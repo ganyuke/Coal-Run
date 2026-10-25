@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7155fdb5d7b9c121a9b259e73276d57, type: 3}
+  m_Name: Day2
+  m_EditorClassIdentifier: Assembly-CSharp::DayConfig
+  day: 2
+  training: 0
+  startingWheels: 2
+  startingHopper: 15
+  target: 240
+  forecast:
+  - time: 0
+    temperature: -10
+  - time: 140
+    temperature: -10
+  - time: 220
+    temperature: -20
+  - time: 290
+    temperature: -32
+  - time: 335
+    temperature: -44
+  - time: 400
+    temperature: -44
+  - time: 455
+    temperature: -20
+  - time: 520
+    temperature: -10
+  - time: 600
+    temperature: -10

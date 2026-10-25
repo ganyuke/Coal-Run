@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ebd9ecfedd92149a906b26dd5d76616, type: 3}
+  m_Name: Tuning
+  m_EditorClassIdentifier: Assembly-CSharp::Tuning
+  step: 0.016666668
+  gravity: -18
+  walkSpeed: 5.1
+  cartMass: 16
+  coalMass: 1.7
+  cartCapacity: 10
+  overfillCapacity: 12
+  hopperCapacity: 30
+  handCapacity: 3
+  chuteRate: 5
+  shovelRate: 2.8
+  pileVolume: 0.23
+  columnWidth: 0.4
+  liftGear: 0.53
+  liftKeyCrank: 6.5
+  liftMaxSpeed: 8
+  liftAcceleration: 6
+  leverTravel: 1.6
+  burnRates:
+  - 0.072
+  - 0.144
+  - 0.204
+  - 0.276
+  - 0.348
+  heldTemperatures:
+  - 8
+  - -4
+  - -14
+  - -26
+  - -38
+  heatLoss: 0.006
+  heatCapacity: 0.28
+  comfortable: 20
+  freeze: 0
+  shiftLength: 600
+  replacementDelay: 7
