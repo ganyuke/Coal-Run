@@ -12,7 +12,7 @@ namespace CoalRun.Core
         public bool Interact;   // E pressed this step
         public bool InteractHeld; // E held
         public int CrankKey;    // W/S held: 1 up, -1 down
-        public int Lane;        // W/S pressed this step: 1 into the control room, -1 out
+        public int Lane;        // W/S pressed this step: 1 up the stairs to the control room, -1 down
         public bool Heave;      // Shift held
         public int Dash;        // A/D double-tapped this step: 1 right, -1 left
         public int Tap;         // A/D pressed this step, double or not

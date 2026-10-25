@@ -29,7 +29,7 @@ namespace CoalRun.Stations
         [SerializeField]
         private string prompt = "Lever";
         [SerializeField] private string farMessage = "Walk up to the lever.";
-        [SerializeField] private string wrongLaneMessage = "The lever is inside the control room.";
+        [SerializeField] private string wrongLaneMessage = "The lever is up in the control room.";
 
         [Header("Audio (all optional)")]
         [SerializeField]

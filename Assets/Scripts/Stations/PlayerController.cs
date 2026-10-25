@@ -8,7 +8,7 @@ namespace CoalRun.Stations
 {
     // The operator. Walks with forces rather than by setting velocity, so the body still gets shoved
     // around by the cart and the lift. Gripping the cart is a soft spring between the two bodies.
-    // Lane 0 is the work floor; lane 1 is behind the control room glass, where only terrain collides.
+    // Lane 0 is the work floor; lane 1 is the control room up the stairs, where only terrain collides.
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
     public class PlayerController : MonoBehaviour
     {
@@ -37,6 +37,8 @@ namespace CoalRun.Stations
         public float Burial { get; private set; }
         // A wheel off the cart, in hands. Hands full: no gripping, shoveling, levers or doors.
         public bool CarryingWheel { get; private set; }
+        // Going up or down the control room stairs (see Climb).
+        public bool Climbing { get; private set; }
 
         private BoxCollider2D _box;
         // How far the operator may be from touching the cart; closes to zero right after taking hold.
@@ -74,6 +76,7 @@ namespace CoalRun.Stations
             _dashCooldown = Mathf.Max(0, _dashCooldown - dt);
             Injury = Mathf.Max(0, Injury - dt * .8f);
             if (!_game.CanAct) { ReleaseGrip(); return; }
+            if (Climbing) return;
             var c = input.Current;
             if (c.Lane != 0) ChangeLane(c.Lane > 0 ? 1 : 0);
             // At the firebox, E is held to light the fire rather than pressed.
@@ -84,7 +87,7 @@ namespace CoalRun.Stations
             Fit(c, dt);
             Move(c, dt);
             Shovel(c, dt);
-            if (Lane == 1) Body.position = new Vector2(Mathf.Clamp(Body.position.x, 23.1f, 30.6f), Body.position.y);
+            if (Lane == 1) Body.position = new Vector2(Mathf.Clamp(Body.position.x, Room.BoothStart + .3f, Room.Width - .55f), Body.position.y);
             CheckBurial(dt);
         }
 
@@ -493,6 +496,10 @@ namespace CoalRun.Stations
         {
             ReleaseGrip();
             machines.Release();
+            StopAllCoroutines();
+            _flying = Climbing = false;
+            Body.bodyType = RigidbodyType2D.Dynamic;
+            if (CarryingWheel) ReleaseWheel(Vector2.zero);
             Hands = 0;
             Injury = Burial = Stagger = 0;
             Lane = 0;
@@ -539,24 +546,65 @@ namespace CoalRun.Stations
         {
             if (!AtDoor || Lane == lane) return;
             if (CarryingWheel) { _game.Say("Put the wheel down first.", 2); return; }
-            // Stepping out of the control room into coal deep enough to bury the operator is refused.
-            if (lane == 0 && DoorBlocked) { _game.Say("Coal is piled against this door.", 3); return; }
+            // Coming down into coal deep enough to bury the operator is refused.
+            if (lane == 0 && DoorBlocked) { _game.Say("Coal is piled at the foot of the stairs.", 3); return; }
             ThrowHands();
             ReleaseGrip();
             machines.Release();
-            Lane = lane;
-            if (visual) visual.sortingOrder = lane == 1 ? backOrder : frontOrder;
+            StartCoroutine(Climb(lane));
+        }
+
+        // Up or down the stairs in one quick glide, kinematic so nothing on the way knocks the operator
+        // off: the foot of the stairs, the top, then a step in through the door (or the same backwards).
+        private IEnumerator Climb(int lane)
+        {
+            Climbing = true;
             _game.Sound("step");
+            float lower = Room.Lower + .72f, upper = Room.BoothFloor + .72f;
+            Vector2[] path = { new(Room.StairsFoot, lower), new(Room.BoothStart, upper), new(Room.BoothStart + .6f, upper) };
+            if (lane == 0)
+            {
+                System.Array.Reverse(path);
+                Lane = 0;
+                if (visual) visual.sortingOrder = frontOrder;
+            }
+            path[0] = Body.position;
+            Facing = lane == 1 ? 1 : -1;
+            Body.bodyType = RigidbodyType2D.Kinematic;
+            Body.linearVelocity = Vector2.zero;
+            var length = Vector2.Distance(path[0], path[1]) + Vector2.Distance(path[1], path[2]);
+            var time = Mathf.Max(.3f, length / 12);
+            for (float k = 0; k < 1;)
+            {
+                yield return new WaitForFixedUpdate();
+                k = Mathf.Min(1, k + Time.fixedDeltaTime / time);
+                // Eased at both ends, then walked along the two legs by distance.
+                var d = k * k * (3 - 2 * k) * length;
+                var first = Vector2.Distance(path[0], path[1]);
+                Body.MovePosition(d < first ? Vector2.Lerp(path[0], path[1], d / first) : Vector2.Lerp(path[1], path[2], (d - first) / (length - first)));
+            }
+            yield return new WaitForFixedUpdate();
+            Body.bodyType = RigidbodyType2D.Dynamic;
+            Body.linearVelocity = Vector2.zero;
+            if (lane == 1)
+            {
+                Lane = 1;
+                if (visual) visual.sortingOrder = backOrder;
+            }
+            Climbing = false;
         }
 
         // In front of the staff lift, past the control room glass, with the shift over.
         private bool CanClockOut => _game.Phase == Phase.Leaving && Lane == 0 && Body.position is { y: < 4.3f, x: > Room.EntranceStart + .2f };
 
-        private bool AtDoor => Body.position is { y: < 4.3f, x: > 29.4f or > 22.7f and < 24.2f };
+        // At the foot of the stairs on the work floor, or at the control room door up top.
+        private bool AtDoor => Lane == 0
+            ? Body.position is { y: < 4.3f } p && Mathf.Abs(p.x - Room.StairsFoot) < .8f
+            : Body.position.x < Room.BoothStart + 1.2f;
 
         private bool DoorBlocked
         {
-            get { var c = _game.Coal; return c.PileHeight(c.Surfaces[0], Body.position.x) > 1; }
+            get { var c = _game.Coal; return c.PileHeight(c.Surfaces[0], Room.StairsFoot) > 1; }
         }
 
         private bool PileInReach()
@@ -581,10 +629,11 @@ namespace CoalRun.Stations
         public List<(string key, string label)> Prompts()
         {
             var list = new List<(string, string)>();
-            if (!_game.CanAct || Machine) return list;
+            if (!_game.CanAct || Machine || Climbing) return list;
             if (Lane == 1)
             {
-                if (AtDoor && !DoorBlocked) list.Add(("S", "Leave"));
+                if (AtDoor && !DoorBlocked) list.Add(("S", "Down the stairs"));
+                MachinePrompt(list);
                 return list;
             }
             if (CarryingWheel)
@@ -595,21 +644,26 @@ namespace CoalRun.Stations
             }
             if (WheelInReach()) list.Add(("E", "Pick up wheel"));
             if (CanClockOut) list.Add(("E", "Clock out"));
-            if (AtDoor) list.Add(("W", "Enter"));
+            if (AtDoor) list.Add(("W", "Up to the control room"));
             if (_game.Furnace.CanLight(this)) list.Add(("Hold E", "Light the fire"));
             if (CartNear() && _game.Cradle.Prompt != null) list.Add(("E", _game.Cradle.Prompt));
             if (CartOverturnedInReach()) list.Add(("E", "Right cart"));
             if (PileInReach()) list.Add(("F", "Shovel"));
             if (!Holding && CartInGrip() && Mathf.Cos(_game.Cart.Angle) > .3f) list.Add(("Space", "Grip cart"));
-            foreach (var m in Machine.All)
-            {
-                if (m is LiftCrank && m.CanOperate(this)) { list.Add(("W S", "Crank")); break; }
-                if (m is not FloorLever lever || !m.CanOperate(this)) continue;
-                list.Add(("Mouse", lever.Prompt));
-                break;
-            }
+            MachinePrompt(list);
             if (list.Count > 2) list.RemoveRange(2, list.Count - 2);
             return list;
+        }
+
+        private void MachinePrompt(List<(string, string)> list)
+        {
+            foreach (var m in Machine.All)
+            {
+                if (m is LiftCrank && m.CanOperate(this)) { list.Add(("W S", "Crank")); return; }
+                if (m is not FloorLever lever || !m.CanOperate(this)) continue;
+                list.Add(("Mouse", lever.Prompt));
+                return;
+            }
         }
     }
 }
