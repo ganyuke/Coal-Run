@@ -11,6 +11,8 @@ namespace CoalRun.Core
         public float step = 1f / 60;
         public float gravity = -18;
         public float walkSpeed = 5.1f;
+        [Tooltip("Walking speed while shoveling, as a fraction of walkSpeed: slow enough to feel the work, but you can work along a pile.")]
+        public float digWalk = .3f;
 
         [Header("Reach")]
         [Tooltip("Furthest gap between the operator and the end of the cart that still lets them take hold.")]
@@ -43,6 +45,8 @@ namespace CoalRun.Core
         public float crashSpeed = 9;
         [Tooltip("Seconds of holding E to bolt a wheel back on.")]
         public float fitTime = 1.5f;
+        [Tooltip("How far the operator lifts the cart's end off the floor to fit a wheel, in degrees.")]
+        public float fitLift = 9;
         [Tooltip("How far from the operator a loose wheel can be picked up.")]
         public float wheelReach = 1.8f;
         [Tooltip("The hardest a carried wheel can be thrown, m/s.")]
@@ -136,6 +140,8 @@ namespace CoalRun.Core
         public float freeze = 0;
         [Tooltip("Seconds the building can sit at or below freezing before the operator freezes. Never shown; it drains back at the same rate once it's above.")]
         public float freezeGrace = 30;
+        [Tooltip("How much faster the operator walks and hauls as the freeze grace runs out, at its end: .25 is 25% faster. A rush, not a slowdown, so nearly freezing isn't punished twice.")]
+        public float freezeRush = .25f;
         [Tooltip("Seconds of holding E at the firebox to light it.")]
         public float lightTime = 2;
         [Tooltip("Seconds a fresh fire takes to come up to the notch's full burn.")]

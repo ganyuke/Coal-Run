@@ -138,16 +138,18 @@ namespace CoalRun.Stations
             Mathf.Abs(player.Position.y - transform.position.y) < 1.6f;
 
         // Called every step with whether the operator is holding E at the firebox. Letting go starts over.
-        public void Kindle(bool held, float dt)
+        // Returns whether they're striking at it, for their animation.
+        public bool Kindle(bool held, float dt)
         {
-            if (!held) { _kindle = 0; return; }
-            if (Hopper <= 0) { _game.Say("There's no coal in the hopper to light.", 2); return; }
+            if (!held) { _kindle = 0; return false; }
+            if (Hopper <= 0) { _game.Say("There's no coal in the hopper to light.", 2); return false; }
             _kindle += dt;
             _game.Sound("kindle", .4f);
-            if (_kindle < _game.Tune.lightTime) return;
+            if (_kindle < _game.Tune.lightTime) return true;
             Lit = true;
             _kindle = _catch = _starved = 0;
             _game.Sound("ignite");
+            return false;
         }
 
         // Takes what fits of `amount`. Returns how much went in.

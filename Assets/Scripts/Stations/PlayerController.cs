@@ -21,6 +21,12 @@ namespace CoalRun.Stations
         [Tooltip("The wheel in the operator's hands, shown while carrying one.")]
         [SerializeField]
         private Transform heldWheel;
+        [Tooltip("Flint and steel, shown while striking at the firebox to light it.")]
+        [SerializeField]
+        private Transform striker;
+        [Tooltip("Sparks thrown off each strike, toward the firebox.")]
+        [SerializeField]
+        private ParticleSystem strikeSparks;
 
         public Rigidbody2D Body { get; private set; }
         public Vector2 Position => Body.position;
@@ -50,6 +56,9 @@ namespace CoalRun.Stations
         // or from them onto the cart (see Fly).
         private float _fit;
         private bool _flying;
+        // Striking at the firebox this step (see Furnace.Kindle), and the time of the last strike.
+        private bool _striking;
+        private float _lastStrike;
 
         private bool _gripBlocked;
         // A double-tap dash (not holding the cart) or lurch (holding it): time left, direction, and how
@@ -75,13 +84,14 @@ namespace CoalRun.Stations
             _lurchFor = Mathf.Max(0, _lurchFor - dt);
             _dashCooldown = Mathf.Max(0, _dashCooldown - dt);
             Injury = Mathf.Max(0, Injury - dt * .8f);
-            if (!_game.CanAct) { ReleaseGrip(); return; }
+            if (!_game.CanAct) { ReleaseGrip(); _striking = false; _fit = 0; return; }
             if (Climbing) return;
             var c = input.Current;
             if (c.Lane != 0) ChangeLane(c.Lane > 0 ? 1 : 0);
             // At the firebox, E is held to light the fire rather than pressed.
             var atFirebox = _game.Furnace.CanLight(this);
-            _game.Furnace.Kindle(atFirebox && c.InteractHeld, dt);
+            _striking = _game.Furnace.Kindle(atFirebox && c.InteractHeld, dt);
+            if (_striking) Facing = (int)Mathf.Sign(_game.Furnace.transform.position.x - Body.position.x);
             if (c.Interact && !atFirebox) Interact();
             if (CarryingWheel && !_flying && c.Click) ThrowWheel(c.Aim);
             Fit(c, dt);
@@ -91,8 +101,9 @@ namespace CoalRun.Stations
             CheckBurial(dt);
         }
 
-        // Slower in the cold: a little below 6° (as in the JS), then more and more as the freeze grace runs out.
-        private float Cold => (_game.Temperature < 6 ? .72f : 1) * (1 - .55f * _game.Chill);
+        // Freezing hurries the operator up rather than slowing them down: they're already about to die, so
+        // making them slower too would punish them twice. Up to freezeRush faster as the grace runs out.
+        private float Rush => _game.Freezing ? 1 + _game.Tune.freezeRush * _game.Chill : 1;
 
         private void Move(Controls c, float dt)
         {
@@ -103,8 +114,8 @@ namespace CoalRun.Stations
             var digging = Digging(c);
             Vector2 p = Body.position, cp = cart.Body.position;
 
-            if (Holding && (!c.Grip || digging || Machine || Lane != 0 || cart.InCradle || cart.Righting || CarryingWheel)) ReleaseGrip();
-            if (!_gripBlocked && !Holding && c.Grip && !digging && !Machine && !CarryingWheel && Lane == 0 && CartInGrip() && !cart.InCradle && !cart.Righting && Mathf.Cos(cart.Angle) > .3f)
+            if (Holding && (!c.Grip || digging || Machine || Lane != 0 || cart.InCradle || cart.Busy || CarryingWheel)) ReleaseGrip();
+            if (!_gripBlocked && !Holding && c.Grip && !digging && !Machine && !CarryingWheel && Lane == 0 && CartInGrip() && !cart.InCradle && !cart.Busy && Mathf.Cos(cart.Angle) > .3f)
                 TakeGrip();
             if (c.Dash != 0) Dash(c.Dash);
             else if (_dashFor > 0) DashCancel(c);
@@ -116,7 +127,7 @@ namespace CoalRun.Stations
             // pushing. A body contact would push on the bin's top corner and lever it over its wheel.
             _box.excludeLayers = Lane == 1 ? ~GameLayers.Mask(GameLayers.Terrain) : GameLayers.Mask(GameLayers.Cart);
 
-            var target = digging ? 0 : c.Move * t.walkSpeed * (Machine ? t.machineWalk : 1) * Cold * (Stagger > 0 ? .25f : 1);
+            var target = c.Move * t.walkSpeed * (Machine ? t.machineWalk : digging ? t.digWalk : 1) * Rush * (Stagger > 0 ? .25f : 1);
             // The dash speeds up as it goes (a run-up), set directly so it follows the ramp exactly.
             if (_dashFor > 0)
             {
@@ -126,7 +137,7 @@ namespace CoalRun.Stations
             }
             var v = Body.linearVelocity;
             // Walking into a low pile steps up onto it instead of stopping dead against it.
-            if (c.Move != 0 && !Machine && !digging && Mathf.Abs(v.y) < 1 && Mathf.Abs(v.x) < 2.5f)
+            if (c.Move != 0 && !Machine && Mathf.Abs(v.y) < 1 && Mathf.Abs(v.x) < 2.5f)
             {
                 var ahead = p.x + c.Move * .36f;
                 var step = _game.Coal.GroundAt(ahead, p.y) - (p.y - .66f);
@@ -137,7 +148,7 @@ namespace CoalRun.Stations
             // A dragging skid makes it slow work: the operator can't haul it at walking pace however hard they
             // push. Heaved off the floor, it nearly rolls like a two-wheel cart.
             var wheels = cart.Wheels >= 2 ? 1 : cart.Wheels == 1 ? cart.SkidClear ? t.heaveHaul : t.oneWheelHaul : t.noWheelHaul;
-            var effective = holding ? c.Move * Mathf.Min(t.walkSpeed, 4.8f / (1 + cart.Coal * .038f)) * wheels * bury * Cold : target;
+            var effective = holding ? c.Move * Mathf.Min(t.walkSpeed, 4.8f / (1 + cart.Coal * .038f)) * wheels * bury * Rush : target;
             // Mid-lurch, neither the operator nor the haul force holds the cart back to the hauling pace.
             if (holding && _lurchFor > 0) effective = _dashDir * Mathf.Max(effective * _dashDir, cart.Body.linearVelocity.x * _dashDir);
             Body.AddForce(new Vector2(Mathf.Clamp((effective - v.x) * Body.mass * 18, -800, 800), 0));
@@ -317,8 +328,9 @@ namespace CoalRun.Stations
 
         private Vector2 HandPoint => Body.position + new Vector2(Facing * .45f, .05f);
 
-        // Holding E at the cart bolts the carried wheel on; letting go starts over. Then it flies onto
-        // its slot and is fitted when it gets there.
+        // Holding E at the cart bolts the carried wheel on; letting go starts over. The operator lifts the
+        // end missing the wheel and works it about while the wheel is lined up on its slot (see Update),
+        // then it goes on with a clunk and the cart is let down.
         private void Fit(Controls c, float dt)
         {
             var cart = _game.Cart;
@@ -328,10 +340,15 @@ namespace CoalRun.Stations
                 return;
             }
             _fit += dt;
+            var t = _game.Tune;
+            var k = _fit / t.fitTime;
+            Facing = (int)Mathf.Sign(cart.WheelSlot(cart.Wheels).x - Body.position.x);
+            // Up in the first quarter, then rocked about, settling as the wheel lines up.
+            cart.HoldUp(cart.Wheels, t.fitLift * Mathf.SmoothStep(0, 1, k * 4) + Mathf.Sin(_fit * 11) * 2.5f * Mathf.Min(1, k * 4) * (1 - k));
             _game.Sound("wrench", .3f);
-            if (_fit < _game.Tune.fitTime) return;
+            if (_fit < t.fitTime) return;
             _fit = 0;
-            StartCoroutine(Fly(heldWheel ? heldWheel.position : HandPoint, Quaternion.identity, () => cart.WheelSlot(cart.Wheels), .25f, () =>
+            StartCoroutine(Fly(heldWheel ? heldWheel.position : HandPoint, heldWheel ? heldWheel.rotation : Quaternion.identity, () => cart.WheelSlot(cart.Wheels), .1f, () =>
             {
                 CarryingWheel = false;
                 if (heldWheel) heldWheel.gameObject.SetActive(false);
@@ -357,7 +374,54 @@ namespace CoalRun.Stations
 
         private void Update()
         {
-            if (heldWheel && !_flying) heldWheel.localPosition = new Vector3(Facing * .45f, .05f, 0);
+            HeldWheel();
+            Strike();
+            // Crouched to strike at the firebox; shivering in the cold, harder the nearer to freezing.
+            var art = visual.transform;
+            var crouch = _striking ? .82f : 1;
+            var shiver = _game.Ended ? 0 : _game.Freezing ? .015f + .035f * _game.Chill : _game.Temperature < 6 ? .008f : 0;
+            art.localScale = new Vector3(1, Mathf.MoveTowards(art.localScale.y, crouch, Time.deltaTime * 2), 1);
+            art.localPosition = new Vector3(shiver * Mathf.Sin(Time.time * 55), -.66f * (1 - art.localScale.y), 0);
+        }
+
+        // In the hands, or while a wheel is being fitted, offered up to its slot and jiggled about, less and
+        // less, until it lines up.
+        private void HeldWheel()
+        {
+            if (!heldWheel || _flying) return;
+            var fit = _fit / _game.Tune.fitTime;
+            var hand = (Vector3)HandPoint + (heldWheel.parent.position - transform.position);
+            if (fit <= 0)
+            {
+                heldWheel.SetPositionAndRotation(hand, Quaternion.identity);
+                return;
+            }
+            var cart = _game.Cart;
+            var loose = 1 - fit;
+            var jiggle = new Vector2(Mathf.Sin(Time.time * 13), .5f * Mathf.Cos(Time.time * 9)) * (.12f * loose);
+            var e = Mathf.SmoothStep(0, 1, fit * 3);
+            heldWheel.SetPositionAndRotation(Vector3.Lerp(hand, cart.WheelSlot(cart.Wheels) + jiggle, e), Quaternion.Euler(0, 0, 25 * loose * Mathf.Sin(Time.time * 7)));
+        }
+
+        // Flint and steel: a quick scrape every .3 s, each throwing a few sparks at the firebox.
+        private void Strike()
+        {
+            if (striker) striker.gameObject.SetActive(_striking);
+            if (!_striking) return;
+            var phase = Time.time % .3f / .3f;
+            if (striker)
+            {
+                striker.localPosition = new Vector3(Facing * .38f, -.05f, 0);
+                // Wound back slowly, then struck down fast.
+                var swing = phase < .7f ? Mathf.Lerp(-20, 50, phase / .7f) : Mathf.Lerp(50, -40, (phase - .7f) / .3f);
+                striker.localRotation = Quaternion.Euler(0, 0, Facing * -swing);
+            }
+            if (!strikeSparks || Time.time - _lastStrike < .3f) return;
+            _lastStrike = Time.time;
+            var at = Body.position + new Vector2(Facing * .5f, -.2f);
+            for (var i = 0; i < 6; i++)
+                strikeSparks.Emit(new ParticleSystem.EmitParams { position = at, velocity = new Vector2(Facing * Random.Range(1.5f, 4f), Random.Range(-.5f, 2.5f)) }, 1);
+            _game.Sound("strike", .1f);
         }
 
         private bool CartNear() => Vector2.Distance(Body.position, _game.Cart.Body.position) < 2.6f;

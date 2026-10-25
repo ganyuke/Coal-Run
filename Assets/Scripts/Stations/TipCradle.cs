@@ -54,7 +54,7 @@ namespace CoalRun.Stations
                 var cart = _game.Cart;
                 var p = cart.Body.position;
                 return Mathf.Abs(p.x - transform.position.x) < _game.Tune.cradleReach && Mathf.Abs(p.y - (Room.Upper + .7f)) < .8f &&
-                       Mathf.Abs(cart.Body.linearVelocity.x) < 2 && !cart.Overturned && !cart.Righting;
+                       Mathf.Abs(cart.Body.linearVelocity.x) < 2 && !cart.Overturned && !cart.Busy;
             }
         }
 

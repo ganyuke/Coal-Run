@@ -44,6 +44,10 @@ namespace CoalRun.Stations
         public bool Overturned => !InCradle && !Righting && Mathf.Cos(Angle) < .7f;
         // Being heaved back onto its wheels (see Right).
         public bool Righting { get; private set; }
+        // One end held up off the floor by the operator while a wheel is fitted (see HoldUp).
+        public bool Lifted { get; private set; }
+        // Moved by hand rather than by physics: no gripping, hooking on or spilling meanwhile.
+        public bool Busy => Righting || Lifted;
         // Half the cart's width as it lies, from its bin: 1 upright, less on its side.
         public float HalfWidth => _colliders.Count > 0 ? _colliders[0].bounds.extents.x : 1;
         // Which side of the cart the skid is on, in world x: -1 or 1.
@@ -55,7 +59,7 @@ namespace CoalRun.Stations
             Wheels >= 2 ? "The cart has both its wheels." :
             InCradle ? "Lower the cart off the cradle first." :
             Mathf.Cos(Angle) < .87f ? "Right the cart first." :
-            Body.linearVelocity.magnitude > 1 ? "The cart has to stop first." : null;
+            !Lifted && Body.linearVelocity.magnitude > 1 ? "The cart has to stop first." : null;
 
         private ShiftManager _game;
         private readonly List<Collider2D> _colliders = new();
@@ -72,6 +76,12 @@ namespace CoalRun.Stations
         // The hardest hit since last step, handled in FixedUpdate rather than mid-contact, since a crash
         // rebuilds the colliders. Hits right after a crash or a fitting don't count again.
         private float _impact, _crashCooldown;
+        // The lift: the point it turns about (the far wheel's foot), the pose it started from, its rotation
+        // now and the one asked for this step, in degrees, and the wheels it had when it was picked up.
+        private Vector2 _liftPivot, _liftFrom;
+        private float _liftRotation, _liftAngle, _liftTarget;
+        private bool _liftAsked;
+        private int _liftWheels;
 
         private void Awake()
         {
@@ -96,13 +106,14 @@ namespace CoalRun.Stations
         private void FixedUpdate()
         {
             UpdateMass();
+            if (Lifted) StepLift(Time.fixedDeltaTime);
             _crashCooldown -= Time.fixedDeltaTime;
             if (_impact >= _game.Tune.crashSpeed && _crashCooldown <= 0) Crash(_impact);
             _impact = 0;
             if (!_heaved) _heaveTarget = 0;
             _heaved = false;
             GroundFriction(Time.fixedDeltaTime);
-            if (!Righting) Spill(Time.fixedDeltaTime);
+            if (!Busy) Spill(Time.fixedDeltaTime);
             // Only steel on the floor sparks; dragging through coal doesn't.
             var onFloor = _skidCollider && _skidCollider.IsTouchingLayers(GameLayers.Mask(GameLayers.Terrain));
             var skidVelocity = Body.GetRelativePointVelocity(new Vector2(-.58f, -.64f));
@@ -289,6 +300,44 @@ namespace CoalRun.Stations
             Rebuild(true);
             _crashCooldown = 1;
             _game.Sound("repair");
+        }
+
+        // Asked every step while the operator works a wheel on: turns the cart about the other end until the
+        // end missing the wheel is `degrees` above level. Measured from level rather than from how it lay,
+        // since a cart with no wheels rests nose down. Once nobody asks, it's let down gently: level if the
+        // wheel went on, back as it lay if not, and then it's back to physics.
+        public void HoldUp(int slot, float degrees)
+        {
+            if (!Lifted)
+            {
+                Lifted = true;
+                Body.bodyType = RigidbodyType2D.Kinematic;
+                Body.linearVelocity = Vector2.zero;
+                Body.angularVelocity = 0;
+                _liftFrom = Body.position;
+                _liftRotation = _liftAngle = Body.rotation;
+                _liftPivot = Body.GetRelativePoint(new Vector2(slot == 0 ? -.58f : .58f, -.64f));
+                _liftWheels = Wheels;
+            }
+            // The front slot is on the right: raising it turns the cart anticlockwise.
+            _liftTarget = (slot == 0 ? 1 : -1) * degrees;
+            _liftAsked = true;
+        }
+
+        private void StepLift(float dt)
+        {
+            var asked = _liftAsked;
+            if (!asked) _liftTarget = Wheels > _liftWheels ? 0 : _liftRotation;
+            _liftAsked = false;
+            _liftAngle = Mathf.MoveTowards(_liftAngle, _liftTarget, 45 * dt);
+            Body.MovePosition(_liftPivot + (Vector2)(Quaternion.Euler(0, 0, _liftAngle - _liftRotation) * (_liftFrom - _liftPivot)));
+            Body.MoveRotation(_liftAngle);
+            if (asked || !Mathf.Approximately(_liftAngle, _liftTarget)) return;
+            Body.bodyType = RigidbodyType2D.Dynamic;
+            Body.linearVelocity = Vector2.zero;
+            Body.angularVelocity = 0;
+            _crashCooldown = 1;
+            Lifted = false;
         }
 
         // Where a wheel goes on the cart: the front one first, then the back.
