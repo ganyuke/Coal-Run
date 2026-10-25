@@ -11,7 +11,7 @@ namespace CoalRun.Stations
     {
         public enum Stage { Arrival, Lever, Stuck, Avalanche, Dig, Deliver, Done }
 
-        [Tooltip("Stands by the cart under the chute. Its art becomes his body when the coal comes down.")]
+        [Tooltip("Stands by the cart under the chute, drawn behind the coal piles so they cover him. Its art becomes his body when the coal comes down.")]
         [SerializeField]
         private GameObject helper;
         [SerializeField] private MachineInput machines;
@@ -22,6 +22,9 @@ namespace CoalRun.Stations
         [SerializeField]
         private float avalanche = 32;
         [SerializeField] private float avalancheRate = 18;
+        [Tooltip("The backed-up coal bursts out of the chute sideways, toward the helper, at up to this speed.")]
+        [SerializeField]
+        private float avalancheThrow = 2.2f;
 
         public Stage Current { get; private set; }
         // Until the avalanche is over, the chute only does what the training says.
@@ -30,7 +33,10 @@ namespace CoalRun.Stations
 
         private ShiftManager _game;
         private FloorLever _lever;
-        private float _timer, _left, _accumulator, _helperBurial, _deliveredBefore;
+        private float _timer, _left, _accumulator, _deliveredBefore;
+        // The helper's injury from falling lumps (enough knocks him down, as in the JS), seconds he's been
+        // buried or knocked down, and how much he's still flinching from the last hit.
+        private float _helperInjury, _helperBurial, _flinch;
         private bool _nagged;
 
         private void Start()
@@ -62,13 +68,14 @@ namespace CoalRun.Stations
                 while (_accumulator >= .5f || _left <= 0 && _accumulator > 0)
                 {
                     var lump = Mathf.Min(.5f, _accumulator);
-                    _game.Chute.Dispense(lump);
+                    // Aimed anywhere between straight down onto the cart and onto the helper's head.
+                    _game.Chute.Dispense(lump, Mathf.Sign(helper.transform.position.x - Room.Chute) * Random.Range(0, avalancheThrow));
                     _accumulator -= lump;
                 }
                 _game.Sound("coal", .13f);
             }
 
-            if (helper && helper.activeSelf && _game.Coal.PileHeight(_game.Coal.Surfaces[0], helper.transform.position.x) > 1.2f)
+            if (helper && helper.activeSelf && (_helperInjury > 3 || _game.Coal.PileHeight(_game.Coal.Surfaces[0], helper.transform.position.x) > 1.2f))
             {
                 _helperBurial += dt;
                 if (_helperBurial > .6f) KillHelper();
@@ -86,7 +93,8 @@ namespace CoalRun.Stations
                     Current = Stage.Stuck;
                     _lever.Limit = 1;
                     machines.Release();
-                    _game.Chute.Dispense(.5f);
+                    // Onto his head, so the first lump out makes him flinch.
+                    _game.Chute.Dispense(.5f, Mathf.Sign(helper.transform.position.x - Room.Chute) * 1.7f);
                     _game.Sound("clunk");
                     _game.Say("“Gotta put in a little more elbow grease.”", 8);
                     break;
@@ -133,11 +141,33 @@ namespace CoalRun.Stations
             _game.FinishTraining();
         }
 
+        // A lump falling onto the helper's head and shoulders (see CoalField). Returns whether it hit him.
+        public bool HitHelper(Vector2 lump, float amount)
+        {
+            if (!helper || !helper.activeSelf) return false;
+            var at = (Vector2)helper.transform.position;
+            if (Mathf.Abs(lump.x - at.x) > .5f || Mathf.Abs(lump.y - at.y) > .9f) return false;
+            _helperInjury += amount;
+            _flinch = 1;
+            _game.Sound("hurt", .4f, .5f);
+            return true;
+        }
+
+        // He staggers back from each hit, and sinks a little lower the more he's taken.
+        private void Update()
+        {
+            if (!helper || !helper.activeSelf) return;
+            _flinch = Mathf.Max(0, _flinch - Time.deltaTime * 3);
+            var art = helper.transform.GetChild(0);
+            var lean = Mathf.Sign(helper.transform.position.x - Room.Chute) * (_flinch * 14 + Mathf.Min(3, _helperInjury) * 4);
+            art.localRotation = Quaternion.Euler(0, 0, -lean + Mathf.Sin(Time.time * 40) * 4 * _flinch);
+        }
+
         private void KillHelper()
         {
             var at = (Vector2)helper.transform.position;
             var art = helper.transform.GetChild(0).gameObject;
-            _game.Bodies.Add(Corpse.Topple(art, "Dead helper", at, Vector2.zero));
+            _game.Bodies.Add(Corpse.Topple(art, "Dead helper", at, Vector2.zero, true));
             helper.SetActive(false);
             _game.Sound("hurt");
             _game.Say("“Well, the help is all dead. That’s awesome.”", 6);

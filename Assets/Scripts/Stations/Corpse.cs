@@ -8,8 +8,9 @@ namespace CoalRun.Stations
     // that lies on floors and coal piles and rides the lift, but touches nothing else, so it's never in the way.
     public static class Corpse
     {
-        // Takes over `art` (a worker's SortingGroup root) and returns the body it now lies on.
-        public static Rigidbody2D Topple(GameObject art, string name, Vector2 at, Vector2 velocity)
+        // Takes over `art` (a worker's SortingGroup root) and returns the body it now lies on. A buried one
+        // sinks through coal piles to the floor, so the coal goes on covering it instead of lifting it out.
+        public static Rigidbody2D Topple(GameObject art, string name, Vector2 at, Vector2 velocity, bool buried = false)
         {
             var body = new GameObject(name) { layer = GameLayers.Part };
             // Already leaning past its balance point, so over it goes, either way.
@@ -29,7 +30,7 @@ namespace CoalRun.Stations
             rb.angularVelocity = side * 90;
             var box = body.AddComponent<BoxCollider2D>();
             box.size = new Vector2(.48f, 1.33f);
-            box.excludeLayers = GameLayers.Mask(GameLayers.Player, GameLayers.Cart, GameLayers.Part);
+            box.excludeLayers = buried ? GameLayers.Mask(GameLayers.Player, GameLayers.Cart, GameLayers.Part, GameLayers.Pile) : GameLayers.Mask(GameLayers.Player, GameLayers.Cart, GameLayers.Part);
             return rb;
         }
     }

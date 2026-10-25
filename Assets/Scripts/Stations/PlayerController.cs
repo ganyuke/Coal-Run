@@ -636,8 +636,6 @@ namespace CoalRun.Stations
         {
             if (!AtDoor || Lane == lane) return;
             if (CarryingWheel) { _game.Say("Put the wheel down first.", 2); return; }
-            // Coming down into coal deep enough to bury the operator is refused.
-            if (lane == 0 && DoorBlocked) { _game.Say("Coal is piled at the foot of the stairs.", 3); return; }
             ThrowHands();
             ReleaseGrip();
             machines.Release();
@@ -654,6 +652,8 @@ namespace CoalRun.Stations
             Vector2[] path = { new(Room.StairsFoot, lower), new(Room.BoothStart, upper), new(Room.BoothStart + .6f, upper) };
             if (lane == 0)
             {
+                // Coal piled at the foot of the stairs is stepped down onto, not into.
+                path[0].y = _game.Coal.GroundAt(Room.StairsFoot, lower) + .72f;
                 System.Array.Reverse(path);
                 Lane = 0;
                 if (visual) visual.sortingOrder = frontOrder;
@@ -692,11 +692,6 @@ namespace CoalRun.Stations
             ? Body.position is { y: < 4.3f } p && Mathf.Abs(p.x - Room.StairsFoot) < .8f
             : Body.position.x < Room.BoothStart + 1.2f;
 
-        private bool DoorBlocked
-        {
-            get { var c = _game.Coal; return c.PileHeight(c.Surfaces[0], Room.StairsFoot) > 1; }
-        }
-
         private bool PileInReach()
         {
             var c = _game.Coal;
@@ -722,7 +717,7 @@ namespace CoalRun.Stations
             if (!_game.CanAct || Machine || Climbing) return list;
             if (Lane == 1)
             {
-                if (AtDoor && !DoorBlocked) list.Add(("S", "Down the stairs"));
+                if (AtDoor) list.Add(("S", "Down the stairs"));
                 MachinePrompt(list);
                 return list;
             }

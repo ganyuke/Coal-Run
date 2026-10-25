@@ -31,7 +31,7 @@ namespace CoalRun.Stations
         {
             public Rigidbody2D Body;
             public float Amount, Rest;
-            public bool HitPlayer;
+            public bool HitPlayer, HitHelper;
             public bool Active => Body.gameObject.activeSelf;
         }
 
@@ -321,7 +321,7 @@ namespace CoalRun.Stations
                 var p = new Vector2(Mathf.Clamp(x + (Random.value - .5f) * .9f * spread, .6f, 31.4f), y);
                 lump.Amount = q;
                 lump.Rest = 0;
-                lump.HitPlayer = false;
+                lump.HitPlayer = lump.HitHelper = false;
                 lump.Body.transform.position = p;
                 lump.Body.gameObject.SetActive(true);
                 lump.Body.position = p;
@@ -409,6 +409,8 @@ namespace CoalRun.Stations
                         _nextCoalInjury = _game.Elapsed + .25f;
                     }
                 }
+                // And the tutorial's helper, standing under the chute.
+                if (!lump.HitHelper && v.y < -1 && _game.Tutorial.HitHelper(p, lump.Amount)) lump.HitHelper = true;
                 // The cart catches lumps that fall into its bin; what it can't hold goes over the side.
                 var local = cart.Body.GetPoint(p);
                 if (Mathf.Abs(local.x) < .92f && local.y is > -.1f and < 1.05f && v.y <= cart.Body.linearVelocity.y + .5f && Mathf.Abs(cart.Angle) < .48f)
