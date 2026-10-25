@@ -1,55 +1,59 @@
-using UnityEngine;
+using CoalRun.Core;
 using UnityEngine.InputSystem;
+using UnityEngine;
 
-// The mouse side of the machinery: on press, takes the machine under the cursor if the operator
-// can reach it; while held, feeds it the cursor; on release or when it goes out of reach, lets go.
-public class MachineInput : MonoBehaviour
+namespace CoalRun.Stations
 {
-    [SerializeField] private PlayerController player;
-    [SerializeField] private Camera cam;
-
-    public Machine Active { get; private set; }
-    public Machine Hover { get; private set; }
-
-    private void Update()
+    // The mouse side of the machinery: on press, takes the machine under the cursor if the operator
+    // can reach it; while held, feeds it the cursor; on release or when it goes out of reach, lets go.
+    public class MachineInput : MonoBehaviour
     {
-        var mouse = Mouse.current;
-        var game = ShiftManager.Instance;
-        if (mouse == null) return;
-        Vector2 p = cam.ScreenToWorldPoint(mouse.position.ReadValue());
-        Hover = game.CanAct ? Pick(p) : null;
-        if (Active && (!mouse.leftButton.isPressed || !game.CanAct || !Active.CanOperate(player))) Release();
-        if (!Active && mouse.leftButton.wasPressedThisFrame && Hover)
+        [SerializeField] private PlayerController player;
+        [SerializeField] private Camera cam;
+
+        public Machine Active { get; private set; }
+        public Machine Hover { get; private set; }
+
+        private void Update()
         {
-            if (Hover.CanOperate(player))
+            var mouse = Mouse.current;
+            var game = ShiftManager.Instance;
+            if (mouse == null) return;
+            Vector2 p = cam.ScreenToWorldPoint(mouse.position.ReadValue());
+            Hover = game.CanAct ? Pick(p) : null;
+            if (Active && (!mouse.leftButton.isPressed || !game.CanAct || !Active.CanOperate(player))) Release();
+            if (!Active && mouse.leftButton.wasPressedThisFrame && Hover)
             {
-                player.ReleaseGrip();
-                player.ThrowHands();
-                Active = Hover;
-                Active.Begin(p);
+                if (Hover.CanOperate(player))
+                {
+                    player.ReleaseGrip();
+                    player.ThrowHands();
+                    Active = Hover;
+                    Active.Begin(p);
+                }
+                else game.Say(Hover.OutOfReach, 3);
             }
-            else game.Say(Hover.OutOfReach, 3);
+            if (Active) Active.Drag(p, Time.deltaTime);
         }
-        if (Active) Active.Drag(p, Time.deltaTime);
-    }
 
-    public void Release()
-    {
-        if (Active) Active.End();
-        Active = null;
-    }
-
-    private static Machine Pick(Vector2 p)
-    {
-        Machine best = null;
-        var bestDistance = float.PositiveInfinity;
-        foreach (var m in Machine.All)
+        public void Release()
         {
-            var d = Vector2.Distance(p, m.HandlePosition);
-            if (!m.Hit(p) || d >= bestDistance) continue;
-            best = m;
-            bestDistance = d;
+            if (Active) Active.End();
+            Active = null;
         }
-        return best;
+
+        private static Machine Pick(Vector2 p)
+        {
+            Machine best = null;
+            var bestDistance = float.PositiveInfinity;
+            foreach (var m in Machine.All)
+            {
+                var d = Vector2.Distance(p, m.HandlePosition);
+                if (!m.Hit(p) || d >= bestDistance) continue;
+                best = m;
+                bestDistance = d;
+            }
+            return best;
+        }
     }
 }
