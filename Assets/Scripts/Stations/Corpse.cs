@@ -21,7 +21,7 @@ namespace CoalRun.Stations
             art.transform.localRotation = Quaternion.identity;
             art.transform.localScale = Vector3.one;
             foreach (Transform t in art.transform)
-                if (t.name is "Held wheel" or "Striker") t.gameObject.SetActive(false);
+                if (t.name is "Held wheel" or "Striker" or "Held shovel") t.gameObject.SetActive(false);
             art.GetComponent<SortingGroup>().sortingOrder = 3;
             foreach (var r in art.GetComponentsInChildren<SpriteRenderer>()) r.color *= new Color(.65f, .65f, .65f);
             var rb = body.AddComponent<Rigidbody2D>();

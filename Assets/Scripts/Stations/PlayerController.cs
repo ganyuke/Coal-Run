@@ -27,6 +27,12 @@ namespace CoalRun.Stations
         [Tooltip("Sparks thrown off each strike, toward the firebox.")]
         [SerializeField]
         private ParticleSystem strikeSparks;
+        [Tooltip("The shovel in the operator's hands, pivoting at the hands with the blade pointing down its local -y. Shown while digging or carrying coal.")]
+        [SerializeField]
+        private Transform heldShovel;
+        [Tooltip("The black heap on the blade, scaled with the coal on it.")]
+        [SerializeField]
+        private Transform shovelLoad;
 
         public Rigidbody2D Body { get; private set; }
         public Vector2 Position => Body.position;
@@ -114,6 +120,7 @@ namespace CoalRun.Stations
             if (!c.Grip) _gripBlocked = false;
             if (c.Move != 0) Facing = (int)Mathf.Sign(c.Move);
             var digging = Digging(c);
+            _digging = digging;
             Vector2 p = Body.position, cp = cart.Body.position;
 
             if (Holding && (!c.Grip || digging || Machine || Lane != 0 || cart.InCradle || cart.Busy || CarryingWheel)) ReleaseGrip();
@@ -381,6 +388,7 @@ namespace CoalRun.Stations
         {
             HeldWheel();
             Strike();
+            HeldShovel();
             // Crouched to strike at the firebox; shivering in the cold, harder the nearer to freezing.
             var art = visual.transform;
             var crouch = _striking ? .82f : 1;
@@ -494,6 +502,8 @@ namespace CoalRun.Stations
             foreach (var (s, i) in _spots)
             {
                 if (s.Heights[i] <= .001f) continue;
+                var dx = s.Start + (i + .5f) * t.columnWidth - p.x;
+                _digSide = Mathf.Abs(dx) > .1f ? (int)Mathf.Sign(dx) : Facing;
                 var taken = coal.TakeFromPile(s, i, Mathf.Min(t.shovelRate * dt, t.handCapacity - Hands));
                 Hands += taken;
                 Scooped += taken;
@@ -520,8 +530,44 @@ namespace CoalRun.Stations
             var v = ThrowVelocity(from, aim, t.throwSpeed);
             _game.Coal.Emit(from.x, from.y, Hands, v.x, v.y, t.throwSpread);
             Hands = 0;
+            _thrownAt = Time.time;
             _game.Sound("coal");
         }
+
+        // Out while digging or carrying coal: jabbed into the pile on whichever side it's digging as it fills,
+        // the heap on the blade growing, then swung across and up toward the throw and back down.
+        private void HeldShovel()
+        {
+            if (!heldShovel) return;
+            var throwing = Time.time - _thrownAt;
+            var shown = (_digging || Hands > 0 || throwing < .4f) && Lane == 0 && !CarryingWheel && !Machine;
+            heldShovel.gameObject.SetActive(shown);
+            if (!shown) return;
+            var full = Hands / _game.Tune.handCapacity;
+            // Degrees the shaft is swung from straight down, positive to the right: low toward the pile being
+            // dug, higher as it's loaded, toward the throw once they've stopped digging.
+            var side = _digging ? _digSide : Facing;
+            var angle = side * Mathf.Lerp(50, 65, full);
+            if (_digging && Hands > 0 && full < .99f) angle += side * Mathf.Sin(Time.time * 16) * 9;
+            if (throwing < .4f)
+            {
+                // Across and up in .12 s, back down over the rest.
+                var swing = throwing < .12f ? Mathf.SmoothStep(0, 1, throwing / .12f) : 1 - Mathf.SmoothStep(0, 1, (throwing - .12f) / .28f);
+                angle = Mathf.Lerp(angle, Facing * 145, swing);
+            }
+            var toward = angle >= 0 ? 1 : -1;
+            heldShovel.localPosition = new Vector3(Mathf.Lerp(heldShovel.localPosition.x, toward * .2f, Time.deltaTime * 20), -.08f, 0);
+            heldShovel.localRotation = Quaternion.Euler(0, 0, angle);
+            if (!shovelLoad) return;
+            shovelLoad.gameObject.SetActive(full > .01f);
+            // On the blade's upper face.
+            shovelLoad.localPosition = new Vector3(toward * .06f * Mathf.Sqrt(full), -.86f, 0);
+            shovelLoad.localScale = new Vector3(.18f + .16f * full, .12f + .14f * full, 1);
+        }
+
+        private bool _digging;
+        private int _digSide = 1;
+        private float _thrownAt = -1;
 
         // The launch velocity that reaches `to` after a flight time that grows with distance, so near
         // throws are quick tosses and far ones lob. Capped at `max`, in which case it falls short.
