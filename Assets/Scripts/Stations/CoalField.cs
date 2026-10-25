@@ -403,8 +403,10 @@ namespace CoalRun.Stations
                     foreach (var i in s.Id == SurfaceId.Lift ? new[] { s.Heights.Length - 1 } : new[] { 0, s.Heights.Length - 1 })
                     {
                         if (level && (s.Id == SurfaceId.Lift || i == 0)) continue;
-                        if (s.Heights[i] <= .22f) continue;
+                        // Under a twentieth of a unit stays put: the slump tops the end column up by specks,
+                        // and shedding each one made an endless stream of lumps with next to no coal in them.
                         var q = Mathf.Min(.5f, ToCoal(s.Heights[i] - .22f));
+                        if (q < .05f) continue;
                         s.Heights[i] -= ToHeight(q);
                         Mark(s, i);
                         // Straight past the edge with no scatter: scattered, it could land back where it fell
