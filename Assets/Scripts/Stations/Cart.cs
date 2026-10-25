@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using CoalRun.Core;
 using UnityEngine;
@@ -40,7 +41,9 @@ namespace CoalRun.Stations
         public bool Heaving => _heaveTarget > 0;
         public bool SkidClear => _skidCollider && !_skidCollider.IsTouchingLayers(GameLayers.Mask(GameLayers.Terrain));
         // On its side or upside down: too far over to hold, so it has to be righted (E).
-        public bool Overturned => !InCradle && Mathf.Cos(Angle) < .7f;
+        public bool Overturned => !InCradle && !Righting && Mathf.Cos(Angle) < .7f;
+        // Being heaved back onto its wheels (see Right).
+        public bool Righting { get; private set; }
         // Half the cart's width as it lies, from its bin: 1 upright, less on its side.
         public float HalfWidth => _colliders.Count > 0 ? _colliders[0].bounds.extents.x : 1;
         // Which side of the cart the skid is on, in world x: -1 or 1.
@@ -99,7 +102,7 @@ namespace CoalRun.Stations
             if (!_heaved) _heaveTarget = 0;
             _heaved = false;
             GroundFriction(Time.fixedDeltaTime);
-            Spill(Time.fixedDeltaTime);
+            if (!Righting) Spill(Time.fixedDeltaTime);
             // Only steel on the floor sparks; dragging through coal doesn't.
             var onFloor = _skidCollider && _skidCollider.IsTouchingLayers(GameLayers.Mask(GameLayers.Terrain));
             var skidVelocity = Body.GetRelativePointVelocity(new Vector2(-.58f, -.64f));
@@ -205,14 +208,36 @@ namespace CoalRun.Stations
         // Stands the cart back up on its wheels where it lies, as the JS rightCart does: no animation yet.
         public void Right()
         {
+            if (!Righting) StartCoroutine(Heave());
+        }
+
+        // Tipped back up over half a second rather than snapped upright: lifted a little on the way so it
+        // clears the floor, turning the short way round. Held kinematic, so nothing knocks it off course and
+        // the coal doesn't spill as it passes through steep angles.
+        private IEnumerator Heave()
+        {
+            Righting = true;
+            _game.Sound("repair");
             var p = Body.position;
             var floor = _game.Coal.SurfaceAt(p.x, p.y).Floor();
-            Body.position = new Vector2(Mathf.Clamp(p.x, 1.45f, 30.55f), floor + .7f);
-            Body.rotation = 0;
+            Vector2 to = new(Mathf.Clamp(p.x, 1.45f, 30.55f), floor + .7f);
+            float from = Body.rotation, upright = Mathf.Round(from / 360) * 360;
+            Body.bodyType = RigidbodyType2D.Kinematic;
             Body.linearVelocity = Vector2.zero;
             Body.angularVelocity = 0;
-            transform.SetPositionAndRotation(Body.position, Quaternion.identity);
-            _game.Sound("repair");
+            for (float k = 0; k < 1;)
+            {
+                yield return new WaitForFixedUpdate();
+                k = Mathf.Min(1, k + Time.fixedDeltaTime / .5f);
+                var e = k * k * (3 - 2 * k);
+                Body.MovePosition(Vector2.Lerp(p, to, e) + new Vector2(0, .35f * Mathf.Sin(k * Mathf.PI)));
+                Body.MoveRotation(Mathf.Lerp(from, upright, e));
+            }
+            yield return new WaitForFixedUpdate();
+            Body.bodyType = RigidbodyType2D.Dynamic;
+            Body.rotation = 0;
+            _crashCooldown = 1;
+            Righting = false;
         }
 
         // The skid coming down hard bounces coal out over both rims: dropping it from high costs coal,

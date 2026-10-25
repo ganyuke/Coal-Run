@@ -44,9 +44,10 @@ namespace CoalRun.Stations
         // Centre to centre when the operator's hands are on the bin's rim (cart half width 1 + operator .24).
         private const float Touching = 1.26f;
 
-        // Seconds E has been held to bolt the wheel on, and whether it's on its way from the hands to the cart.
+        // Seconds E has been held to bolt the wheel on, and whether the wheel is on its way into the hands
+        // or from them onto the cart (see Fly).
         private float _fit;
-        private bool _fitting;
+        private bool _flying;
 
         private bool _gripBlocked;
         // A double-tap dash (not holding the cart) or lurch (holding it): time left, direction, and how
@@ -79,7 +80,7 @@ namespace CoalRun.Stations
             var atFirebox = _game.Furnace.CanLight(this);
             _game.Furnace.Kindle(atFirebox && c.InteractHeld, dt);
             if (c.Interact && !atFirebox) Interact();
-            if (CarryingWheel && !_fitting && c.Click) ThrowWheel(c.Aim);
+            if (CarryingWheel && !_flying && c.Click) ThrowWheel(c.Aim);
             Fit(c, dt);
             Move(c, dt);
             Shovel(c, dt);
@@ -99,8 +100,8 @@ namespace CoalRun.Stations
             var digging = Digging(c);
             Vector2 p = Body.position, cp = cart.Body.position;
 
-            if (Holding && (!c.Grip || digging || Machine || Lane != 0 || cart.InCradle || CarryingWheel)) ReleaseGrip();
-            if (!_gripBlocked && !Holding && c.Grip && !digging && !Machine && !CarryingWheel && Lane == 0 && CartInGrip() && !cart.InCradle && Mathf.Cos(cart.Angle) > .3f)
+            if (Holding && (!c.Grip || digging || Machine || Lane != 0 || cart.InCradle || cart.Righting || CarryingWheel)) ReleaseGrip();
+            if (!_gripBlocked && !Holding && c.Grip && !digging && !Machine && !CarryingWheel && Lane == 0 && CartInGrip() && !cart.InCradle && !cart.Righting && Mathf.Cos(cart.Angle) > .3f)
                 TakeGrip();
             if (c.Dash != 0) Dash(c.Dash);
             else if (_dashFor > 0) DashCancel(c);
@@ -287,9 +288,12 @@ namespace CoalRun.Stations
         {
             ThrowHands();
             ReleaseGrip();
+            Vector3 from = wheel.position;
+            var spin = wheel.transform.rotation;
             _game.Cart.RemoveWheel(wheel);
             CarryingWheel = true;
             if (heldWheel) heldWheel.gameObject.SetActive(true);
+            StartCoroutine(Fly(from, spin, () => HandPoint, .2f, null));
             _game.Sound("clank");
         }
 
@@ -315,7 +319,7 @@ namespace CoalRun.Stations
         private void Fit(Controls c, float dt)
         {
             var cart = _game.Cart;
-            if (!CarryingWheel || _fitting || !c.InteractHeld || Lane != 0 || !CartNear() || cart.WheelBlocker != null || CartOverturnedInReach())
+            if (!CarryingWheel || _flying || !c.InteractHeld || Lane != 0 || !CartNear() || cart.WheelBlocker != null || CartOverturnedInReach())
             {
                 _fit = 0;
                 return;
@@ -324,27 +328,33 @@ namespace CoalRun.Stations
             _game.Sound("wrench", .3f);
             if (_fit < _game.Tune.fitTime) return;
             _fit = 0;
-            StartCoroutine(FitWheel());
+            StartCoroutine(Fly(heldWheel ? heldWheel.position : HandPoint, Quaternion.identity, () => cart.WheelSlot(cart.Wheels), .25f, () =>
+            {
+                CarryingWheel = false;
+                if (heldWheel) heldWheel.gameObject.SetActive(false);
+                cart.SetWheels(cart.Wheels + 1);
+            }));
         }
 
-        private IEnumerator FitWheel()
+        // Moves the held wheel from where it was to a point that may itself be moving (the hands, a cart
+        // slot), eased in and out and turning upright on the way, so nothing jumps into place.
+        private IEnumerator Fly(Vector3 from, Quaternion spin, System.Func<Vector2> to, float time, System.Action done)
         {
-            _fitting = true;
-            var cart = _game.Cart;
-            var start = heldWheel ? heldWheel.position : (Vector3)HandPoint;
-            for (float k = 0; k < 1; k += Time.deltaTime / .25f)
+            _flying = true;
+            for (float k = 0; k < 1; k += Time.deltaTime / time)
             {
-                if (heldWheel) heldWheel.position = Vector3.Lerp(start, cart.WheelSlot(cart.Wheels), k * k * (3 - 2 * k));
+                var e = k * k * (3 - 2 * k);
+                if (heldWheel) heldWheel.SetPositionAndRotation(Vector3.Lerp(from, to(), e), Quaternion.Slerp(spin, Quaternion.identity, e));
                 yield return null;
             }
-            CarryingWheel = _fitting = false;
-            if (heldWheel) heldWheel.gameObject.SetActive(false);
-            cart.SetWheels(cart.Wheels + 1);
+            if (heldWheel) heldWheel.rotation = Quaternion.identity;
+            _flying = false;
+            done?.Invoke();
         }
 
         private void Update()
         {
-            if (heldWheel && !_fitting) heldWheel.localPosition = new Vector3(Facing * .45f, .05f, 0);
+            if (heldWheel && !_flying) heldWheel.localPosition = new Vector3(Facing * .45f, .05f, 0);
         }
 
         private bool CartNear() => Vector2.Distance(Body.position, _game.Cart.Body.position) < 2.6f;
