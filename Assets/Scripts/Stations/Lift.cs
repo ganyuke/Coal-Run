@@ -87,7 +87,7 @@ public class Lift : MonoBehaviour
             var p = rider.position;
             if (Mathf.Abs(p.x - Room.LiftX) < 1.6f && Mathf.Abs(p.y - Y) < 2) mass += rider.mass;
         }
-        return mass;
+        return mass + game.Coal.LiftCoal * game.Tune.coalMass;
     }
 
     // The lowest the platform may go without coming down on the cart, the operator, or a part.

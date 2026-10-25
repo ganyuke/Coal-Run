@@ -24,6 +24,7 @@ public class MachineInput : MonoBehaviour
             if (Hover.CanOperate(player))
             {
                 player.ReleaseGrip();
+                player.ThrowHands();
                 Active = Hover;
                 Active.Begin(p);
             }

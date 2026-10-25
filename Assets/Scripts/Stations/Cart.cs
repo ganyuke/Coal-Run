@@ -15,9 +15,10 @@ public class Cart : MonoBehaviour
     public float Coal { get; set; }
     public float Angle => Body.rotation * Mathf.Deg2Rad;
     public float AngularVelocity => Body.angularVelocity * Mathf.Deg2Rad;
-    // Filled in when the tip cradle and the coal field arrive.
+    // Filled in when the tip cradle arrives.
     public bool InCradle => false;
-    public float Burial => 0;
+    // How deep the bin sits in coal.
+    public float Burial => game.Coal.CartBurial(this);
 
     ShiftManager game;
     readonly List<Collider2D> colliders = new();

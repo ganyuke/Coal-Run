@@ -62,6 +62,11 @@ public static class GreyboxBuilder
         var upperCrank = Crank("Upper landing crank", new Vector2(4.75f, Room.Upper + 1.65f), null, LiftCrank.Spot.UpperLanding, lift);
         var player = BuildPlayer(out var playerVisual);
         var cart = BuildCart();
+        var chute = BuildChute(tuning);
+
+        var coalGo = new GameObject("Coal field");
+        var coal = coalGo.AddComponent<CoalField>();
+        Wire(coal, ("liftPlatform", lift.transform), ("lumpSprite", circle), ("columnSprite", square), ("spriteMaterial", unlit));
 
         var game = new GameObject("Game");
         var shift = game.AddComponent<ShiftManager>();
@@ -69,7 +74,7 @@ public static class GreyboxBuilder
         var machines = game.AddComponent<MachineInput>();
         var hud = game.AddComponent<DebugHud>();
 
-        Wire(shift, ("tuning", tuning), ("day", day1), ("input", input), ("player", player), ("cart", cart), ("lift", lift));
+        Wire(shift, ("tuning", tuning), ("day", day1), ("input", input), ("player", player), ("cart", cart), ("lift", lift), ("coal", coal), ("chute", chute));
         Wire(machines, ("player", player), ("cam", cam));
         Wire(hud, ("player", player), ("machines", machines));
         Wire(player, ("input", input), ("machines", machines), ("visual", playerVisual));
@@ -111,7 +116,6 @@ public static class GreyboxBuilder
         // Stations that don't do anything yet, so the room reads.
         Rect(art, "Tip cradle", Room.Tip - .6f, Room.Upper, Room.Tip + .6f, Room.Upper + .25f, Steel, 2);
         Rect(art, "Burn lever (todo)", 14.15f, Room.Upper, 14.45f, Room.Upper + 1.8f, Steel, 2);
-        Rect(art, "Chute lever (todo)", 28.2f, 2.9f, 28.5f, 4.5f, Steel, -6);
         Rect(art, "Weigh plate", 24.6f, Room.Lower - .05f, 27.4f, Room.Lower + .05f, new Color(.6f, .5f, .2f), 1);
         // Control room: the operator stands behind this glass in lane 1.
         Rect(art, "Control room glass", 23, Room.Lower, 30.7f, 5.6f, Glass, 10);
@@ -175,6 +179,19 @@ public static class GreyboxBuilder
         so.FindProperty("lift").objectReferenceValue = lift;
         so.ApplyModifiedPropertiesWithoutUndo();
         return crank;
+    }
+
+    // The lever sits in the control room, behind the glass. Its knob starts at the top of its travel.
+    static Chute BuildChute(Tuning tuning)
+    {
+        var at = new Vector2(28.35f, 3.7f);
+        var go = new GameObject("Chute lever");
+        go.transform.position = at;
+        Box(go.transform, "Slot", at, new Vector2(.1f, tuning.leverTravel + .2f), Steel * .5f, -6);
+        var knob = Box(go.transform, "Knob", at + new Vector2(0, tuning.leverTravel / 2), new Vector2(.4f, .25f), new Color(.8f, .2f, .15f), -5).transform;
+        var chute = go.AddComponent<Chute>();
+        Wire(chute, ("handle", go.transform), ("knob", knob));
+        return chute;
     }
 
     // ---- Operator and cart ------------------------------------------------------------------

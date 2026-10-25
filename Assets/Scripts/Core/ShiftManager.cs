@@ -18,18 +18,25 @@ public class ShiftManager : MonoBehaviour
     [SerializeField] PlayerController player;
     [SerializeField] Cart cart;
     [SerializeField] Lift lift;
+    [SerializeField] CoalField coal;
+    [SerializeField] Chute chute;
 
     public Tuning Tune => tuning;
     public DayConfig Day => day;
     public PlayerController Player => player;
     public Cart Cart => cart;
     public Lift Lift => lift;
+    public CoalField Coal => coal;
+    public Chute Chute => chute;
 
     public Phase Phase { get; private set; } = Phase.Shift;
     public bool CanAct => Phase is Phase.Tutorial or Phase.Shift;
     public float Elapsed { get; private set; }
     public string Message { get; private set; } = "";
     public float MessageFor { get; private set; }
+    public float InitialCoal { get; private set; }
+    // Every unit of coal is always in exactly one place, so this should never change.
+    public float TotalCoal => chute.Bunker + cart.Coal + player.Hands + coal.Loose;
 
     // name, loudness
     public event Action<string, float> OnSound;
@@ -43,6 +50,8 @@ public class ShiftManager : MonoBehaviour
         Physics2D.gravity = new Vector2(0, tuning.gravity);
         GameLayers.ConfigureCollisions();
     }
+
+    void Start() => InitialCoal = TotalCoal;
 
     void FixedUpdate()
     {
@@ -65,6 +74,15 @@ public class ShiftManager : MonoBehaviour
         if (soundTimers.TryGetValue(name, out var until) && until > Elapsed) return;
         soundTimers[name] = Elapsed + cooldown;
         OnSound?.Invoke(name, amount);
+    }
+
+    // Accidents kill only the operator. Placeholder until M4's replacement worker: the next one
+    // walks in from the staff lift straight away.
+    public void Die(string reason)
+    {
+        Say($"{reason}. Another worker is on the way.", 5);
+        Sound("hurt");
+        player.Respawn(new Vector2(30.5f, Room.Lower + .75f));
     }
 
     // Nothing can leave the room. Anything physics squeezes through a wall or floor is put back on the lower floor.
