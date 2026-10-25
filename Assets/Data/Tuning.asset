@@ -59,6 +59,7 @@ MonoBehaviour:
   liftHit: 1
   liftCrush: 3
   liftKnock: 0.5
+  liftSquashSpeed: 1.2
   leverAngle: 35
   leverReturn: 0.5
   machineWalk: 0.35

@@ -8,7 +8,8 @@ namespace CoalRun.Stations
     // load only adds resistance. Cranked down onto something in the shaft, or up with something hanging
     // off its open side into the upper floor, it jams against it with a bang: a cart has coal jolted out,
     // and the operator is hurt, and crushed if the cranking carries on. It's kinematic, so it stops short
-    // of actually pushing into them (that would squeeze bodies through floors).
+    // of actually pushing into them (that would squeeze bodies through floors). Coal in the shaft it
+    // squashes flat as it comes down, slowly, and stops on the flattened layer.
     [RequireComponent(typeof(Rigidbody2D))]
     public class Lift : MonoBehaviour
     {
@@ -82,10 +83,15 @@ namespace CoalRun.Stations
             var limit = Mathf.Min(t.liftMaxSpeed, Mathf.Max(0, Mathf.Sqrt(2 * t.liftAcceleration * Mathf.Max(0, distance) + brake * brake) - brake));
             var target = Mathf.Clamp(requested, -limit, limit);
             Speed += Mathf.Clamp(target - Speed, -t.liftAcceleration * dt, t.liftAcceleration * dt);
+            // Coming down into coal in the shaft, it bogs down at once, then slower as the coal packs flat.
+            if (Speed < 0 && Y + Speed * dt < Room.Lower + _game.Coal.ShaftPeak())
+                Speed = Mathf.Max(Speed, -t.liftSquashSpeed * Mathf.Clamp01((Y - floor) / .5f) - .05f);
             var next = Y + Speed * dt;
             if (next > ceiling) { Jam(Speed, hangingOff); next = ceiling; }
             if (next < floor) { Jam(-Speed, under); next = floor; }
             Speed = (next - Y) / dt;
+            // Down in its pit, the platform's top is flush with the floor, so the coal under it has Y - Lower of room.
+            _game.Coal.Squash(next - Room.Lower);
 
             if (_driver) _driver.Turn(-Speed * dt / 1.4f * Mathf.Rad2Deg);
             if (Mathf.Abs(Speed) > .02f) _game.Sound("crank", .1f, Mathf.Abs(Speed));
@@ -148,6 +154,13 @@ namespace CoalRun.Stations
                 if (!(p.x + half > .5f && p.x - half < 4 && p.y < Y - .25f && clear > floor)) continue;
                 floor = clear;
                 blocker = kind;
+            }
+            // Coal in the shaft can be squashed flat, but no further. A thin layer is just shoved out.
+            var layer = Room.Lower + _game.Coal.ShaftLayer();
+            if (layer > Room.Lower + .1f && layer > floor)
+            {
+                floor = layer;
+                blocker = "coal";
             }
             return Mathf.Min(floor, Y);
         }

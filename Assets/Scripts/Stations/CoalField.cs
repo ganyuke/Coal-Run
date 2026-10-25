@@ -69,6 +69,9 @@ namespace CoalRun.Stations
                 // Rides on the lift: the platform's top surface is .15 above its body.
                 MakeSurface(SurfaceId.Lift, .55f, 3.95f, liftPlatform, .15f)
             };
+            // Coal in the shaft is drawn behind the platform, which comes down onto it and sinks into it a little.
+            for (var i = 0; i < Surfaces[0].Columns.Length; i++)
+                if (InShaft(i)) Surfaces[0].Columns[i].sortingOrder = 2;
         }
 
         private Surface MakeSurface(SurfaceId id, float start, float end, Transform parent, float y)
@@ -161,6 +164,71 @@ namespace CoalRun.Stations
             var i = Index(s, x);
             s.Heights[i] += ToHeight(amount);
             Mark(s, i);
+        }
+
+        // Whether the lower floor's column i is in the lift shaft, under the platform.
+        private bool InShaft(int i)
+        {
+            var x = Surfaces[0].Start + (i + .5f) * _game.Tune.columnWidth;
+            return x >= Surfaces[2].Start && x <= Surfaces[2].End;
+        }
+
+        // How thick the coal on the floor of the shaft would be flattened out: the lowest the platform can
+        // squash it to.
+        public float ShaftLayer()
+        {
+            var s = Surfaces[0];
+            float sum = 0, count = 0;
+            for (var i = 0; i < s.Heights.Length; i++)
+            {
+                if (!InShaft(i)) continue;
+                sum += s.Heights[i];
+                count++;
+            }
+            return count > 0 ? sum / count : 0;
+        }
+
+        // The tallest heap on the floor of the shaft, where the platform first touches coal.
+        public float ShaftPeak()
+        {
+            var s = Surfaces[0];
+            float peak = 0;
+            for (var i = 0; i < s.Heights.Length; i++)
+                if (InShaft(i)) peak = Mathf.Max(peak, s.Heights[i]);
+            return peak;
+        }
+
+        // The platform pressing coal in the shaft down to `room` deep: what's above it is pushed sideways
+        // into the lower parts of the shaft, flattening the heap. The lift stops at ShaftLayer, so it fits;
+        // past the open side, the floor's own slump squeezes it out.
+        public void Squash(float room)
+        {
+            var s = Surfaces[0];
+            float excess = 0, space = 0;
+            for (var i = 0; i < s.Heights.Length; i++)
+            {
+                if (!InShaft(i)) continue;
+                if (s.Heights[i] > room)
+                {
+                    excess += s.Heights[i] - room;
+                    s.Heights[i] = room;
+                    Mark(s, i);
+                }
+                else space += room - s.Heights[i];
+            }
+            if (excess <= 0) return;
+            // Shared out in proportion to the room each column has, so the hollows fill evenly.
+            var share = Mathf.Min(1, excess / Mathf.Max(space, 1e-6f));
+            for (var i = 0; i < s.Heights.Length; i++)
+            {
+                if (!InShaft(i) || s.Heights[i] >= room) continue;
+                var add = (room - s.Heights[i]) * share;
+                s.Heights[i] += add;
+                excess -= add;
+                Mark(s, i);
+            }
+            // Any rounding left over goes out of the open side.
+            if (excess > 0) AddToPile(s, Surfaces[2].End + _game.Tune.columnWidth / 2, ToCoal(excess));
         }
 
         // Anything steeper than .3 between neighbouring columns flows downhill.
@@ -381,11 +449,11 @@ namespace CoalRun.Stations
             {
                 for (var i = 0; i < lowerFloor.Heights.Length; i++)
                 {
-                    float x = lowerFloor.Start + (i + .5f) * _game.Tune.columnWidth, h = lowerFloor.Heights[i];
-                    if (h <= 0 || x < platform.Start || x > platform.End) continue;
+                    var h = lowerFloor.Heights[i];
+                    if (h <= 0 || !InShaft(i)) continue;
                     lowerFloor.Heights[i] = 0;
                     Mark(lowerFloor, i);
-                    AddToPile(platform, x, ToCoal(h));
+                    AddToPile(platform, lowerFloor.Start + (i + .5f) * _game.Tune.columnWidth, ToCoal(h));
                 }
                 Slump(platform, edge, lowerFloor, Index(lowerFloor, platform.End + _game.Tune.columnWidth / 2));
             }

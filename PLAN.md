@@ -97,6 +97,8 @@ Each milestone ends with something you can play. Don't start the next one until 
 - **Down onto the cart:** jams on top of it, 10 → 7 at full crank speed.
 - **Onto the operator (down on them, or up with them hanging off the side):** `liftHit` (1 injury per m/s of impact), then `liftCrush` (3 a second) while the crank keeps turning against them. 7 kills, healing 0.8 a second: hit at 3 m/s gives 4.6, dead about 1.5 s later if you keep cranking. The death message says "Crushed by the lift" or "Crushed against the floor" (`PlayerController.Hurt` now takes a cause).
 - `CoalField.ReturnAll()` sends every lump and pile back to the bunker, for tests.
+- **Down onto coal in the shaft (10/25, your call: flatten it until it can't go further):** touching coal, the platform bogs down to `liftSquashSpeed` (1.2 m/s), slowing as it nears the stop. Coal above its underside is pushed sideways into the lower parts of the shaft (`CoalField.Squash`), and it stops on the flattened layer (`ShaftLayer`) with "The coal is under the lift." 9 coal heaped 1.2 m stops it 0.55 up. The floor's slump keeps squeezing coal out of the open side; a layer under 10 cm doesn't hold it up and gets shoved out. Shaft coal is drawn behind the platform. (Before: it passed straight through and picked the pile up on landing, as in the JS.)
+- **No coal loops at the joins:** a platform resting at the bottom joins the floor like it joins the upper floor when level, and doesn't shed off its open side (it used to shed, the floor slumped the coal back into the shaft and the platform picked it up, for ever). `Emit` puts less than 0.05 coal straight on the pile below rather than making a lump of it.
 
 ### Floor levers (10/24, your request)
 

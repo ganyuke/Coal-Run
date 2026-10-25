@@ -94,6 +94,8 @@ namespace CoalRun.Core
         public float liftCrush = 3;
         [Tooltip("How hard the lift jamming against the cart knocks it, as a fraction of the lift's speed (see joltSpill).")]
         public float liftKnock = .5f;
+        [Tooltip("Fastest the platform can come down through coal in the shaft, in m/s. It slows to a stop on the flattened layer.")]
+        public float liftSquashSpeed = 1.2f;
 
         [Header("Levers")]
         [Tooltip("How far a floor lever tilts either side of upright, in degrees.")]
