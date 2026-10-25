@@ -36,6 +36,12 @@ namespace CoalRun.Stations
         [Tooltip("The black heap on the blade, scaled with the coal on it.")]
         [SerializeField]
         private Transform shovelLoad;
+        [Tooltip("Where the shovel reaches, from the feet, facing right (mirrored facing left): coal piled into it can be dug, the tallest column first.")]
+        [SerializeField]
+        private Rect scoopBox = new(-.15f, -.3f, 1.45f, 1.7f);
+        [Tooltip("Optional. Outlines the scoop box while F is held, for tuning it. Brighter with coal in it.")]
+        [SerializeField]
+        private LineRenderer scoopOutline;
 
         public Rigidbody2D Body { get; private set; }
         public Vector2 Position => Body.position;
@@ -394,6 +400,7 @@ namespace CoalRun.Stations
             HeldWheel();
             Strike();
             HeldShovel();
+            ScoopOutline();
             // Crouched to strike at the firebox; shivering in the cold, harder the nearer to freezing.
             var art = visual.transform;
             var crouch = _striking ? .82f : 1;
@@ -495,36 +502,64 @@ namespace CoalRun.Stations
             var t = _game.Tune;
             if (!Digging(c)) { ThrowHands(); return; }
             if (Hands >= t.handCapacity - .001f) { ThrowHands(); return; }
-            var coal = _game.Coal;
-            Vector2 p = Body.position, cp = _game.Cart.Body.position;
-            _spots.Clear();
-            foreach (var dx in new[] { -.65f, 0, .65f }) Reach(p.x + dx, p.y);
-            if (Mathf.Abs(cp.x - p.x) < 2.4f && Mathf.Abs(cp.y - p.y) < 2)
-                foreach (var x in new[] { cp.x - .6f, cp.x, cp.x + .6f }) if (Mathf.Abs(x - p.x) < 2.6f) Reach(x, cp.y);
-            // Digs where the cursor points: the coal in reach nearest it first, then on from there.
-            var aim = c.Aim.x;
-            // Held toward the cursor while there's nothing to dig.
+            // Held toward the cursor (they face it) while there's nothing to dig.
             _digSide = Facing;
-            _spots.Sort((a, b) => Mathf.Abs(ColumnX(a) - aim).CompareTo(Mathf.Abs(ColumnX(b) - aim)));
-            foreach (var (s, i) in _spots)
-            {
-                if (s.Heights[i] <= .001f) continue;
-                var dx = s.Start + (i + .5f) * t.columnWidth - p.x;
-                _digSide = Mathf.Abs(dx) > .1f ? (int)Mathf.Sign(dx) : Facing;
-                var taken = coal.TakeFromPile(s, i, Mathf.Min(t.shovelRate * dt, t.handCapacity - Hands));
-                Hands += taken;
-                Scooped += taken;
-                _game.Sound("shovel", .22f);
-                return;
-            }
-            ThrowHands();
-            return;
-
-            void Reach(float x, float y) { var s = coal.SurfaceAt(x, y); _spots.Add((s, coal.Index(s, x))); }
-            float ColumnX((CoalField.Surface s, int i) spot) => spot.s.Start + (spot.i + .5f) * t.columnWidth;
+            if (ScoopTarget(Facing) is not { } target) { ThrowHands(); return; }
+            var (s, i) = target;
+            var dx = s.Start + (i + .5f) * t.columnWidth - Body.position.x;
+            _digSide = Mathf.Abs(dx) > .1f ? (int)Mathf.Sign(dx) : Facing;
+            var taken = _game.Coal.TakeFromPile(s, i, Mathf.Min(t.shovelRate * dt, t.handCapacity - Hands));
+            Hands += taken;
+            Scooped += taken;
+            _game.Sound("shovel", .22f);
         }
 
-        private readonly List<(CoalField.Surface s, int i)> _spots = new();
+        // The scoop box in the world, on the side they face.
+        private Rect ScoopRect(int side)
+        {
+            var feet = Body.position + new Vector2(0, -.72f);
+            var x = side > 0 ? feet.x + scoopBox.xMin : feet.x - scoopBox.xMax;
+            return new Rect(x, feet.y + scoopBox.yMin, scoopBox.width, scoopBox.height);
+        }
+
+        // The tallest column of coal piled into the scoop box, on any surface: the floors or the lift.
+        private (CoalField.Surface s, int i)? ScoopTarget(int side)
+        {
+            var box = ScoopRect(side);
+            var width = _game.Tune.columnWidth;
+            (CoalField.Surface, int)? best = null;
+            var bestTop = float.MinValue;
+            foreach (var s in _game.Coal.Surfaces)
+            {
+                var floor = s.Y;
+                if (floor > box.yMax) continue;
+                for (var i = 0; i < s.Heights.Length; i++)
+                {
+                    var x = s.Start + (i + .5f) * width;
+                    var top = floor + s.Heights[i];
+                    if (x < box.xMin || x > box.xMax || s.Heights[i] <= .001f || top < box.yMin || top <= bestTop) continue;
+                    best = (s, i);
+                    bestTop = top;
+                }
+            }
+            return best;
+        }
+
+        private void ScoopOutline()
+        {
+            if (!scoopOutline) return;
+            scoopOutline.enabled = _digging;
+            if (!_digging) return;
+            var b = ScoopRect(Facing);
+            scoopOutline.positionCount = 4;
+            scoopOutline.loop = true;
+            scoopOutline.SetPosition(0, new Vector3(b.xMin, b.yMin));
+            scoopOutline.SetPosition(1, new Vector3(b.xMin, b.yMax));
+            scoopOutline.SetPosition(2, new Vector3(b.xMax, b.yMax));
+            scoopOutline.SetPosition(3, new Vector3(b.xMax, b.yMin));
+            var color = ScoopTarget(Facing) != null ? new Color(1, .85f, .3f, .7f) : new Color(1, 1, 1, .25f);
+            scoopOutline.startColor = scoopOutline.endColor = color;
+        }
 
         // Empties the shovel toward the cursor. The throw is aimed to pass through the cursor, so coal
         // lands where you point; it only goes in the cart if the lumps actually land in the bin.
@@ -765,14 +800,8 @@ namespace CoalRun.Stations
             ? Body.position is { y: < 4.3f } p && Mathf.Abs(p.x - Room.StairsFoot) < .8f
             : Body.position.x < Room.BoothStart + 1.2f;
 
-        private bool PileInReach()
-        {
-            var c = _game.Coal;
-            var p = Body.position;
-            foreach (var dx in new[] { 0, .65f, -.65f })
-                if (c.PileHeight(c.SurfaceAt(p.x + dx, p.y), p.x + dx) > .04f) return true;
-            return false;
-        }
+        // Coal in the scoop box on either side: they turn to face the cursor when they dig.
+        private bool PileInReach() => ScoopTarget(1) != null || ScoopTarget(-1) != null;
 
         // The cart is taken hold of from either end, not from inside its footprint. 1.24 is the distance
         // between centres when the operator's body touches the end of the bin.
