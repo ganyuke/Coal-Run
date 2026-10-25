@@ -496,12 +496,12 @@ namespace CoalRun.Stations
             var coal = _game.Coal;
             Vector2 p = Body.position, cp = _game.Cart.Body.position;
             _spots.Clear();
-            foreach (var dx in new[] { Facing * .65f, 0, -Facing * .65f }) Reach(p.x + dx, p.y);
+            foreach (var dx in new[] { -.65f, 0, .65f }) Reach(p.x + dx, p.y);
             if (Mathf.Abs(cp.x - p.x) < 2.4f && Mathf.Abs(cp.y - p.y) < 2)
-            {
                 foreach (var x in new[] { cp.x - .6f, cp.x, cp.x + .6f }) if (Mathf.Abs(x - p.x) < 2.6f) Reach(x, cp.y);
-                _spots.Sort((a, b) => b.s.Heights[b.i].CompareTo(a.s.Heights[a.i]));
-            }
+            // Digs where the cursor points: the coal in reach nearest it first, then on from there.
+            var aim = c.Aim.x;
+            _spots.Sort((a, b) => Mathf.Abs(ColumnX(a) - aim).CompareTo(Mathf.Abs(ColumnX(b) - aim)));
             foreach (var (s, i) in _spots)
             {
                 if (s.Heights[i] <= .001f) continue;
@@ -517,6 +517,7 @@ namespace CoalRun.Stations
             return;
 
             void Reach(float x, float y) { var s = coal.SurfaceAt(x, y); _spots.Add((s, coal.Index(s, x))); }
+            float ColumnX((CoalField.Surface s, int i) spot) => spot.s.Start + (spot.i + .5f) * t.columnWidth;
         }
 
         private readonly List<(CoalField.Surface s, int i)> _spots = new();
@@ -548,10 +549,12 @@ namespace CoalRun.Stations
             if (!shown) return;
             var full = Hands / _game.Tune.handCapacity;
             // Degrees the shaft is swung from straight down, positive to the right: low toward the pile being
-            // dug, higher as it's loaded, toward the throw once they've stopped digging.
-            var side = _digging ? _digSide : Facing;
-            var angle = side * Mathf.Lerp(50, 65, full);
-            if (_digging && Hands > 0 && full < .99f) angle += side * Mathf.Sin(Time.time * 16) * 9;
+            // dug, coming round to point at the cursor as it fills, so you can see where the throw will go.
+            var hand = Body.position + new Vector2(heldShovel.localPosition.x, -.08f);
+            var toAim = input.Current.Aim - hand;
+            var aimed = Mathf.Clamp(Mathf.Atan2(toAim.x, -toAim.y) * Mathf.Rad2Deg, -120, 120);
+            var angle = _digging ? Mathf.LerpAngle(_digSide * 50, aimed, full * full) : Hands > 0 ? aimed : Facing * 50;
+            if (_digging && Hands > 0 && full < .99f) angle += _digSide * Mathf.Sin(Time.time * 16) * 9 * (1 - full);
             if (throwing < .4f)
             {
                 // Across and up in .12 s, back down over the rest.
