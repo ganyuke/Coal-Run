@@ -30,7 +30,7 @@ Each milestone ends with something you can play. Don't start the next one until 
     - [x] Step 3: blue → red colour bands with 1–5 snowflakes under the lever's notches (instead of number labels; the notepad graph uses the same bands in M5)
   - [x] Shift clock, forecast, complete / frozen; clock out at the staff lift
 - [ ] **M4 · Things going wrong** (Tue 10/27)
-  - [ ] Crashes knock wheels off; pick up and refit (E)
+  - [x] Crashes knock wheels off; pick up, carry, throw and refit (hold E)
   - [x] Right the cart: E or ram it (done early, 10/24)
   - [ ] Death and the replacement worker; red phone
   - [ ] Tutorial: helper, stuck lever, avalanche, dig out
@@ -58,7 +58,7 @@ About a day ahead: M1 and M2 are done, and M3 is a third done, all on the first 
 **Still to do, in order:**
 1. **M3 Furnace:** burn lever with notches labelled "holds −10°" and so on, burning coal from the hopper, building temperature with inertia, output meter next to the lever.
 2. **M3 Shift:** 10-minute clock, Day 1 forecast, shift complete, frozen = game over.
-3. **M4 Crashes:** wheels knocked off by hard hits and edge drops; pick up and refit with E.
+3. ~~**M4 Crashes:**~~ done 10/25.
 4. **M4 Death:** replacement worker down the staff lift (now an instant respawn); red phone that rings more as the building cools.
 5. **M4 Tutorial:** the helper, the stuck lever, the avalanche, digging the cart out.
 6. **M5 Days:** Day 1 → morning memo → Day 2; real Day 2 forecast and target; the axle installer beat (push the cart into him or away).
@@ -95,6 +95,7 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - **Burn dial (step 3):** a fan behind the burn lever (`Burn lever/Dial`, `NotchDial`), one ray per notch at the knob's angle for it: a colour tile (blue → light blue → yellow → orange → red) and 1–5 snowflakes beyond it (`snowflake.png`, generated) for how much cold it holds off. The current notch is lit, the rest drawn at `dim` .25. Tiles sit at radius 2 so the operator's head doesn't cover the red one. The dial is added to the lever's prefab instance in the scene, not to the Floor lever prefab.
 - **Lighting (your call, 10/25):** the shift starts with the fire out (10 coal in the hopper). Hold E at the firebox mouth on the lower floor for `lightTime` 2 s (letting go starts over; refused with an empty hopper); the coal bed warms up as you hold. A fresh fire comes up to the notch's full burn over `catchTime` 5 s. With the hopper empty, the embers last `emberTime` 10 s, cooling, then the fire goes out and has to be lit again. `Controls.InteractHeld` (E held) is new; at the firebox E lights instead of doing its usual press action.
 - **Shift end (your calls, 10/25):** at 10:00 the clock stops and the phase goes to `Leaving` ("The shift is over. Take the staff lift up."): you can still act, the furnace keeps burning, the building can't freeze any more. E in front of the staff lift (lower floor, x > 29.4, lane 0) clocks out → `Complete`. The building at 0° starts a hidden grace (`freezeGrace` 30 s, your call 10/25): "It's freezing in here. Get the fire up.", the lamp over the staff lift (`FreezeLamp`) pulses red, and the operator slows more and more (down to 45% on top of the JS's 72% below 6°, pushing the cart too). Back above 0° it drains at the same rate; used up → `Frozen`. Ended, the world keeps running but nobody can act. The report is a placeholder IMGUI card in `DebugHud` (the JS wording, output vs target, coal delivered); R or its button reloads the scene to restart. `ShiftManager.OnPhase` fires on each change for the real UI and audio later. The shift starts at Play for now (briefing and tutorial come in M4/M5).
+- **Crashes and wheels (your calls, 10/25):** `Cart.OnCollisionEnter2D` keeps the hardest hit of the step (speed along the contact normal, so sliding doesn't count; the operator and wheels are ignored); in FixedUpdate a hit over `crashSpeed` 9 m/s (about a 2.25 m drop) pops the last wheel fitted, with a 1.2 s cooldown. No extra spill: a cart that lands tilted spills by itself. The loose wheel is `Assets/Prefabs/Wheel.prefab` (Part layer, r .3, rolling drag so it stops), listed in `Cart.LooseWheels`; out-of-bounds wheels are put back like the cart, and the lift stops above one in the shaft. E picks one up (within `wheelReach` 1.8) into the operator's hands (`Held wheel` on the Operator prefab): no grip, shovel, levers, doors or lighting while carrying. A click throws it through the cursor (`wheelThrowSpeed` 8, so far aims fall short; the levers ignore clicks while carrying); E away from the cart puts it down. Holding E at the cart for `fitTime` 1.5 s bolts it on, if the cart is upright, stopped and out of the cradle (E says why not); then it tweens from the hands onto its slot (front first) over .25 s.
 
 ### M2 decisions (10/24)
 

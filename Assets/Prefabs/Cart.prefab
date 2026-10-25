@@ -5102,6 +5102,7 @@ MonoBehaviour:
   sparks: {fileID: 4126994094852898799}
   sparksPerMetre: 18
   scrape: {fileID: 1503065346361978402}
+  wheelPrefab: {fileID: 1272984800203403130, guid: ff054a7b73fa73e648e9f03993805db2, type: 3}
 --- !u!1 &2913612098413985771
 GameObject:
   m_ObjectHideFlags: 0

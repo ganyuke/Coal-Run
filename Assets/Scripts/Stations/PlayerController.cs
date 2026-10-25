@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using CoalRun.Core;
 using UnityEngine.Rendering;
@@ -17,6 +18,9 @@ namespace CoalRun.Stations
         [SerializeField]
         private SortingGroup visual;
         [SerializeField] private int frontOrder = 20, backOrder = 4;
+        [Tooltip("The wheel in the operator's hands, shown while carrying one.")]
+        [SerializeField]
+        private Transform heldWheel;
 
         public Rigidbody2D Body { get; private set; }
         public Vector2 Position => Body.position;
@@ -31,12 +35,18 @@ namespace CoalRun.Stations
         public float Hands { get; private set; }
         public float Injury { get; private set; }
         public float Burial { get; private set; }
+        // A wheel off the cart, in hands. Hands full: no gripping, shoveling, levers or doors.
+        public bool CarryingWheel { get; private set; }
 
         private BoxCollider2D _box;
         // How far the operator may be from touching the cart; closes to zero right after taking hold.
         private float _slack;
         // Centre to centre when the operator's hands are on the bin's rim (cart half width 1 + operator .24).
         private const float Touching = 1.26f;
+
+        // Seconds E has been held to bolt the wheel on, and whether it's on its way from the hands to the cart.
+        private float _fit;
+        private bool _fitting;
 
         private bool _gripBlocked;
         // A double-tap dash (not holding the cart) or lurch (holding it): time left, direction, and how
@@ -69,6 +79,8 @@ namespace CoalRun.Stations
             var atFirebox = _game.Furnace.CanLight(this);
             _game.Furnace.Kindle(atFirebox && c.InteractHeld, dt);
             if (c.Interact && !atFirebox) Interact();
+            if (CarryingWheel && !_fitting && c.Click) ThrowWheel(c.Aim);
+            Fit(c, dt);
             Move(c, dt);
             Shovel(c, dt);
             if (Lane == 1) Body.position = new Vector2(Mathf.Clamp(Body.position.x, 23.1f, 30.6f), Body.position.y);
@@ -87,8 +99,8 @@ namespace CoalRun.Stations
             var digging = Digging(c);
             Vector2 p = Body.position, cp = cart.Body.position;
 
-            if (Holding && (!c.Grip || digging || Machine || Lane != 0 || cart.InCradle)) ReleaseGrip();
-            if (!_gripBlocked && !Holding && c.Grip && !digging && !Machine && Lane == 0 && CartInGrip() && !cart.InCradle && Mathf.Cos(cart.Angle) > .3f)
+            if (Holding && (!c.Grip || digging || Machine || Lane != 0 || cart.InCradle || CarryingWheel)) ReleaseGrip();
+            if (!_gripBlocked && !Holding && c.Grip && !digging && !Machine && !CarryingWheel && Lane == 0 && CartInGrip() && !cart.InCradle && Mathf.Cos(cart.Angle) > .3f)
                 TakeGrip();
             if (c.Dash != 0) Dash(c.Dash);
             else if (_dashFor > 0) DashCancel(c);
@@ -226,15 +238,28 @@ namespace CoalRun.Stations
             _game.Sound("ram", .2f, cart.mass);
         }
 
-        // E: one press, one action, picked by what the operator is standing next to: hooking the cart onto
-        // the tip cradle or lowering it, righting it, or clocking out at the staff lift. The phone and wheels come in M4.
+        // E: one press, one action, picked by what the operator is standing next to: righting the cart,
+        // putting a carried wheel down, picking one up, hooking the cart onto the tip cradle or lowering it,
+        // or clocking out at the staff lift. The phone comes in M4.
         private void Interact()
         {
             if (Machine || Lane != 0) return;
-            var cart = _game.Cart;
+            if (CartOverturnedInReach()) { RightCart(); return; }
+            if (CarryingWheel)
+            {
+                // Away from the cart, E puts the wheel down; at the cart, holding it bolts it on (see Fit).
+                if (!CartNear() || _game.Cart.Wheels >= 2) ReleaseWheel(Body.linearVelocity + new Vector2(Facing * 1.5f, 1));
+                else if (_game.Cart.WheelBlocker != null) _game.Say(_game.Cart.WheelBlocker, 2);
+                return;
+            }
+            if (WheelInReach() is { } wheel) { PickUp(wheel); return; }
             if (CartNear() && _game.Cradle.Interact()) return;
-            if (CanClockOut) { _game.ClockOut(); return; }
-            if (!CartOverturnedInReach()) return;
+            if (CanClockOut) _game.ClockOut();
+        }
+
+        private void RightCart()
+        {
+            var cart = _game.Cart;
             var cp = cart.Body.position;
             var floor = _game.Coal.SurfaceAt(cp.x, cp.y).Floor();
             // A cart at rest has landed, even when it came to rest hung up on something.
@@ -242,6 +267,84 @@ namespace CoalRun.Stations
             if (cart.Burial > .8f) { _game.Say("The cart is buried. Dig it out first.", 3); return; }
             ReleaseGrip();
             cart.Right();
+        }
+
+        private Rigidbody2D WheelInReach()
+        {
+            Rigidbody2D best = null;
+            var reach = _game.Tune.wheelReach;
+            foreach (var w in _game.Cart.LooseWheels)
+            {
+                var d = Vector2.Distance(w.position, Body.position);
+                if (d >= reach) continue;
+                best = w;
+                reach = d;
+            }
+            return best;
+        }
+
+        private void PickUp(Rigidbody2D wheel)
+        {
+            ThrowHands();
+            ReleaseGrip();
+            _game.Cart.RemoveWheel(wheel);
+            CarryingWheel = true;
+            if (heldWheel) heldWheel.gameObject.SetActive(true);
+            _game.Sound("clank");
+        }
+
+        private void ReleaseWheel(Vector2 velocity)
+        {
+            CarryingWheel = false;
+            if (heldWheel) heldWheel.gameObject.SetActive(false);
+            _game.Cart.DropWheel(HandPoint, velocity);
+            _game.Sound("clank");
+        }
+
+        // Thrown to pass through the cursor, like the shovel, but heavier: it falls short of far aims.
+        private void ThrowWheel(Vector2 aim)
+        {
+            if (Mathf.Abs(aim.x - Body.position.x) > .05f) Facing = (int)Mathf.Sign(aim.x - Body.position.x);
+            ReleaseWheel(ThrowVelocity(HandPoint, aim, _game.Tune.wheelThrowSpeed));
+        }
+
+        private Vector2 HandPoint => Body.position + new Vector2(Facing * .45f, .05f);
+
+        // Holding E at the cart bolts the carried wheel on; letting go starts over. Then it flies onto
+        // its slot and is fitted when it gets there.
+        private void Fit(Controls c, float dt)
+        {
+            var cart = _game.Cart;
+            if (!CarryingWheel || _fitting || !c.InteractHeld || Lane != 0 || !CartNear() || cart.WheelBlocker != null || CartOverturnedInReach())
+            {
+                _fit = 0;
+                return;
+            }
+            _fit += dt;
+            _game.Sound("wrench", .3f);
+            if (_fit < _game.Tune.fitTime) return;
+            _fit = 0;
+            StartCoroutine(FitWheel());
+        }
+
+        private IEnumerator FitWheel()
+        {
+            _fitting = true;
+            var cart = _game.Cart;
+            var start = heldWheel ? heldWheel.position : (Vector3)HandPoint;
+            for (float k = 0; k < 1; k += Time.deltaTime / .25f)
+            {
+                if (heldWheel) heldWheel.position = Vector3.Lerp(start, cart.WheelSlot(cart.Wheels), k * k * (3 - 2 * k));
+                yield return null;
+            }
+            CarryingWheel = _fitting = false;
+            if (heldWheel) heldWheel.gameObject.SetActive(false);
+            cart.SetWheels(cart.Wheels + 1);
+        }
+
+        private void Update()
+        {
+            if (heldWheel && !_fitting) heldWheel.localPosition = new Vector3(Facing * .45f, .05f, 0);
         }
 
         private bool CartNear() => Vector2.Distance(Body.position, _game.Cart.Body.position) < 2.6f;
@@ -274,7 +377,7 @@ namespace CoalRun.Stations
         private Machine _held;
         private float _grabbedAt, _lastX;
 
-        private bool Digging(Controls c) => c.Shovel && Lane == 0 && !Machine;
+        private bool Digging(Controls c) => c.Shovel && Lane == 0 && !Machine && !CarryingWheel;
 
         // The cart pushes loose coal ahead of it. That's harder work than shoveling it out of the way:
         // the pile pushes back, and past 1.2 high it doesn't budge.
@@ -425,6 +528,7 @@ namespace CoalRun.Stations
         private void ChangeLane(int lane)
         {
             if (!AtDoor || Lane == lane) return;
+            if (CarryingWheel) { _game.Say("Put the wheel down first.", 2); return; }
             // Stepping out of the control room into coal deep enough to bury the operator is refused.
             if (lane == 0 && DoorBlocked) { _game.Say("Coal is piled against this door.", 3); return; }
             ThrowHands();
@@ -473,6 +577,13 @@ namespace CoalRun.Stations
                 if (AtDoor && !DoorBlocked) list.Add(("S", "Leave"));
                 return list;
             }
+            if (CarryingWheel)
+            {
+                list.Add(CartNear() && _game.Cart.Wheels < 2 ? ("Hold E", "Fit wheel") : ("E", "Put wheel down"));
+                list.Add(("Click", "Throw wheel"));
+                return list;
+            }
+            if (WheelInReach()) list.Add(("E", "Pick up wheel"));
             if (CanClockOut) list.Add(("E", "Clock out"));
             if (AtDoor) list.Add(("W", "Enter"));
             if (_game.Furnace.CanLight(this)) list.Add(("Hold E", "Light the fire"));

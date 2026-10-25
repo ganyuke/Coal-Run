@@ -38,6 +38,16 @@ namespace CoalRun.Core
         [Tooltip("Hauling pace with no wheels at all.")]
         public float noWheelHaul = .3f;
 
+        [Header("Crashes and wheels")]
+        [Tooltip("Landing or hitting something faster than this, in m/s straight into the surface, pops the cart's last wheel. 9 is about a 2.25 m drop.")]
+        public float crashSpeed = 9;
+        [Tooltip("Seconds of holding E to bolt a wheel back on.")]
+        public float fitTime = 1.5f;
+        [Tooltip("How far from the operator a loose wheel can be picked up.")]
+        public float wheelReach = 1.8f;
+        [Tooltip("The hardest a carried wheel can be thrown, m/s.")]
+        public float wheelThrowSpeed = 8;
+
         [Header("Heave and ram")]
         [Tooltip("How fast Shift raises the skid end of an empty one-wheel cart, in degrees per second; a full one rises at under half that. Let go, it drops.")]
         public float heaveRate = 70;

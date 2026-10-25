@@ -20,6 +20,9 @@ namespace CoalRun.Stations
         [Tooltip("Optional. Looped while the skid scrapes; louder the faster it goes.")]
         [SerializeField]
         private AudioSource scrape;
+        [Tooltip("A wheel off the cart, spawned when one pops off in a crash or the operator puts one down.")]
+        [SerializeField]
+        private Rigidbody2D wheelPrefab;
 
         public Rigidbody2D Body { get; private set; }
         public int Wheels { get; private set; }
@@ -42,6 +45,14 @@ namespace CoalRun.Stations
         public float HalfWidth => _colliders.Count > 0 ? _colliders[0].bounds.extents.x : 1;
         // Which side of the cart the skid is on, in world x: -1 or 1.
         public float SkidSide => Mathf.Sign(Body.GetRelativeVector(Vector2.left).x);
+        // Wheels lying about the room, off the cart.
+        public List<Rigidbody2D> LooseWheels { get; } = new();
+        // Why a wheel can't be bolted on right now, or null if it can.
+        public string WheelBlocker =>
+            Wheels >= 2 ? "The cart has both its wheels." :
+            InCradle ? "Lower the cart off the cradle first." :
+            Mathf.Cos(Angle) < .87f ? "Right the cart first." :
+            Body.linearVelocity.magnitude > 1 ? "The cart has to stop first." : null;
 
         private ShiftManager _game;
         private readonly List<Collider2D> _colliders = new();
@@ -55,6 +66,9 @@ namespace CoalRun.Stations
         // Whether the skid touched the floor last step, and how fast it was coming down, for the jolt.
         private bool _skidWasDown = true;
         private float _skidFall;
+        // The hardest hit since last step, handled in FixedUpdate rather than mid-contact, since a crash
+        // rebuilds the colliders. Hits right after a crash or a fitting don't count again.
+        private float _impact, _crashCooldown;
 
         private void Awake()
         {
@@ -79,6 +93,9 @@ namespace CoalRun.Stations
         private void FixedUpdate()
         {
             UpdateMass();
+            _crashCooldown -= Time.fixedDeltaTime;
+            if (_impact >= _game.Tune.crashSpeed && _crashCooldown <= 0) Crash(_impact);
+            _impact = 0;
             if (!_heaved) _heaveTarget = 0;
             _heaved = false;
             GroundFriction(Time.fixedDeltaTime);
@@ -222,7 +239,48 @@ namespace CoalRun.Stations
         {
             Wheels = Mathf.Clamp(wheels, 0, 2);
             Rebuild(true);
+            _crashCooldown = 1;
             _game.Sound("repair");
+        }
+
+        // Where a wheel goes on the cart: the front one first, then the back.
+        public Vector2 WheelSlot(int index) => Body.GetRelativePoint(new Vector2(index == 0 ? .58f : -.58f, -.34f));
+
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            var layer = collision.collider.gameObject.layer;
+            if (InCradle || layer == GameLayers.Player || layer == GameLayers.Part) return;
+            // Only the speed straight into the surface: sliding along a floor isn't a crash.
+            for (var i = 0; i < collision.contactCount; i++)
+                _impact = Mathf.Max(_impact, Mathf.Abs(Vector2.Dot(collision.relativeVelocity, collision.GetContact(i).normal)));
+        }
+
+        // Hitting hard pops off the last wheel fitted. Coal isn't thrown out here: a cart that lands tilted
+        // spills by itself.
+        private void Crash(float speed)
+        {
+            _crashCooldown = 1.2f;
+            _game.Sound("crash", .4f, speed);
+            if (Wheels == 0) return;
+            var slot = WheelSlot(Wheels - 1);
+            var away = Mathf.Sign(slot.x - Body.position.x);
+            Wheels--;
+            Rebuild(false);
+            DropWheel(slot, Body.linearVelocity * .3f + new Vector2(away * 2, 4));
+            _game.Say("A wheel came off the cart.", 4);
+        }
+
+        public void DropWheel(Vector2 at, Vector2 velocity)
+        {
+            var wheel = Instantiate(wheelPrefab, at, Quaternion.identity);
+            wheel.linearVelocity = velocity;
+            LooseWheels.Add(wheel);
+        }
+
+        public void RemoveWheel(Rigidbody2D wheel)
+        {
+            LooseWheels.Remove(wheel);
+            Destroy(wheel.gameObject);
         }
 
         private void Rebuild(bool clearWheelOverlap)

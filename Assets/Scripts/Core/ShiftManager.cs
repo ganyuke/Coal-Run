@@ -189,6 +189,9 @@ namespace CoalRun.Core
                 player.ReleaseGrip();
                 Put(cart.Body, Room.Lower + .72f);
             }
+            foreach (var wheel in cart.LooseWheels)
+                if (Lost(wheel.position))
+                    Put(wheel, Room.Lower + .35f);
             if (!player.Body.simulated || !Lost(player.Body.position)) return;
             player.ReleaseGrip();
             Put(player.Body, Room.Lower + .72f);
