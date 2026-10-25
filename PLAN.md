@@ -38,6 +38,33 @@ Each milestone ends with something you can play. Don't start the next one until 
 - [ ] **M6 · Art and sound** (Thu 10/29)
 - [ ] **M7 · Build, playtest, submit** (Fri 10/30)
 
+## Status (Sun 10/25, 1 am)
+
+About a day ahead: M1 and M2 are done, and M3 is a third done, all on the first day.
+
+**Done on day 1 (Sat 10/24 into Sun):**
+- Project: Unity 6 project, git + LFS, ShiftManager hub, Tuning/DayConfig assets, InputReader, prefabs, namespaces, Rider style pass.
+- Operator: walk, step up onto piles, tighter interaction reach, dash, short dash.
+- Cart: grip, push and pull; one-wheel skid with friction, sparks and scrape; heave (Shift); ram and lurch; righting (E or ram); spill angle that depends on the load; jolt on hard landings.
+- Lift: mouse spinner and W/S cranks, each wheel turns when it drives; jams and crushing; the cart hanging off the side; squashing coal in the shaft flat.
+- Coal: lumps, piles, slumping, pile colliders, burial, shovel with mouse aim, chute lever (analog, in the control room), return grate, F-key debug shortcuts.
+- Floor levers: lie flat, roll back gradually, limit how far you can walk while holding one.
+- Tip cradle: hook and hoist with E, two real chains, the lever pays one chain out to pour onto the hopper grate. Furnace hopper with a fill gauge.
+- Bugs: three coal loops (edge specks, resting platform, the earlier infinite waterfall), getting stuck on slivers of coal, only the platform wheel turning.
+
+**Still to do, in order:**
+1. **M3 Furnace:** burn lever with notches labelled "holds −10°" and so on, burning coal from the hopper, building temperature with inertia, output meter next to the lever.
+2. **M3 Shift:** 10-minute clock, Day 1 forecast, shift complete, frozen = game over.
+3. **M4 Crashes:** wheels knocked off by hard hits and edge drops; pick up and refit with E.
+4. **M4 Death:** replacement worker down the staff lift (now an instant respawn); red phone that rings more as the building cools.
+5. **M4 Tutorial:** the helper, the stuck lever, the avalanche, digging the cart out.
+6. **M5 Days:** Day 1 → morning memo → Day 2; real Day 2 forecast and target; the axle installer beat (push the cart into him or away).
+7. **M5 UI:** notepad with the forecast graph, output target and objective; menus; replaces the debug HUD.
+8. **M6 Art and sound:** a sound on every manual action, art over the greybox, frost on the glass as the last freeze warning.
+9. **M7:** build, playtest, submit.
+
+Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or a slower heave), and merging the audio slots into one AudioSource with clip fields. The M2 playtest box is still open.
+
 ## Architecture (decided 10/24)
 
 - **Stations + one hub.** One MonoBehaviour per thing: `PlayerController`, `Cart`, `Lift`, `LiftCrank`, and later `Chute`, `TipCradle`, `Furnace`, `CoalField`.
