@@ -508,13 +508,15 @@ namespace CoalRun.Stations
                 var x = s.Start + i * w;
                 column.transform.localPosition = new Vector3(x + w / 2, h / 2, 0);
                 column.transform.localScale = new Vector3(w, h, 1);
-                var left = i == 0 ? h : (h + s.Heights[i - 1]) / 2;
-                var right = i == s.Heights.Length - 1 ? h : (h + s.Heights[i + 1]) / 2;
+                // Where the pile ends on bare floor it ramps down to nothing: a lip there, however thin,
+                // stopped the operator dead against a sliver of coal.
+                var left = i == 0 ? h : s.Heights[i - 1] >= .018f ? (h + s.Heights[i - 1]) / 2 : 0;
+                var right = i == s.Heights.Length - 1 ? h : s.Heights[i + 1] >= .018f ? (h + s.Heights[i + 1]) / 2 : 0;
                 var o = s.ShapeOrigin;
                 _quad[0] = o + new Vector2(x, -.05f);
                 _quad[1] = o + new Vector2(x + w, -.05f);
-                _quad[2] = o + new Vector2(x + w, Mathf.Max(.02f, right));
-                _quad[3] = o + new Vector2(x, Mathf.Max(.02f, left));
+                _quad[2] = o + new Vector2(x + w, right);
+                _quad[3] = o + new Vector2(x, left);
                 _shapes.AddPolygon(_quad);
             }
             s.Collider.SetCustomShapes(_shapes);

@@ -109,7 +109,7 @@ namespace CoalRun.Stations
             {
                 var ahead = p.x + c.Move * .36f;
                 var step = _game.Coal.GroundAt(ahead, p.y) - (p.y - .66f);
-                if (step is > .03f and < .48f) Body.position = new Vector2(p.x, p.y + step + .035f);
+                if (step is > .005f and < .48f) Body.position = new Vector2(p.x, p.y + step + .035f);
             }
             // Coal around the cart slows the haul. Past 1.2 deep it doesn't move at all.
             var bury = Mathf.Max(0, 1 - cart.Burial / 1.2f);
