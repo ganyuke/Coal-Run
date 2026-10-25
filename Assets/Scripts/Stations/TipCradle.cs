@@ -3,21 +3,25 @@ using UnityEngine;
 
 namespace CoalRun.Stations
 {
-    // The tip cradle on the upper floor, beside the hopper grate. Park the cart in it and press E: two
-    // chains hook onto the bin and hoist it clear of the floor. Then the tip lever turns it about the
-    // bottom corner on the side it's pushed toward, like a pitcher over a cup: pushed right, the rim swings
-    // out over the grate and the coal pours out onto it (the cart's ordinary spill) and down into the
-    // hopper; pulled left, it goes on the floor. Let go and the lever rolls back upright. E again with the
-    // cart level lowers it and unhooks it.
+    // The tip cradle on the upper floor, by the hopper grate. Park the cart in it and press E: two chains
+    // from the hoist beam hook onto the bin's top corners and wind it up off the floor. The tip lever then
+    // pays out the chain on the side it's pushed toward: that end drops and swings in under the other
+    // chain, which holds, and the coal pours out over the low rim (the cart's ordinary spill). Pushed right
+    // it lands on the grate and drops into the hopper; pulled left it goes on the floor. Let go and the
+    // lever rolls back upright, winding the chain back in. E again with the cart level lowers it and
+    // unhooks it. The chains are real ropes: only they and gravity hold and turn the cart.
     public class TipCradle : MonoBehaviour
     {
         [SerializeField] private FloorLever lever;
-        [Tooltip("Hung from the hoist beam over either end of the cart, left then right. Stretched to the bin's top corners while it's hooked on.")]
+        [Tooltip("Hung from the hoist beam over either end of the cart, left then right. Drawn to the bin's top corners while it's hooked on.")]
         [SerializeField]
         private Transform[] chains = new Transform[2];
         [Tooltip("How high the beam the chains hang from is, above the floor.")]
         [SerializeField]
         private float beamHeight = 4;
+        [Tooltip("Damping on the hanging cart, so it doesn't swing for ages.")]
+        [SerializeField]
+        private float swingDamping = 2;
 
         private enum State { Free, Raising, Up, Lowering }
 
@@ -31,10 +35,10 @@ namespace CoalRun.Stations
         };
 
         private ShiftManager _game;
-        private HingeJoint2D _joint;
         private State _state;
-        // Which bottom corner of the bin the cart turns about: 1 right (over the grate), -1 left.
-        private float _side = 1;
+        // Left then right, like the chains.
+        private readonly DistanceJoint2D[] _ropes = new DistanceJoint2D[2];
+        private float _linearDamping, _angularDamping;
 
         private void Start()
         {
@@ -54,12 +58,9 @@ namespace CoalRun.Stations
             }
         }
 
-        // The bin's bottom corner on the given side, in the cart's own space.
-        private static Vector2 Corner(float side) => new(side * .83f, -.12f);
-
-        // Where that corner is with the cart standing level in the cradle, hoisted or set down.
-        private Vector2 CornerAt(float side, bool hoisted) =>
-            new Vector2(transform.position.x, Room.Upper + .7f + (hoisted ? _game.Tune.hoistHeight : 0)) + Corner(side);
+        // The bin's top corner at that end (-1 left, 1 right), in the cart's own space, and where its chain hangs from.
+        private static Vector2 Hook(float end) => new(end, .64f);
+        private Vector2 BeamPoint(float end) => new(transform.position.x + end, transform.position.y + beamHeight);
 
         // E next to the cart. Returns whether the press was for the cradle.
         public bool Interact()
@@ -69,13 +70,22 @@ namespace CoalRun.Stations
             {
                 case State.Free when Parked:
                     _game.Player.ReleaseGrip();
-                    _side = 1;
-                    // Hooked on where it stands; the hoist then lifts it and centres it in the cradle.
-                    _joint = cart.gameObject.AddComponent<HingeJoint2D>();
-                    _joint.autoConfigureConnectedAnchor = false;
-                    _joint.anchor = Corner(_side);
-                    _joint.connectedAnchor = cart.Body.GetRelativePoint(Corner(_side));
-                    _joint.useMotor = true;
+                    for (var i = 0; i < 2; i++)
+                    {
+                        float end = i == 0 ? -1 : 1;
+                        var rope = cart.gameObject.AddComponent<DistanceJoint2D>();
+                        rope.autoConfigureConnectedAnchor = false;
+                        rope.autoConfigureDistance = false;
+                        rope.anchor = Hook(end);
+                        rope.connectedAnchor = BeamPoint(end);
+                        rope.maxDistanceOnly = true;
+                        rope.distance = Vector2.Distance(cart.Body.GetRelativePoint(Hook(end)), BeamPoint(end));
+                        _ropes[i] = rope;
+                    }
+                    _linearDamping = cart.Body.linearDamping;
+                    _angularDamping = cart.Body.angularDamping;
+                    cart.Body.linearDamping = swingDamping;
+                    cart.Body.angularDamping = swingDamping;
                     cart.Cradle = this;
                     _state = State.Raising;
                     _game.Sound("hook");
@@ -97,43 +107,48 @@ namespace CoalRun.Stations
         private void FixedUpdate()
         {
             lever.InterlockMessage = Parked ? "Hook the cart on first (E)." : "Stop the cart at the tip cradle.";
-            if (!_joint) return;
+            if (_state == State.Free) return;
             var t = _game.Tune;
             var cart = _game.Cart;
-            var rotation = cart.Body.rotation;
+            var dt = Time.fixedDeltaTime;
 
-            // Level, it changes over to the corner on the side the lever is pushed toward.
-            var push = lever.Value - lever.RestValue;
-            var want = push > .01f ? 1 : push < -.01f ? -1 : _side;
-            if (_state == State.Up && !Mathf.Approximately(want, _side) && Mathf.Abs(rotation) < 1.5f)
+            // Wound up, the chains hold the cart level `hoistHeight` off the floor. Lowering pays them out a
+            // little past where it stands, so it's resting on its wheels before they come off.
+            var standing = Room.Upper + .7f + Hook(1).y;
+            var held = transform.position.y + beamHeight - standing - (_state == State.Lowering ? -.1f : t.hoistHeight);
+            var push = (lever.Value - lever.RestValue) * 2;
+            var arrived = true;
+            for (var i = 0; i < 2; i++)
             {
-                _side = want;
-                _joint.anchor = Corner(_side);
-                _joint.connectedAnchor = CornerAt(_side, true);
+                // The lever pays out the chain on the side it's pushed toward.
+                var payout = _state == State.Up ? Mathf.Max(0, i == 0 ? -push : push) * t.tipPayout : 0;
+                var speed = _state == State.Up ? t.payoutSpeed : t.hoistSpeed;
+                var length = Mathf.MoveTowards(_ropes[i].distance, held + payout, speed * dt);
+                arrived &= Mathf.Approximately(length, held + payout);
+                if (Mathf.Approximately(length, _ropes[i].distance)) continue;
+                _ropes[i].distance = length;
+                cart.Body.WakeUp(); // Paying out chain doesn't wake a hanging cart that's gone to sleep.
             }
 
-            // The hoist moves the hooked corner up into place, or back down.
-            var goal = CornerAt(_side, _state != State.Lowering);
-            _joint.connectedAnchor = Vector2.MoveTowards(_joint.connectedAnchor, goal, t.hoistSpeed * Time.fixedDeltaTime);
-            var arrived = (_joint.connectedAnchor - goal).sqrMagnitude < 1e-6f;
-            if (_state == State.Raising && arrived) { _state = State.Up; _game.Sound("clank"); }
-            if (_state == State.Lowering && arrived)
+            switch (_state)
             {
-                Destroy(_joint);
-                _joint = null;
-                cart.Cradle = null;
-                _state = State.Free;
-                _game.Sound("clank");
-                return;
+                case State.Raising when arrived:
+                    _state = State.Up;
+                    _game.Sound("clank");
+                    break;
+                case State.Lowering when arrived:
+                    for (var i = 0; i < 2; i++)
+                    {
+                        Destroy(_ropes[i]);
+                        _ropes[i] = null;
+                    }
+                    cart.Body.linearDamping = _linearDamping;
+                    cart.Body.angularDamping = _angularDamping;
+                    cart.Cradle = null;
+                    _state = State.Free;
+                    _game.Sound("clank");
+                    break;
             }
-
-            // Rotating clockwise (negative) lowers the cart's right end. Only the lever turns it, and only
-            // once it's up; till then the motor holds it level.
-            var target = _state == State.Up ? -push * 2 * t.tipMaxAngle : 0;
-            // A loaded bin turns slower.
-            var speed = Mathf.Clamp((target - rotation) * 7, -t.tipSpeed, t.tipSpeed) / (1 + cart.Coal * .07f);
-            // The joint turns the world relative to the cart, so its motor runs the opposite way.
-            _joint.motor = new JointMotor2D { motorSpeed = -speed, maxMotorTorque = t.tipTorque };
         }
 
         private void Update()
@@ -144,8 +159,8 @@ namespace CoalRun.Stations
             {
                 if (!chains[i]) continue;
                 float end = i == 0 ? -1 : 1;
-                var top = new Vector2(transform.position.x + end, transform.position.y + beamHeight);
-                var bottom = Hooked ? cart.Body.GetRelativePoint(new Vector2(end, .64f)) : top + Vector2.down * 1.2f;
+                var top = BeamPoint(end);
+                var bottom = Hooked ? cart.Body.GetRelativePoint(Hook(end)) : top + Vector2.down * 1.2f;
                 var d = bottom - top;
                 chains[i].position = (top + bottom) / 2;
                 chains[i].rotation = Quaternion.FromToRotation(Vector3.up, d);

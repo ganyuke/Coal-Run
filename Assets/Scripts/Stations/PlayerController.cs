@@ -123,7 +123,7 @@ namespace CoalRun.Stations
             Tether(c, p, v);
             // The ram stays live while the dash's speed carries on past its end, or a cart just out of
             // dash range would be run straight through at nearly full speed.
-            if (_ramming && (_dashFor > 0 || Body.linearVelocity.x * _dashDir > t.walkSpeed) && !holding) Ram(p);
+            if (_ramming && (_dashFor > 0 || Body.linearVelocity.x * _dashDir > t.walkSpeed) && !holding && !cart.InCradle) Ram(p);
             else _ramming = false;
 
             if (holding && (c.Move != 0 || _lurchFor > 0))

@@ -104,16 +104,14 @@ namespace CoalRun.Core
         public float machineWalk = .35f;
 
         [Header("Tip cradle")]
-        [Tooltip("How far either way the tip lever turns the cart, in degrees, at the end of its travel.")]
-        public float tipMaxAngle = 89;
-        [Tooltip("Fastest the cradle turns an empty cart, in degrees per second. A full one turns about half as fast.")]
-        public float tipSpeed = 230;
-        [Tooltip("The cart hangs from a bottom corner, so this has to hold a full one's weight off to the side (about 600).")]
-        public float tipTorque = 900;
+        [Tooltip("How much chain the tip lever pays out at the end of its travel, in metres. Past about 1.6 the chain goes slack and the cart just hangs from the other one, about 57° over.")]
+        public float tipPayout = 1.8f;
+        [Tooltip("How fast the chain follows the lever, in m/s.")]
+        public float payoutSpeed = 2.5f;
         [Tooltip("How far from the cradle's middle the cart can be parked and still be hooked on.")]
         public float cradleReach = 1.3f;
-        [Tooltip("How far the hoist lifts the cart off the floor, so it can turn.")]
-        public float hoistHeight = .8f;
+        [Tooltip("How far the hoist lifts the cart off the floor. Enough that a cart hanging from one chain clears the floor.")]
+        public float hoistHeight = 1.3f;
         [Tooltip("How fast the hoist raises and lowers it, in m/s.")]
         public float hoistSpeed = 1;
 
