@@ -10,6 +10,7 @@ namespace CoalRun.Core
         public bool Grip;       // Space held
         public bool Shovel;     // F held
         public bool Interact;   // E pressed this step
+        public bool InteractHeld; // E held
         public int CrankKey;    // W/S held: 1 up, -1 down
         public int Lane;        // W/S pressed this step: 1 into the control room, -1 out
         public bool Heave;      // Shift held
@@ -69,6 +70,7 @@ namespace CoalRun.Core
                 Grip = k.spaceKey.isPressed,
                 Shovel = k.fKey.isPressed,
                 Interact = _interactPressed,
+                InteractHeld = k.eKey.isPressed,
                 CrankKey = (up ? 1 : 0) - (down ? 1 : 0),
                 Lane = _lanePressed,
                 Heave = k.leftShiftKey.isPressed || k.rightShiftKey.isPressed,

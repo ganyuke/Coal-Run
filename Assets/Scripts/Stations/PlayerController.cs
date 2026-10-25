@@ -65,7 +65,10 @@ namespace CoalRun.Stations
             if (!_game.CanAct) { ReleaseGrip(); return; }
             var c = input.Current;
             if (c.Lane != 0) ChangeLane(c.Lane > 0 ? 1 : 0);
-            if (c.Interact) Interact();
+            // At the firebox, E is held to light the fire rather than pressed.
+            var atFirebox = _game.Furnace.CanLight(this);
+            _game.Furnace.Kindle(atFirebox && c.InteractHeld, dt);
+            if (c.Interact && !atFirebox) Interact();
             Move(c, dt);
             Shovel(c, dt);
             if (Lane == 1) Body.position = new Vector2(Mathf.Clamp(Body.position.x, 23.1f, 30.6f), Body.position.y);
@@ -465,6 +468,7 @@ namespace CoalRun.Stations
                 return list;
             }
             if (AtDoor) list.Add(("W", "Enter"));
+            if (_game.Furnace.CanLight(this)) list.Add(("Hold E", "Light the fire"));
             if (CartNear() && _game.Cradle.Prompt != null) list.Add(("E", _game.Cradle.Prompt));
             if (CartOverturnedInReach()) list.Add(("E", "Right cart"));
             if (PileInReach()) list.Add(("F", "Shovel"));

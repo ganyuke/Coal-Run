@@ -49,7 +49,7 @@ namespace CoalRun.UI
                 $"Lift {game.Lift.Y:0.00}  speed {game.Lift.Speed:0.00}\n" +
                 $"Bunker {game.Chute.Bunker:0.0}  chute {game.Chute.Pull:0.00}  hands {player.Hands:0.0}  lumps {game.Coal.ActiveLumps}\n" +
                 $"Hopper {game.Furnace.Hopper:0.0}  delivered {game.Furnace.Delivered:0.0}  in cradle {cart.InCradle}  tilt {cart.Body.rotation:0}°\n" +
-                $"Clock {(int)game.Clock / 60}:{(int)game.Clock % 60:00}  outside {game.Outside:0.0}°  inside {game.Temperature:0.0}°  burn notch {game.Furnace.Notch} ({game.Furnace.BurnRate:0.000}/s, holds {game.Tune.heldTemperatures[game.Furnace.Notch]:0}°)  output {game.Furnace.Output:0.0} kWh\n" +
+                $"Clock {(int)game.Clock / 60}:{(int)game.Clock % 60:00}  outside {game.Outside:0.0}°  inside {game.Temperature:0.0}°  fire {(game.Furnace.Lit ? "lit" : "out")}, notch {game.Furnace.Notch} ({game.Furnace.BurnRate:0.000}/s, holds {game.Tune.heldTemperatures[game.Furnace.Notch]:0}°)  output {game.Furnace.Output:0.0} kWh\n" +
                 $"Cart burial {cart.Burial:0.00}  operator burial {player.Burial:0.0}s  injury {player.Injury:0.0}\n" +
                 $"Coal error {game.TotalCoal - game.InitialCoal:0.0000}\n" +
                 $"Machine {(machines.Active ? machines.Active.name : "-")}  hover {(machines.Hover ? machines.Hover.name : "-")}\n" +

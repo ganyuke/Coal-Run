@@ -32,6 +32,7 @@ namespace CoalRun.Stations
         [SerializeField]
         private float flameRate = 60;
         [SerializeField] private float sparkRate = 6;
+        [SerializeField] private Color coldBed = new(.12f, .1f, .1f);
         [SerializeField] private Color emberColor = new(.7f, .16f, .04f);
         [SerializeField] private Color hotBedColor = new(1, .55f, .15f);
         [SerializeField] private Color darkMouth = new(.1f, .05f, .04f);
@@ -52,10 +53,16 @@ namespace CoalRun.Stations
         // Coal actually burning per second: the notch's rate, or less once the hopper runs dry.
         public float BurnRate { get; private set; }
         public int Notch => burnLever ? burnLever.Notch : 0;
+        // The shift starts with the fire out. It's lit by holding E at the firebox, and goes out again once
+        // the hopper has been empty for Tuning.emberTime.
+        public bool Lit { get; private set; }
 
         private ShiftManager _game;
         // How hard the fire looks to be burning, 0 to 1 (see Update).
         private float _heat;
+        // Seconds E has been held at the firebox, up to Tuning.lightTime; how far a fresh fire has come up
+        // to full burn, 0 to 1; seconds the hopper has been empty while lit.
+        private float _kindle, _catch, _starved;
 
         // In Awake, so ShiftManager counts the starting hopper in its Start.
         private void Awake()
@@ -68,7 +75,17 @@ namespace CoalRun.Stations
         {
             if (_game.Phase != Phase.Shift) { BurnRate = 0; return; }
             var dt = Time.fixedDeltaTime;
-            var used = Mathf.Min(Hopper, _game.Tune.burnRates[Notch] * dt);
+            var t = _game.Tune;
+            if (!Lit) { BurnRate = 0; return; }
+            _catch = Mathf.Min(1, _catch + dt / t.catchTime);
+            var used = Mathf.Min(Hopper, t.burnRates[Notch] * _catch * dt);
+            _starved = Hopper > 0 ? 0 : _starved + dt;
+            if (_starved >= t.emberTime)
+            {
+                Lit = false;
+                _game.Say("The fire has gone out. Light it again at the firebox.", 4);
+            }
+
             Hopper -= used;
             Burned += used;
             Output += used * 1.5f;
@@ -88,11 +105,11 @@ namespace CoalRun.Stations
             // second or two instead of going out at once.
             var rates = _game.Tune.burnRates;
             _heat = Mathf.MoveTowards(_heat, BurnRate / rates[^1], Time.deltaTime * .6f);
-            var lit = _heat > .01f;
+            var burning = _heat > .01f;
             if (fire)
             {
                 var emission = fire.emission;
-                emission.rateOverTimeMultiplier = lit ? Mathf.Lerp(.15f, 1, _heat) * flameRate : 0;
+                emission.rateOverTimeMultiplier = burning ? Mathf.Lerp(.15f, 1, _heat) * flameRate : 0;
                 var main = fire.main;
                 main.startSizeMultiplier = Mathf.Lerp(.5f, 1, _heat);
                 var rise = fire.velocityOverLifetime;
@@ -107,10 +124,30 @@ namespace CoalRun.Stations
 
             // Perlin noise wanders smoothly, so the glow breathes instead of strobing.
             var flicker = Mathf.PerlinNoise(Time.time * 2, .5f);
-            if (bed) bed.color = Color.Lerp(emberColor, hotBedColor, _heat * (.75f + .25f * flicker));
+            // The bed warms up as it's kindled, glows with the burn, and cools while the embers die.
+            var ember = Lit ? 1 - _starved / _game.Tune.emberTime : _kindle / _game.Tune.lightTime;
+            var bedColor = Color.Lerp(coldBed, emberColor, ember * (.8f + .2f * flicker));
+            if (bed) bed.color = Color.Lerp(bedColor, hotBedColor, _heat * (.75f + .25f * flicker));
             if (glow) glow.color = Color.Lerp(darkMouth, litMouth, _heat * (.7f + .3f * flicker));
 
             if (meterDisc) meterDisc.Rotate(0, 0, -BurnRate * meterSpin * Time.deltaTime);
+        }
+
+        public bool CanLight(PlayerController player) =>
+            !Lit && player.Lane == 0 && !player.Holding && Mathf.Abs(player.Position.x - transform.position.x) < 1.3f &&
+            Mathf.Abs(player.Position.y - transform.position.y) < 1.6f;
+
+        // Called every step with whether the operator is holding E at the firebox. Letting go starts over.
+        public void Kindle(bool held, float dt)
+        {
+            if (!held) { _kindle = 0; return; }
+            if (Hopper <= 0) { _game.Say("There's no coal in the hopper to light.", 2); return; }
+            _kindle += dt;
+            _game.Sound("kindle", .4f);
+            if (_kindle < _game.Tune.lightTime) return;
+            Lit = true;
+            _kindle = _catch = _starved = 0;
+            _game.Sound("ignite");
         }
 
         // Takes what fits of `amount`. Returns how much went in.

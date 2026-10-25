@@ -124,6 +124,12 @@ namespace CoalRun.Core
         public float heatCapacity = .28f;
         public float comfortable = 20;
         public float freeze = 0;
+        [Tooltip("Seconds of holding E at the firebox to light it.")]
+        public float lightTime = 2;
+        [Tooltip("Seconds a fresh fire takes to come up to the notch's full burn.")]
+        public float catchTime = 5;
+        [Tooltip("Seconds the embers of a fire with an empty hopper last before it goes out.")]
+        public float emberTime = 10;
 
         [Header("Shift")]
         public float shiftLength = 600;
