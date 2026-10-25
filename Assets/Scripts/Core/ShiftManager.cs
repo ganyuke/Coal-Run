@@ -23,6 +23,7 @@ namespace CoalRun.Core
         [SerializeField] private Lift lift;
         [SerializeField] private CoalField coal;
         [SerializeField] private Chute chute;
+        [SerializeField] private Furnace furnace;
 
         public Tuning Tune => tuning;
         public DayConfig Day => day;
@@ -31,6 +32,7 @@ namespace CoalRun.Core
         public Lift Lift => lift;
         public CoalField Coal => coal;
         public Chute Chute => chute;
+        public Furnace Furnace => furnace;
 
         public Phase Phase { get; } = Phase.Shift;
         public bool CanAct => Phase is Phase.Tutorial or Phase.Shift;
@@ -39,7 +41,7 @@ namespace CoalRun.Core
         public float MessageFor { get; private set; }
         public float InitialCoal { get; private set; }
         // Every unit of coal is always in exactly one place, so this should never change.
-        public float TotalCoal => chute.Bunker + cart.Coal + player.Hands + coal.Loose;
+        public float TotalCoal => chute.Bunker + cart.Coal + player.Hands + coal.Loose + furnace.Hopper;
 
         // name, loudness
         public event Action<string, float> OnSound;

@@ -467,7 +467,10 @@ namespace CoalRun.Stations
             if (PileInReach()) list.Add(("F", "Shovel"));
             if (!Holding && CartInGrip() && Mathf.Cos(_game.Cart.Angle) > .3f) list.Add(("Space", "Grip cart"));
             foreach (var m in Machine.All)
+            {
                 if (m is LiftCrank && m.CanOperate(this)) { list.Add(("W S", "Crank")); break; }
+                if (m is FloorLever && m.CanOperate(this)) { list.Add(("Mouse", "Tip lever")); break; }
+            }
             if (list.Count > 2) list.RemoveRange(2, list.Count - 2);
             return list;
         }

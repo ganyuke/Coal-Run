@@ -26,8 +26,9 @@ namespace CoalRun.Stations
         public float Coal { get; set; }
         public float Angle => Body.rotation * Mathf.Deg2Rad;
         public float AngularVelocity => Body.angularVelocity * Mathf.Deg2Rad;
-        // Filled in when the tip cradle arrives.
-        public bool InCradle => false;
+        // Set while the tip cradle holds the cart.
+        public TipCradle Cradle { get; set; }
+        public bool InCradle => Cradle;
         // How deep the bin sits in coal.
         public float Burial => _game.Coal.CartBurial(this);
         // How fast the skid is sliding along the floor; 0 when it's off the floor or there's no skid.
@@ -168,8 +169,8 @@ namespace CoalRun.Stations
         {
             var t = _game.Tune;
             // Measured from how the cart rests: with no wheels it sits 23° over on its bin corner, and its
-            // coal stays put.
-            var over = Mathf.Abs(Angle) * Mathf.Rad2Deg - (Wheels == 0 ? 23 : 0) - SpillAngle;
+            // coal stays put. The cradle holds it by its middle, so there it's measured from level.
+            var over = Mathf.Abs(Angle) * Mathf.Rad2Deg - (Wheels == 0 && !InCradle ? 23 : 0) - SpillAngle;
             if (over <= 0 || Coal <= 0) { _spillAccumulator = 0; return; }
             _spillAccumulator += Mathf.Min(Coal, t.spillRate * over / 10 * dt);
             if (_spillAccumulator < .25f) return;
@@ -178,6 +179,9 @@ namespace CoalRun.Stations
             Coal -= q;
             // The rim at the low end: rotating clockwise (negative) lowers the +x end.
             float low = Angle < 0 ? 1 : -1;
+            // In the cradle, what pours over the hopper side goes into the hopper; what doesn't fit goes over.
+            if (Cradle) q -= Cradle.Pour(q, low);
+            if (q <= 0) return;
             var lip = Body.GetRelativePoint(new Vector2(low * 1.08f, .6f));
             var v = Body.linearVelocity + Body.GetRelativeVector(new Vector2(low * 1.5f, 0));
             _game.Coal.Emit(lip.x, lip.y, q, v.x, v.y, .3f);

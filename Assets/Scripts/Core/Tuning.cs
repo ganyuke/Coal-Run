@@ -103,6 +103,15 @@ namespace CoalRun.Core
         [Tooltip("Walking speed while holding a lever or crank, as a fraction of walkSpeed.")]
         public float machineWalk = .35f;
 
+        [Header("Tip cradle")]
+        [Tooltip("How far either way the tip lever turns the cart, in degrees, at the end of its travel.")]
+        public float tipMaxAngle = 89;
+        [Tooltip("Fastest the cradle turns an empty cart, in degrees per second. A full one turns about half as fast.")]
+        public float tipSpeed = 230;
+        public float tipTorque = 180;
+        [Tooltip("How far from the cradle's middle the cart can be parked and still be taken up.")]
+        public float cradleReach = 1.3f;
+
         [Header("Furnace")]
         public float[] burnRates = { .072f, .144f, .204f, .276f, .348f };
         public float[] heldTemperatures = { 8, -4, -14, -26, -38 };

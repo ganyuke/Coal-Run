@@ -4,8 +4,8 @@ using UnityEngine;
 namespace CoalRun.Stations
 {
     // A lever standing up out of the floor, pivoting at its base. Drag the knob from left to right:
-    // Value goes 0 (tilted left) to 1 (tilted right). A spring-return lever rolls back to the left on
-    // its own once let go; one without a spring stays where it was left.
+    // Value goes 0 (tilted left) to 1 (tilted right). A spring-return lever rolls back to its rest
+    // value (the left end, or upright) on its own once let go; one without a spring stays where it was left.
     public class FloorLever : Machine
     {
         [Tooltip("Rotated about its own position, the base of the lever.")]
@@ -17,6 +17,10 @@ namespace CoalRun.Stations
         private float standOff = .3f;
         [SerializeField] private int lane = 1;
         [SerializeField] private bool springReturn = true;
+        [Tooltip("Where it starts and a spring-return lever rolls back to: 0 left, .5 upright, 1 right.")]
+        [Range(0, 1)]
+        [SerializeField]
+        private float restValue;
         [SerializeField] private string farMessage = "Walk up to the lever.";
         [SerializeField] private string wrongLaneMessage = "The lever is inside the control room.";
 
@@ -34,7 +38,11 @@ namespace CoalRun.Stations
         private AudioSource stop;
 
         public float Value { get; private set; }
-        public override string OutOfReach => ShiftManager.Instance.Player.Lane == lane ? farMessage : wrongLaneMessage;
+        public float RestValue => restValue;
+        // Set by the station the lever works: while it returns false, the lever can't be taken hold of.
+        public System.Func<bool> Interlock { get; set; }
+        public string InterlockMessage { get; set; } = "";
+        public override string OutOfReach => ShiftManager.Instance.Player.Lane != lane ? wrongLaneMessage : InReach(ShiftManager.Instance.Player) ? InterlockMessage : farMessage;
         public override Vector2 HandlePosition => _game ? Knob : base.HandlePosition;
         // Held, the operator can walk as far as the knob goes at either end, staying on the side of it
         // they took hold from.
@@ -54,6 +62,7 @@ namespace CoalRun.Stations
         {
             _game = ShiftManager.Instance;
             if (!handle) handle = stick;
+            Value = _lastValue = restValue;
         }
 
         private Vector2 Pivot => stick ? stick.position : transform.position;
@@ -74,12 +83,15 @@ namespace CoalRun.Stations
             return Vector2.Distance(mouse, a + (b - a) * t) < .25f + .2f * t;
         }
 
-        public override bool CanOperate(PlayerController player)
+        public override bool CanOperate(PlayerController player) =>
+            _game.CanAct && player.Lane == lane && InReach(player) && (InUse || Interlock == null || Interlock());
+
+        private bool InReach(PlayerController player)
         {
             Vector2 p = player.Position, reach = _game.Tune.machineReach;
             // The operator's middle is about .7 above the floor the lever stands on. Once held, WalkRange
             // keeps them beside it, so only the floor is checked.
-            return _game.CanAct && player.Lane == lane && (InUse || Mathf.Abs(p.x - Pivot.x) < reach.x) && Mathf.Abs(p.y - Pivot.y - .7f) < reach.y;
+            return (InUse || Mathf.Abs(p.x - Pivot.x) < reach.x) && Mathf.Abs(p.y - Pivot.y - .7f) < reach.y;
         }
 
         private float FromMouse(Vector2 mouse)
@@ -115,7 +127,7 @@ namespace CoalRun.Stations
         private void FixedUpdate()
         {
             var dt = Time.fixedDeltaTime;
-            if (!InUse && springReturn) Value = Mathf.MoveTowards(Value, 0, _game.Tune.leverReturn * dt);
+            if (!InUse && springReturn) Value = Mathf.MoveTowards(Value, restValue, _game.Tune.leverReturn * dt);
 
             var speed = Mathf.Abs(Value - _lastValue) / dt;
             var hitEnd = Value is <= 0 or >= 1 && _lastValue is > 0 and < 1;

@@ -23,7 +23,7 @@ Each milestone ends with something you can play. Don't start the next one until 
   - [x] Chute lever in the control room (lane 1), analog pull
   - [ ] **Playtest:** fill the cart from the lever without burying it; dig a buried cart out; haul through a spill
 - [ ] **M3 · Furnace and the shift** (Mon 10/26)
-  - [ ] Tip cradle + tip handle, pour into the hopper, spill the wrong way
+  - [x] Tip cradle + tip handle, pour into the hopper, spill the wrong way
   - [ ] Furnace: burn lever notches, heat model, output meter
   - [ ] Shift clock, forecast, complete / frozen
 - [ ] **M4 · Things going wrong** (Tue 10/27)
@@ -48,7 +48,7 @@ Each milestone ends with something you can play. Don't start the next one until 
 - **One InputReader.** All key bindings live in `InputReader.cs`. Mouse machinery goes through `MachineInput` → `Machine` subclasses.
 - **The scene is the source of truth.** `Assets/Scenes/Boiler.unity`, edited by hand (or through the CLI). The greybox generator that first built it is gone (10/25).
   Hierarchy: `Systems` (Game, camera, Coal field), `Room` (Art grouped into Walls / Floors / Return grate / Fixtures, plus Colliders), `Stations` (Lift, cranks, Chute lever, Cart, Operator).
-  Prefabs in `Assets/Prefabs`: `Cart`, `Operator` (both get respawned in M4), `Lift crank` (all three cranks are instances: both landings and the platform wheel). New stations go in as prefabs too; the Chute lever becomes a `Floor lever` prefab when the burn lever (M3) needs a second one.
+  Prefabs in `Assets/Prefabs`: `Cart`, `Operator` (both get respawned in M4), `Lift crank` (all three cranks are instances: both landings and the platform wheel). New stations go in as prefabs too: `Floor lever` (Chute lever and Tip lever are instances; the burn lever will be one too), `Chute` (with the bunker art), `Tip cradle`, `Furnace` (firebox and hopper art). A lever is only a lever: the station it works holds a reference to it (the `Chute` component used to sit on the chute lever, and the prefab copied it into the tip lever as a second, uncounted chute).
 
 ### Smaller calls made while porting (change any of them)
 
@@ -106,6 +106,13 @@ Each milestone ends with something you can play. Don't start the next one until 
 - Grabbing a lever mid-roll doesn't make it jump to the cursor (grab offset).
 - Audio slots on each lever, empty `AudioSource`s on child objects named `Audio: …`: `grab` (one-shot), `drag` (loop while pushed by hand), `rollBack` (loop while rolling back), `stop` (one-shot at either end). Loops get louder with speed. Drop clips on them in the inspector.
 - Piles are drawn as one stretched sprite per column until the art pass.
+
+### Tip cradle (10/25, your calls: hinge motor, FloorLever with a rest point)
+
+- `TipCradle` at x=17 on the upper floor, worked by the **Tip lever** (a `FloorLever` in lane 0, `restValue` 0.5 so it springs back upright). The lever has an `Interlock`: it can only be taken hold of with the cart parked (within `Tuning.cradleReach` 1.3 of the cradle, upright, under 2 m/s), otherwise it says "Stop the cart at the tip cradle."
+- Taking the lever seats the cart: it's lifted 1.5 above the floor (as in the JS, so the floor can't block it turning) on a `HingeJoint2D` with a motor. The lever's position sets the angle, ±`tipMaxAngle` (89°) at the ends; the motor chases it at up to `tipSpeed` (230°/s, slower when loaded), `tipTorque` 180. Let go, the lever rolls back, and once the cart is level it's set down.
+- **Pouring is the cart's ordinary spill** (load-dependent spill angle, `spillRate`), not the JS's separate pour formula, so your spill tuning carries over. Lever right tips the cart right (`hopperSide` 1): what spills over that rim goes into `Furnace.Hopper` (capacity `hopperCapacity` 30), and what doesn't fit goes over as lumps. Lever left spills onto the floor. The JS kept the overflow in the cart unless tipped past 72°.
+- `Furnace` holds the hopper only so far (starts at `DayConfig.startingHopper`, has a fill gauge, counts `Delivered`). It's in `TotalCoal`.
 - Death is a placeholder (`ShiftManager.Die` respawns at the staff lift at once). M4 adds the replacement delay.
 
 ## Open questions
