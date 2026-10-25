@@ -108,9 +108,14 @@ namespace CoalRun.Core
         public float tipMaxAngle = 89;
         [Tooltip("Fastest the cradle turns an empty cart, in degrees per second. A full one turns about half as fast.")]
         public float tipSpeed = 230;
-        public float tipTorque = 180;
-        [Tooltip("How far from the cradle's middle the cart can be parked and still be taken up.")]
+        [Tooltip("The cart hangs from a bottom corner, so this has to hold a full one's weight off to the side (about 600).")]
+        public float tipTorque = 900;
+        [Tooltip("How far from the cradle's middle the cart can be parked and still be hooked on.")]
         public float cradleReach = 1.3f;
+        [Tooltip("How far the hoist lifts the cart off the floor, so it can turn.")]
+        public float hoistHeight = .8f;
+        [Tooltip("How fast the hoist raises and lowers it, in m/s.")]
+        public float hoistSpeed = 1;
 
         [Header("Furnace")]
         public float[] burnRates = { .072f, .144f, .204f, .276f, .348f };

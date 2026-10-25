@@ -8,6 +8,8 @@ namespace CoalRun.Core
         public const float Width = 32, Height = 18;
         public const float Lower = 2, Upper = 9.5f;
         public const float Edge = 22, Chute = 26, Tip = 17;
+        // The grate in the upper floor over the furnace hopper.
+        public const float HopperStart = 16.1f, HopperEnd = 18.1f;
         public const float LiftX = 2.25f, LiftWidth = 3.5f;
         public const float EntranceStart = 29.2f, EntranceRoof = 6.3f;
     }

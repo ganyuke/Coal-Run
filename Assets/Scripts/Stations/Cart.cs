@@ -179,9 +179,6 @@ namespace CoalRun.Stations
             Coal -= q;
             // The rim at the low end: rotating clockwise (negative) lowers the +x end.
             float low = Angle < 0 ? 1 : -1;
-            // In the cradle, what pours over the hopper side goes into the hopper; what doesn't fit goes over.
-            if (Cradle) q -= Cradle.Pour(q, low);
-            if (q <= 0) return;
             var lip = Body.GetRelativePoint(new Vector2(low * 1.08f, .6f));
             var v = Body.linearVelocity + Body.GetRelativeVector(new Vector2(low * 1.5f, 0));
             _game.Coal.Emit(lip.x, lip.y, q, v.x, v.y, .3f);

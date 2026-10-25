@@ -221,12 +221,13 @@ namespace CoalRun.Stations
             _game.Sound("ram", .2f, cart.mass);
         }
 
-        // E: one press, one action, picked by what the operator is standing next to. Only righting the
-        // cart so far; the phone and wheels come in M4.
+        // E: one press, one action, picked by what the operator is standing next to: hooking the cart onto
+        // the tip cradle or lowering it, or righting it. The phone and wheels come in M4.
         private void Interact()
         {
             if (Machine || Lane != 0) return;
             var cart = _game.Cart;
+            if (CartNear() && _game.Cradle.Interact()) return;
             if (!CartOverturnedInReach()) return;
             var cp = cart.Body.position;
             var floor = _game.Coal.SurfaceAt(cp.x, cp.y).Floor();
@@ -237,8 +238,9 @@ namespace CoalRun.Stations
             cart.Right();
         }
 
-        private bool CartOverturnedInReach() =>
-            _game.Cart.Overturned && Vector2.Distance(Body.position, _game.Cart.Body.position) < 2.6f;
+        private bool CartNear() => Vector2.Distance(Body.position, _game.Cart.Body.position) < 2.6f;
+
+        private bool CartOverturnedInReach() => _game.Cart.Overturned && CartNear();
 
         // Walking while holding a machine works it (a floor lever follows the operator), but only within
         // the machine's walk range.
@@ -463,13 +465,16 @@ namespace CoalRun.Stations
                 return list;
             }
             if (AtDoor) list.Add(("W", "Enter"));
+            if (CartNear() && _game.Cradle.Prompt != null) list.Add(("E", _game.Cradle.Prompt));
             if (CartOverturnedInReach()) list.Add(("E", "Right cart"));
             if (PileInReach()) list.Add(("F", "Shovel"));
             if (!Holding && CartInGrip() && Mathf.Cos(_game.Cart.Angle) > .3f) list.Add(("Space", "Grip cart"));
             foreach (var m in Machine.All)
             {
                 if (m is LiftCrank && m.CanOperate(this)) { list.Add(("W S", "Crank")); break; }
-                if (m is FloorLever && m.CanOperate(this)) { list.Add(("Mouse", "Tip lever")); break; }
+                if (m is not FloorLever || !m.CanOperate(this)) continue;
+                list.Add(("Mouse", "Tip lever"));
+                break;
             }
             if (list.Count > 2) list.RemoveRange(2, list.Count - 2);
             return list;

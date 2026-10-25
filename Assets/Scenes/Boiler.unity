@@ -2896,6 +2896,7 @@ MonoBehaviour:
   coal: {fileID: 1421382007}
   chute: {fileID: 304428492281169643}
   furnace: {fileID: 505197295699373496}
+  cradle: {fileID: 4074597142719355249}
 --- !u!4 &1727399069
 Transform:
   m_ObjectHideFlags: 0
@@ -3249,7 +3250,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6151289955162622955, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 15.5
+      value: 12.8
       objectReference: {fileID: 0}
     - target: {fileID: 6151289955162622955, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3938,7 +3939,7 @@ PrefabInstance:
       objectReference: {fileID: 2003437362}
     - target: {fileID: 6986613172335907449, guid: 2430965138c14bdc0996516c67aa9088, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 17
+      value: 15.4
       objectReference: {fileID: 0}
     - target: {fileID: 6986613172335907449, guid: 2430965138c14bdc0996516c67aa9088, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3990,6 +3991,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6986613172335907449, guid: 2430965138c14bdc0996516c67aa9088, type: 3}
   m_PrefabInstance: {fileID: 4074597142719355247}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &4074597142719355249 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1024495554526470304, guid: 2430965138c14bdc0996516c67aa9088, type: 3}
+  m_PrefabInstance: {fileID: 4074597142719355247}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 639aee7404d384f39a79a9f619523dea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Stations.TipCradle
 --- !u!1001 &4350012416484048489
 PrefabInstance:
   m_ObjectHideFlags: 0

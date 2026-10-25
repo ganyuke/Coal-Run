@@ -107,12 +107,15 @@ Each milestone ends with something you can play. Don't start the next one until 
 - Audio slots on each lever, empty `AudioSource`s on child objects named `Audio: …`: `grab` (one-shot), `drag` (loop while pushed by hand), `rollBack` (loop while rolling back), `stop` (one-shot at either end). Loops get louder with speed. Drop clips on them in the inspector.
 - Piles are drawn as one stretched sprite per column until the art pass.
 
-### Tip cradle (10/25, your calls: hinge motor, FloorLever with a rest point)
+### Tip cradle (10/25, your calls: hinge motor, FloorLever with a rest point, hook and hoist, real lumps)
 
-- `TipCradle` at x=17 on the upper floor, worked by the **Tip lever** (a `FloorLever` in lane 0, `restValue` 0.5 so it springs back upright). The lever has an `Interlock`: it can only be taken hold of with the cart parked (within `Tuning.cradleReach` 1.3 of the cradle, upright, under 2 m/s), otherwise it says "Stop the cart at the tip cradle."
-- Taking the lever seats the cart: it's lifted 1.5 above the floor (as in the JS, so the floor can't block it turning) on a `HingeJoint2D` with a motor. The lever's position sets the angle, ±`tipMaxAngle` (89°) at the ends; the motor chases it at up to `tipSpeed` (230°/s, slower when loaded), `tipTorque` 180. Let go, the lever rolls back, and once the cart is level it's set down.
-- **Pouring is the cart's ordinary spill** (load-dependent spill angle, `spillRate`), not the JS's separate pour formula, so your spill tuning carries over. Lever right tips the cart right (`hopperSide` 1): what spills over that rim goes into `Furnace.Hopper` (capacity `hopperCapacity` 30), and what doesn't fit goes over as lumps. Lever left spills onto the floor. The JS kept the overflow in the cart unless tipped past 72°.
+- `TipCradle` at x=15.4 on the upper floor, beside the **hopper grate** (`Room.HopperStart`–`HopperEnd`, 16.1–18.1) over the hopper.
+- **E hooks and hoists:** with the cart parked in the cradle (within `Tuning.cradleReach` 1.3, upright, under 2 m/s), E hooks two chains on and the hoist lifts it `hoistHeight` (0.8) at `hoistSpeed` (1 m/s), centring it. E again, with the cart level and the lever let go, lowers it and unhooks. Prompts "[E] Hook cart" / "[E] Lower cart".
+- **Tip lever** (a `FloorLever` in lane 0 at x=12.8, `restValue` 0.5 so it springs back upright). Its `Interlock` only lets you take it once the cart is up; otherwise "Hook the cart on first (E)." or "Stop the cart at the tip cradle."
+- **Pitcher pour:** the cart hangs on a `HingeJoint2D` at the bin's bottom corner on the side the lever's pushed toward (it changes corners while level), so the rim swings out over the grate. The lever position sets the angle, ±`tipMaxAngle` (89°); a motor chases it at up to `tipSpeed` (230°/s, slower loaded), `tipTorque` 900 (it holds the cart's weight off to the side).
+- **Pouring is the cart's ordinary spill**, untouched: lumps go over the low rim. Lumps landing on the hopper grate go into `Furnace.Hopper` (like the return grate), and coal piled on the grate drains in as the hopper makes room; a full hopper leaves coal heaping on the grate. Shovelled coal counts too. Tipped left, it lands on the floor on the operator's side, and can hit them.
 - `Furnace` holds the hopper only so far (starts at `DayConfig.startingHopper`, has a fill gauge, counts `Delivered`). It's in `TotalCoal`.
+- First pass (replaced the same day): grabbing the lever teleported the cart up and pivoted it about its middle, with the coal counted straight into the hopper. You called it jank.
 - Death is a placeholder (`ShiftManager.Die` respawns at the staff lift at once). M4 adds the replacement delay.
 
 ## Open questions

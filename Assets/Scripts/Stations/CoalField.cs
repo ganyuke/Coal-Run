@@ -148,9 +148,26 @@ namespace CoalRun.Stations
         {
             // The covered staff entrance returns coal to the bunker, keeping the doorway clear and the total intact.
             if (s.Id == SurfaceId.Lower && x >= Room.EntranceStart) { _game.Chute.Bunker += amount; return; }
+            // The hopper grate passes coal down into the hopper; once it's full, coal heaps up on the grate.
+            if (OnHopperGrate(s, x)) amount -= _game.Furnace.Feed(amount);
+            if (amount <= 0) return;
             var i = Index(s, x);
             s.Heights[i] += ToHeight(amount);
             Mark(s, i);
+        }
+
+        private static bool OnHopperGrate(Surface s, float x) => s.Id == SurfaceId.Upper && x is >= Room.HopperStart and <= Room.HopperEnd;
+
+        // Coal heaped on the hopper grate drops through as the hopper burns down and makes room.
+        private void DrainHopperGrate()
+        {
+            var s = Surfaces[1];
+            for (var i = Index(s, Room.HopperStart); i <= Index(s, Room.HopperEnd); i++)
+            {
+                var room = _game.Tune.hopperCapacity - _game.Furnace.Hopper;
+                if (room <= 0) return;
+                if (s.Heights[i] > 0) _game.Furnace.Feed(TakeFromPile(s, i, room));
+            }
         }
 
         // Sends every lump and pile back to the bunker, keeping the total intact. For tests and debugging.
@@ -257,6 +274,7 @@ namespace CoalRun.Stations
             _pileTimer += dt;
             if (_pileTimer < .1f) return;
             _pileTimer = 0;
+            DrainHopperGrate();
             UpdatePiles();
         }
 
@@ -272,13 +290,20 @@ namespace CoalRun.Stations
                 if (!lump.Active) continue;
                 active++;
                 Vector2 p = lump.Body.position, v = lump.Body.linearVelocity;
-                // The floor by the staff lift and the control room door is a grate that sends coal back
-                // to the bunker. Lumps land on it before they go, so a throw there looks like a throw.
-                if (p is { x: >= Room.EntranceStart, y: <= Room.Lower + .2f })
+                switch (p)
                 {
-                    _game.Chute.Bunker += lump.Amount;
-                    Retire(lump);
-                    continue;
+                    // The floor by the staff lift and the control room door is a grate that sends coal back
+                    // to the bunker. Lumps land on it before they go, so a throw there looks like a throw.
+                    case { x: >= Room.EntranceStart, y: <= Room.Lower + .2f }:
+                        _game.Chute.Bunker += lump.Amount;
+                        Retire(lump);
+                        continue;
+                    // Likewise the hopper grate, while the hopper has room.
+                    case { x: >= Room.HopperStart and <= Room.HopperEnd, y: <= Room.Upper + .2f and >= Room.Upper - .3f }:
+                        lump.Amount -= _game.Furnace.Feed(lump.Amount);
+                        if (lump.Amount > 0) break;
+                        Retire(lump);
+                        continue;
                 }
                 // A lump falling onto the operator's head and shoulders hurts.
                 if (player.Lane == 0 && player.Body.simulated && !lump.HitPlayer && Mathf.Abs(p.x - pp.x) < .42f && p.y > pp.y + .4f && p.y < pp.y + 1.1f && v.y < -5)

@@ -64,8 +64,10 @@ MonoBehaviour:
   machineWalk: 0.35
   tipMaxAngle: 89
   tipSpeed: 230
-  tipTorque: 180
+  tipTorque: 900
   cradleReach: 1.3
+  hoistHeight: 0.8
+  hoistSpeed: 1
   burnRates:
   - 0.072
   - 0.144

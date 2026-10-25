@@ -24,6 +24,7 @@ namespace CoalRun.Core
         [SerializeField] private CoalField coal;
         [SerializeField] private Chute chute;
         [SerializeField] private Furnace furnace;
+        [SerializeField] private TipCradle cradle;
 
         public Tuning Tune => tuning;
         public DayConfig Day => day;
@@ -33,6 +34,7 @@ namespace CoalRun.Core
         public CoalField Coal => coal;
         public Chute Chute => chute;
         public Furnace Furnace => furnace;
+        public TipCradle Cradle => cradle;
 
         public Phase Phase { get; } = Phase.Shift;
         public bool CanAct => Phase is Phase.Tutorial or Phase.Shift;
