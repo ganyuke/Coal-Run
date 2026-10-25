@@ -10,6 +10,14 @@ public class Tuning : ScriptableObject
     public float gravity = -18;
     public float walkSpeed = 5.1f;
 
+    [Header("Reach")]
+    [Tooltip("Furthest gap between the operator and the end of the cart that still lets them take hold.")]
+    public float gripReach = .45f;
+    [Tooltip("How far from a crank or lever handle the operator can stand and still work it.")]
+    public Vector2 machineReach = new(1.4f, 1.4f);
+    [Tooltip("The platform wheel works from anywhere on the lift platform.")]
+    public bool platformWheelAnywhere = false;
+
     [Header("Cart")]
     public float cartMass = 16;
     public float coalMass = 1.7f;

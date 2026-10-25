@@ -128,12 +128,13 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // The cart is taken hold of from either end, up to a step away, not from inside its footprint.
+    // The cart is taken hold of from either end, not from inside its footprint. 1.24 is the distance
+    // between centres when the operator's body touches the end of the bin.
     public bool CartInGrip()
     {
         Vector2 p = Body.position, cp = game.Cart.Body.position;
         float dx = Mathf.Abs(p.x - cp.x);
-        return dx > 1.05f && dx < 2.4f && Mathf.Abs(p.y - cp.y) < 1.4f;
+        return dx > 1.05f && dx < 1.24f + game.Tune.gripReach && Mathf.Abs(p.y - cp.y) < 1.4f;
     }
 
     // Up to two key prompts for whatever is within reach, most urgent first.

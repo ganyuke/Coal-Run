@@ -22,10 +22,10 @@ public class LiftCrank : Machine
     public override bool CanOperate(PlayerController player)
     {
         if (!ShiftManager.Instance.CanAct || player.Lane != 0) return false;
-        Vector2 p = player.Position, m = HandlePosition;
-        // The platform wheel works from anywhere on the platform.
-        if (spot == Spot.Platform && p.x > .5f && p.x < 4 && Mathf.Abs(p.y - lift.Y - .72f) < .6f) return true;
-        return Mathf.Abs(p.x - m.x) <= 2.15f && Mathf.Abs(p.y - m.y) <= 2;
+        Vector2 p = player.Position, m = HandlePosition, reach = ShiftManager.Instance.Tune.machineReach;
+        bool onPlatform = p.x > .5f && p.x < 4 && Mathf.Abs(p.y - lift.Y - .72f) < .6f;
+        if (spot == Spot.Platform && ShiftManager.Instance.Tune.platformWheelAnywhere && onPlatform) return true;
+        return Mathf.Abs(p.x - m.x) <= reach.x && Mathf.Abs(p.y - m.y) <= reach.y;
     }
 
     protected override void OnBegin(Vector2 mouse)

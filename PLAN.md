@@ -9,12 +9,13 @@ Dates assume the jam ends Friday 10/30. Move them if it doesn't.
 
 Each milestone ends with something you can play. Don't start the next one until the current one plays.
 
-- [ ] **M1 · Walk, cart, lift** (Sat 10/24)
+- [x] **M1 · Walk, cart, lift** (Sat 10/24)
   - [x] Core: ShiftManager hub, Tuning + DayConfig assets, InputReader, layers
   - [x] Operator walk, cart grip/push/pull, one or two wheels (F2)
   - [x] Freight lift: mouse spinner on the wheel, W/S at a crank, landing cranks, safety stops
   - [x] Greybox scene generator
-  - [ ] **Playtest:** is pushing the cart onto the lift and cranking up fun on its own? Tune `Tuning.asset`.
+  - [x] **Playtest:** is pushing the cart onto the lift and cranking up fun on its own? Tune `Tuning.asset`.
+  - [x] Tighter interaction reach, tunable under Tuning > Reach
 - [ ] **M2 · Coal** (Sun 10/25)
   - [ ] CoalField: lump pool (Rigidbody2D), pile heightmaps per surface, pile colliders, slumping
   - [ ] Cart absorbs lumps; burial slows the cart; bulldozing
