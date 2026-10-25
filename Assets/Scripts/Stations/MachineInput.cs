@@ -5,13 +5,13 @@ using UnityEngine.InputSystem;
 // can reach it; while held, feeds it the cursor; on release or when it goes out of reach, lets go.
 public class MachineInput : MonoBehaviour
 {
-    [SerializeField] PlayerController player;
-    [SerializeField] Camera cam;
+    [SerializeField] private PlayerController player;
+    [SerializeField] private Camera cam;
 
     public Machine Active { get; private set; }
     public Machine Hover { get; private set; }
 
-    void Update()
+    private void Update()
     {
         var mouse = Mouse.current;
         var game = ShiftManager.Instance;
@@ -39,14 +39,16 @@ public class MachineInput : MonoBehaviour
         Active = null;
     }
 
-    static Machine Pick(Vector2 p)
+    private static Machine Pick(Vector2 p)
     {
         Machine best = null;
-        float bestDistance = float.PositiveInfinity;
+        var bestDistance = float.PositiveInfinity;
         foreach (var m in Machine.All)
         {
-            float d = Vector2.Distance(p, m.HandlePosition);
-            if (m.Hit(p) && d < bestDistance) { best = m; bestDistance = d; }
+            var d = Vector2.Distance(p, m.HandlePosition);
+            if (!m.Hit(p) || d >= bestDistance) continue;
+            best = m;
+            bestDistance = d;
         }
         return best;
     }

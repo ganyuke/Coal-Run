@@ -1,5 +1,5 @@
 // Room geometry in world units (1 unit is about a metre), copied from the JS prototype's ROOM.
-// The greybox generator lays the scene out from these, and the stations use them for reach checks.
+// The scene was laid out from these, and the code uses them for floors, reach and coal surfaces.
 // Moving a floor or station by hand in the scene means changing it here too.
 public static class Room
 {

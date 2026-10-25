@@ -23,12 +23,12 @@ public class DayConfig : ScriptableObject
     public ForecastPoint[] forecast =
     {
         new(0, -4), new(140, -4), new(220, -14), new(290, -26), new(335, -38),
-        new(400, -38), new(455, -14), new(520, -4), new(600, -4),
+        new(400, -38), new(455, -14), new(520, -4), new(600, -4)
     };
 
     public float OutsideAt(float time)
     {
-        for (int i = 1; i < forecast.Length; i++)
+        for (var i = 1; i < forecast.Length; i++)
         {
             var a = forecast[i - 1];
             var b = forecast[i];

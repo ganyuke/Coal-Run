@@ -15,21 +15,54 @@ MonoBehaviour:
   step: 0.016666668
   gravity: -18
   walkSpeed: 5.1
+  gripReach: 0.45
+  machineReach: {x: 1.4, y: 1.4}
+  platformWheelAnywhere: 0
   cartMass: 16
   coalMass: 1.7
   cartCapacity: 10
   overfillCapacity: 12
+  haulGain: 110
+  haulForce: 340
+  rollingFriction: 0.13
+  skidFriction: 0.8
+  dragFriction: 1.3
+  oneWheelHaul: 0.5
+  noWheelHaul: 0.3
+  heaveRate: 70
+  heaveMax: 30
+  heaveForce: 300
+  heaveHaul: 0.85
+  spillAngleEmpty: 25
+  spillAngleFull: 6
+  spillRate: 8
+  joltSpeed: 1.4
+  joltSpill: 2
+  dashStartSpeed: 3
+  dashSpeed: 10
+  dashTime: 0.3
+  dashCooldown: 0.6
+  rightingSpin: 250
+  lurchImpulse: 100
+  lurchHop: 190
   hopperCapacity: 30
   handCapacity: 3
   chuteRate: 5
   shovelRate: 2.8
+  throwSpeed: 10
+  throwSpread: 0.25
   pileVolume: 0.23
   columnWidth: 0.4
   liftGear: 0.53
   liftKeyCrank: 6.5
   liftMaxSpeed: 8
   liftAcceleration: 6
-  leverTravel: 1.6
+  liftHit: 1
+  liftCrush: 3
+  liftKnock: 0.5
+  leverAngle: 35
+  leverReturn: 0.5
+  machineWalk: 0.35
   burnRates:
   - 0.072
   - 0.144

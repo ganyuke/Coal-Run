@@ -12,14 +12,14 @@ public class ShiftManager : MonoBehaviour
 {
     public static ShiftManager Instance { get; private set; }
 
-    [SerializeField] Tuning tuning;
-    [SerializeField] DayConfig day;
-    [SerializeField] InputReader input;
-    [SerializeField] PlayerController player;
-    [SerializeField] Cart cart;
-    [SerializeField] Lift lift;
-    [SerializeField] CoalField coal;
-    [SerializeField] Chute chute;
+    [SerializeField] private Tuning tuning;
+    [SerializeField] private DayConfig day;
+    [SerializeField] private InputReader input;
+    [SerializeField] private PlayerController player;
+    [SerializeField] private Cart cart;
+    [SerializeField] private Lift lift;
+    [SerializeField] private CoalField coal;
+    [SerializeField] private Chute chute;
 
     public Tuning Tune => tuning;
     public DayConfig Day => day;
@@ -29,7 +29,7 @@ public class ShiftManager : MonoBehaviour
     public CoalField Coal => coal;
     public Chute Chute => chute;
 
-    public Phase Phase { get; private set; } = Phase.Shift;
+    public Phase Phase { get; } = Phase.Shift;
     public bool CanAct => Phase is Phase.Tutorial or Phase.Shift;
     public float Elapsed { get; private set; }
     public string Message { get; private set; } = "";
@@ -41,9 +41,9 @@ public class ShiftManager : MonoBehaviour
     // name, loudness
     public event Action<string, float> OnSound;
 
-    readonly Dictionary<string, float> soundTimers = new();
+    private readonly Dictionary<string, float> _soundTimers = new();
 
-    void Awake()
+    private void Awake()
     {
         Instance = this;
         Time.fixedDeltaTime = tuning.step;
@@ -51,15 +51,48 @@ public class ShiftManager : MonoBehaviour
         GameLayers.ConfigureCollisions();
     }
 
-    void Start() => InitialCoal = TotalCoal;
+    private void Start() => InitialCoal = TotalCoal;
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-        float dt = Time.fixedDeltaTime;
+        var dt = Time.fixedDeltaTime;
         Elapsed += dt;
         MessageFor -= dt;
-        if (input.Current.debugWheel) cart.SetWheels(cart.Wheels < 2 ? 2 : 1);
+        if (input.Current.DebugKey != 0) DebugCommand(input.Current.DebugKey);
         RecoverLost();
+    }
+
+    // Testing shortcuts, by F key. Public so the editor CLI can call them too. Coal is moved to and from
+    // the bunker, so the total stays intact.
+    public void DebugCommand(int key)
+    {
+        switch (key)
+        {
+            case 2: // Wheels 1 → 2 → 0 → 1.
+                cart.SetWheels((cart.Wheels + 1) % 3);
+                Say($"Debug: {cart.Wheels} wheel{(cart.Wheels == 1 ? "" : "s")}.", 2);
+                break;
+            case 4: // Load empty → 6 → full → overfilled → empty.
+                var load = cart.Coal < 5.9f ? 6 : cart.Coal < tuning.cartCapacity - .1f ? tuning.cartCapacity : cart.Coal < tuning.overfillCapacity - .1f ? tuning.overfillCapacity : 0;
+                chute.Bunker += cart.Coal - load;
+                cart.Coal = load;
+                Say($"Debug: cart holds {load:0}.", 2);
+                break;
+            case 5: // Loose coal back to the bunker.
+                Coal.ReturnAll();
+                Say("Debug: loose coal cleaned up.", 2);
+                break;
+            case 6: // The cart, upright and still, beside the operator on their floor.
+                var p = player.Position;
+                float side = player.Facing, floor = Coal.SurfaceAt(p.x, p.y).Y;
+                cart.Body.position = new Vector2(Mathf.Clamp(p.x + side * 1.6f, 1.45f, 30.55f), floor + .7f);
+                cart.Body.rotation = 0;
+                cart.Body.linearVelocity = Vector2.zero;
+                cart.Body.angularVelocity = 0;
+                cart.transform.SetPositionAndRotation(cart.Body.position, Quaternion.identity);
+                Say("Debug: cart brought over.", 2);
+                break;
+        }
     }
 
     public void Say(string message, float duration = 5)
@@ -69,43 +102,43 @@ public class ShiftManager : MonoBehaviour
     }
 
     // Repeats of the same sound inside the cooldown are dropped, so stations can call this every step.
-    public void Sound(string name, float cooldown = .12f, float amount = 1)
+    public void Sound(string sound, float cooldown = .12f, float amount = 1)
     {
-        if (soundTimers.TryGetValue(name, out var until) && until > Elapsed) return;
-        soundTimers[name] = Elapsed + cooldown;
-        OnSound?.Invoke(name, amount);
+        if (_soundTimers.TryGetValue(sound, out var until) && until > Elapsed) return;
+        _soundTimers[sound] = Elapsed + cooldown;
+        OnSound?.Invoke(sound, amount);
     }
 
     // Accidents kill only the operator. Placeholder until M4's replacement worker: the next one
     // walks in from the staff lift straight away.
     public void Die(string reason)
     {
-        Say($"{reason}. Another worker is on the way.", 5);
+        Say($"{reason}. Another worker is on the way.");
         Sound("hurt");
         player.Respawn(new Vector2(30.5f, Room.Lower + .75f));
     }
 
     // Nothing can leave the room. Anything physics squeezes through a wall or floor is put back on the lower floor.
-    void RecoverLost()
+    private void RecoverLost()
     {
-        static bool Lost(Vector2 p) => !(p.x > 0 && p.x < Room.Width && p.y > Room.Lower - 1.5f && p.y < Room.Height + 4);
-        static void Put(Rigidbody2D b, float y)
-        {
-            float x = float.IsFinite(b.position.x) ? Mathf.Clamp(b.position.x, 5.5f, 28.5f) : 14;
-            b.position = new Vector2(x, y);
-            b.rotation = 0;
-            b.linearVelocity = Vector2.zero;
-            b.angularVelocity = 0;
-        }
         if (Lost(cart.Body.position))
         {
             player.ReleaseGrip();
             Put(cart.Body, Room.Lower + .72f);
         }
-        if (player.Body.simulated && Lost(player.Body.position))
+        if (!player.Body.simulated || !Lost(player.Body.position)) return;
+        player.ReleaseGrip();
+        Put(player.Body, Room.Lower + .72f);
+        return;
+
+        static bool Lost(Vector2 p) => p is not { x: > 0 and < Room.Width, y: > Room.Lower - 1.5f and < Room.Height + 4 };
+        static void Put(Rigidbody2D b, float y)
         {
-            player.ReleaseGrip();
-            Put(player.Body, Room.Lower + .72f);
+            var x = float.IsFinite(b.position.x) ? Mathf.Clamp(b.position.x, 5.5f, 28.5f) : 14;
+            b.position = new Vector2(x, y);
+            b.rotation = 0;
+            b.linearVelocity = Vector2.zero;
+            b.angularVelocity = 0;
         }
     }
 }
