@@ -5,7 +5,8 @@ namespace CoalRun.Stations
 {
     // A lever standing up out of the floor, pivoting at its base. Drag the knob from left to right:
     // Value goes 0 (tilted left) to 1 (tilted right). A spring-return lever rolls back to its rest
-    // value (the left end, or upright) on its own once let go; one without a spring stays where it was left.
+    // value (the left end, or upright) on its own once let go; one without a spring stays where it was left,
+    // or with notches, rolls into the nearest one.
     public class FloorLever : Machine
     {
         [Tooltip("Rotated about its own position, the base of the lever.")]
@@ -17,6 +18,9 @@ namespace CoalRun.Stations
         private float standOff = .3f;
         [SerializeField] private int lane = 1;
         [SerializeField] private bool springReturn = true;
+        [Tooltip("More than one: let go, it rolls into the nearest of this many evenly spaced notches, ends included, and clunks at each one it passes. Without a spring only.")]
+        [SerializeField]
+        private int notches;
         [Tooltip("Where it starts and a spring-return lever rolls back to: 0 left, .5 upright, 1 right.")]
         [Range(0, 1)]
         [SerializeField]
@@ -36,9 +40,14 @@ namespace CoalRun.Stations
         [Tooltip("Played when it hits either end.")]
         [SerializeField]
         private AudioSource stop;
+        [Tooltip("Played as it passes a notch.")]
+        [SerializeField]
+        private AudioSource clunk;
 
         public float Value { get; private set; }
         public float RestValue => restValue;
+        // The nearest notch, 0 at the left end; 0 on a lever without notches.
+        public int Notch => notches > 1 ? Mathf.RoundToInt(Value * (notches - 1)) : 0;
         // Set by the station the lever works: while it returns false, the lever can't be taken hold of.
         public System.Func<bool> Interlock { get; set; }
         public string InterlockMessage { get; set; } = "";
@@ -53,6 +62,7 @@ namespace CoalRun.Stations
         // lever partway through its roll-back doesn't make it jump.
         private float _grabOffset;
         private float _lastValue;
+        private int _lastNotch;
 
         private Vector2 _lastMouse;
         // Which side of the knob the operator took hold from: 1 right, -1 left.
@@ -63,6 +73,7 @@ namespace CoalRun.Stations
             _game = ShiftManager.Instance;
             if (!handle) handle = stick;
             Value = _lastValue = restValue;
+            _lastNotch = Notch;
         }
 
         private Vector2 Pivot => stick ? stick.position : transform.position;
@@ -128,6 +139,13 @@ namespace CoalRun.Stations
         {
             var dt = Time.fixedDeltaTime;
             if (!InUse && springReturn) Value = Mathf.MoveTowards(Value, restValue, _game.Tune.leverReturn * dt);
+            else if (!InUse && notches > 1) Value = Mathf.MoveTowards(Value, (float)Notch / (notches - 1), _game.Tune.leverReturn * dt);
+            if (Notch != _lastNotch)
+            {
+                _lastNotch = Notch;
+                if (clunk) clunk.Play();
+                _game.Sound("notch");
+            }
 
             var speed = Mathf.Abs(Value - _lastValue) / dt;
             var hitEnd = Value is <= 0 or >= 1 && _lastValue is > 0 and < 1;

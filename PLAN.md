@@ -25,6 +25,9 @@ Each milestone ends with something you can play. Don't start the next one until 
 - [ ] **M3 · Furnace and the shift** (Mon 10/26)
   - [x] Tip cradle + tip handle, pour into the hopper, spill the wrong way
   - [ ] Furnace: burn lever notches, heat model, output meter
+    - [x] Step 1: notched burn lever, burning from the hopper, clock + outside + building temperature (F3 HUD)
+    - [ ] Step 2: fire glow in the firebox mouth (grows and brightens with the notch, Perlin flicker) and a spinning meter disc for output
+    - [ ] Step 3: blue → red colour bands with 1–5 snowflakes under the lever's notches (instead of number labels; the notepad graph uses the same bands in M5)
   - [ ] Shift clock, forecast, complete / frozen
 - [ ] **M4 · Things going wrong** (Tue 10/27)
   - [ ] Crashes knock wheels off; pick up and refit (E)
@@ -87,6 +90,7 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - The skid sparks (`Cart.sparks`, a particle system at its bottom) and has a `scrape` audio slot, both scaled by how fast it slides along the floor (`Cart.Scraping`). Dragging through coal doesn't spark.
 - Debug keys (`ShiftManager.DebugCommand`, listed in the F3 readout): F2 wheels 1 → 2 → 0, F4 cart load 0 → 6 → 10 → 12, F5 loose coal back to the bunker, F6 the cart upright beside you. Coal moves to and from the bunker, so the total stays intact.
 - `Machine.All` is a static registry that machines join in `OnEnable`, so nothing calls `Find`.
+- **Burn lever** at x 19.3 on the upper floor, right of the hopper grate (the JS had it at 14.3, which a cart in the tip cradle now covers). A `FloorLever` with `notches` 5, no spring, starting at notch 1. Let go, it rolls into the nearest notch with a clunk (`clunk` audio slot, `notch` sound). The `Furnace` burns `burnRates[notch]` from the hopper and counts `Burned` (in the coal total) and `Output` (1.5 kWh per coal); `ShiftManager` steps `Clock`, `Outside` and `Temperature` with the JS heat formula. The clock runs from the start of Play for now.
 
 ### M2 decisions (10/24)
 
@@ -154,3 +158,4 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - Real UI: uGUI (Canvas) or UI Toolkit? uGUI is the safer bet for a jam.
 - Day 2 forecast and target are placeholders (Day 1's storm, 6° colder).
 - Design doc open items: lift momentum, power loss.
+- **The furnace is lit when the shift starts** (10 in the hopper, burning at notch 1). Either start with an empty hopper and light it on our shift, or give the burn lever an "out" notch that puts the fire out (your note, 10/25).

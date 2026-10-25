@@ -39,11 +39,15 @@ namespace CoalRun.Core
         public Phase Phase { get; } = Phase.Shift;
         public bool CanAct => Phase is Phase.Tutorial or Phase.Shift;
         public float Elapsed { get; private set; }
+        // Seconds into the shift, the temperature outside from the day's forecast, and inside the building.
+        public float Clock { get; private set; }
+        public float Outside { get; private set; }
+        public float Temperature { get; private set; }
         public string Message { get; private set; } = "";
         public float MessageFor { get; private set; }
         public float InitialCoal { get; private set; }
         // Every unit of coal is always in exactly one place, so this should never change.
-        public float TotalCoal => chute.Bunker + cart.Coal + player.Hands + coal.Loose + furnace.Hopper;
+        public float TotalCoal => chute.Bunker + cart.Coal + player.Hands + coal.Loose + furnace.Hopper + furnace.Burned;
 
         // name, loudness
         public event Action<string, float> OnSound;
@@ -58,7 +62,12 @@ namespace CoalRun.Core
             GameLayers.ConfigureCollisions();
         }
 
-        private void Start() => InitialCoal = TotalCoal;
+        private void Start()
+        {
+            InitialCoal = TotalCoal;
+            Temperature = tuning.comfortable;
+            Outside = day.OutsideAt(0);
+        }
 
         private void FixedUpdate()
         {
@@ -66,7 +75,19 @@ namespace CoalRun.Core
             Elapsed += dt;
             MessageFor -= dt;
             if (input.Current.DebugKey != 0) DebugCommand(input.Current.DebugKey);
+            if (Phase == Phase.Shift) StepHeat(dt);
             RecoverLost();
+        }
+
+        // The building warms by what the furnace burns and loses heat to the outside in proportion to the
+        // difference, so it changes slowly: run under demand and it cools gradually. Burning a notch's rate
+        // holds it at `comfortable` against that notch's held temperature. The furnace runs after the hub,
+        // so this is the last step's burn.
+        private void StepHeat(float dt)
+        {
+            Clock += dt;
+            Outside = day.OutsideAt(Clock);
+            Temperature += (furnace.BurnRate - tuning.heatLoss * (Temperature - Outside)) / tuning.heatCapacity * dt;
         }
 
         // Testing shortcuts, by F key. Public so the editor CLI can call them too. Coal is moved to and from
