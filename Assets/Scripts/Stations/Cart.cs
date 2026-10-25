@@ -11,9 +11,9 @@ namespace CoalRun.Stations
     public class Cart : MonoBehaviour
     {
         [SerializeField] private GameObject frontWheel, backWheel, skid;
-        [Tooltip("Scaled vertically with the load.")]
+        [Tooltip("Columns across the inside of the bin, left to right, drawn as a heap of the load (see Update). Only a picture: the load is still the one number, Coal.")]
         [SerializeField]
-        private Transform fill;
+        private Transform[] heap;
         [Tooltip("At the bottom of the skid. Emits while the skid scrapes along the floor, more the faster it goes.")]
         [SerializeField]
         private ParticleSystem sparks;
@@ -124,12 +124,35 @@ namespace CoalRun.Stations
             }
         }
 
+        // The heap's column heights, eased toward their shape so the coal sloshes rather than jumps.
+        private float[] _heap;
+
+        // A full cart (cartCapacity) fills the bin flat to the rim; less is a mound in the middle, more heaps
+        // above the rim. The top stays roughly level with the world as the cart tilts, so the coal slides to
+        // the low end, the way it's about to pour out.
         private void Update()
         {
-            if (!fill) return;
-            var f = Mathf.Clamp01(Coal / _game.Tune.overfillCapacity);
-            fill.localScale = new Vector3(fill.localScale.x, f * .7f, 1);
-            fill.gameObject.SetActive(f > .01f);
+            if (heap == null || heap.Length == 0) return;
+            const float bottom = -.06f, depth = .7f, halfWidth = .85f;
+            _heap ??= new float[heap.Length];
+            var n = heap.Length;
+            var level = Coal / _game.Tune.cartCapacity * depth;
+            // A pile that's mostly mound when there's little coal, flattening out as the bin fills, then
+            // mounding again once it's heaped.
+            var mound = Mathf.Min(level, .22f) * (Coal > _game.Tune.cartCapacity ? 1.4f : Mathf.Lerp(1, .35f, level / depth));
+            var slope = -Mathf.Tan(Mathf.Clamp(Angle, -.7f, .7f));
+            var width = halfWidth * 2 / n;
+            for (var i = 0; i < n; i++)
+            {
+                var u = (i + .5f) / n * 2 - 1;
+                // 1 - u² averages 2/3 across the bin, so taking that off keeps the area the same.
+                var target = Coal < .02f ? 0 : Mathf.Clamp(level + mound * (1 - u * u - 2f / 3) + slope * u * halfWidth, 0, depth + .35f);
+                _heap[i] = Mathf.Lerp(_heap[i], target, 1 - Mathf.Exp(-12 * Time.deltaTime));
+                var h = _heap[i];
+                heap[i].gameObject.SetActive(h > .01f);
+                heap[i].localPosition = new Vector3(-halfWidth + (i + .5f) * width, bottom + h / 2, 0);
+                heap[i].localScale = new Vector3(width + .01f, h, 1);
+            }
         }
 
         // Rolling resistance on wheels, a steel skid dragging under the missing one: a purely sideways
