@@ -131,9 +131,15 @@ namespace CoalRun.Core
         {
             switch (key)
             {
-                case 2: // Wheels 1 → 2 → 0 → 1.
-                    cart.SetWheels((cart.Wheels + 1) % 3);
-                    Say($"Debug: {cart.Wheels} wheel{(cart.Wheels == 1 ? "" : "s")}.", 2);
+                case 2: // A wheel knocked off as in a crash; with none left, both back on and the loose ones gone.
+                    if (cart.Wheels > 0)
+                    {
+                        cart.PopWheel();
+                        break;
+                    }
+                    while (cart.LooseWheels.Count > 0) cart.RemoveWheel(cart.LooseWheels[0]);
+                    cart.SetWheels(2);
+                    Say("Debug: both wheels back on.", 2);
                     break;
                 case 4: // Load empty → 6 → full → overfilled → empty.
                     var load = cart.Coal < 5.9f ? 6 : cart.Coal < tuning.cartCapacity - .1f ? tuning.cartCapacity : cart.Coal < tuning.overfillCapacity - .1f ? tuning.overfillCapacity : 0;

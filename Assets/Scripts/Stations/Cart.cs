@@ -358,6 +358,12 @@ namespace CoalRun.Stations
         {
             _crashCooldown = 1.2f;
             _game.Sound("crash", .4f, speed);
+            PopWheel();
+        }
+
+        // The last wheel fitted comes off and bounces away as a loose wheel.
+        public void PopWheel()
+        {
             if (Wheels == 0) return;
             var slot = WheelSlot(Wheels - 1);
             var away = Mathf.Sign(slot.x - Body.position.x);

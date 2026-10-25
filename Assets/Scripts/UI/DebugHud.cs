@@ -46,7 +46,7 @@ namespace CoalRun.UI
             if (!_readout) return;
             var cart = game.Cart;
             var text =
-                "F3 hides this · F2 wheels 1/2/0 · F4 cart load 0/6/10/12 · F5 clean up coal · F6 cart to me\n" +
+                "F3 hides this · F2 knock a wheel off · F4 cart load 0/6/10/12 · F5 clean up coal · F6 cart to me\n" +
                 $"Operator {player.Position.x:0.0}, {player.Position.y:0.0}  lane {player.Lane}  holding {player.Holding}\n" +
                 $"Cart {cart.Body.position.x:0.0}, {cart.Body.position.y:0.0}  speed {cart.Body.linearVelocity.magnitude:0.0}  wheels {cart.Wheels}  coal {cart.Coal:0.0}\n" +
                 $"Lift {game.Lift.Y:0.00}  speed {game.Lift.Speed:0.00}\n" +
