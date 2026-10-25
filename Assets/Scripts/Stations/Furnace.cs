@@ -16,15 +16,26 @@ namespace CoalRun.Stations
         private FloorLever burnLever;
 
         [Header("Fire and meter")]
-        [Tooltip("Strips standing in the firebox mouth, scaled up from their bottom edge. Each flickers on its own.")]
+        [Tooltip("Flames rising off the coal bed, masked to the firebox mouth. Its emission, size and rise speed follow the burn; its noise module makes them lick.")]
         [SerializeField]
-        private SpriteRenderer[] flames;
-        [Tooltip("Tallest the middle flame gets at the top notch, before flicker. The outer ones are shorter.")]
+        private ParticleSystem fire;
+        [Tooltip("A few sparks drifting up out of the mouth, more the harder it burns.")]
         [SerializeField]
-        private float flameHeight = 1.15f;
-        [SerializeField] private Color emberColor = new(.45f, .08f, .03f);
-        [SerializeField] private Color lowFlame = new(.85f, .25f, .06f);
-        [SerializeField] private Color highFlame = new(1, .9f, .6f);
+        private ParticleSystem sparks;
+        [Tooltip("The coal bed along the bottom of the firebox: embers when the fire is starved, bright when it roars.")]
+        [SerializeField]
+        private SpriteRenderer bed;
+        [Tooltip("The inside of the firebox mouth, lit up by the fire.")]
+        [SerializeField]
+        private SpriteRenderer glow;
+        [Tooltip("Flames and sparks a second at the top notch.")]
+        [SerializeField]
+        private float flameRate = 60;
+        [SerializeField] private float sparkRate = 6;
+        [SerializeField] private Color emberColor = new(.7f, .16f, .04f);
+        [SerializeField] private Color hotBedColor = new(1, .55f, .15f);
+        [SerializeField] private Color darkMouth = new(.1f, .05f, .04f);
+        [SerializeField] private Color litMouth = new(.4f, .12f, .05f);
         [Tooltip("The electricity meter's disc. Spins with the coal actually burning, like a house meter.")]
         [SerializeField]
         private Transform meterDisc;
@@ -43,8 +54,6 @@ namespace CoalRun.Stations
         public int Notch => burnLever ? burnLever.Notch : 0;
 
         private ShiftManager _game;
-        // Each flame's bottom edge, which stays put as it grows.
-        private float[] _flameBottoms;
         // How hard the fire looks to be burning, 0 to 1 (see Update).
         private float _heat;
 
@@ -53,9 +62,6 @@ namespace CoalRun.Stations
         {
             _game = ShiftManager.Instance;
             Hopper = _game.Day.startingHopper;
-            _flameBottoms = new float[flames.Length];
-            for (var i = 0; i < flames.Length; i++)
-                _flameBottoms[i] = flames[i].transform.localPosition.y - flames[i].transform.localScale.y / 2;
         }
 
         private void FixedUpdate()
@@ -82,20 +88,27 @@ namespace CoalRun.Stations
             // second or two instead of going out at once.
             var rates = _game.Tune.burnRates;
             _heat = Mathf.MoveTowards(_heat, BurnRate / rates[^1], Time.deltaTime * .6f);
-            for (var i = 0; i < flames.Length; i++)
+            var lit = _heat > .01f;
+            if (fire)
             {
-                // Perlin noise wanders smoothly, so the flames lick up and down instead of strobing.
-                var flicker = Mathf.PerlinNoise(Time.time * 3 + i * 7.3f, i * 1.7f);
-                var lit = _heat > .01f;
-                // Tallest in the middle, so the row reads as one fire rather than a bar chart.
-                var middle = (flames.Length - 1) / 2f;
-                var shape = middle > 0 ? 1 - .45f * Mathf.Abs(i - middle) / middle : 1;
-                var h = lit ? Mathf.Lerp(.15f, flameHeight, _heat) * shape * (.7f + .6f * flicker) : .06f + .04f * flicker;
-                var t = flames[i].transform;
-                t.localScale = new Vector3(t.localScale.x, h, 1);
-                t.localPosition = new Vector3(t.localPosition.x, _flameBottoms[i] + h / 2, t.localPosition.z);
-                flames[i].color = lit ? Color.Lerp(lowFlame, highFlame, _heat * (.6f + .4f * flicker)) : emberColor;
+                var emission = fire.emission;
+                emission.rateOverTimeMultiplier = lit ? Mathf.Lerp(.15f, 1, _heat) * flameRate : 0;
+                var main = fire.main;
+                main.startSizeMultiplier = Mathf.Lerp(.5f, 1, _heat);
+                var rise = fire.velocityOverLifetime;
+                rise.yMultiplier = Mathf.Lerp(.5f, 1.6f, _heat);
             }
+
+            if (sparks)
+            {
+                var emission = sparks.emission;
+                emission.rateOverTimeMultiplier = _heat * _heat * sparkRate;
+            }
+
+            // Perlin noise wanders smoothly, so the glow breathes instead of strobing.
+            var flicker = Mathf.PerlinNoise(Time.time * 2, .5f);
+            if (bed) bed.color = Color.Lerp(emberColor, hotBedColor, _heat * (.75f + .25f * flicker));
+            if (glow) glow.color = Color.Lerp(darkMouth, litMouth, _heat * (.7f + .3f * flicker));
 
             if (meterDisc) meterDisc.Rotate(0, 0, -BurnRate * meterSpin * Time.deltaTime);
         }
