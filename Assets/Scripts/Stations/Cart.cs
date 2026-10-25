@@ -46,8 +46,10 @@ namespace CoalRun.Stations
         public bool Righting { get; private set; }
         // One end held up off the floor by the operator while a wheel is fitted (see HoldUp).
         public bool Lifted { get; private set; }
-        // Moved by hand rather than by physics: no gripping, hooking on or spilling meanwhile.
-        public bool Busy => Righting || Lifted;
+        // Held still where it stands, for the tutorial (see Park).
+        public bool Parked { get; private set; }
+        // Moved by hand rather than by physics, or not at all: no gripping, hooking on or spilling meanwhile.
+        public bool Busy => Righting || Lifted || Parked;
         // Half the cart's width as it lies, from its bin: 1 upright, less on its side.
         public float HalfWidth => _colliders.Count > 0 ? _colliders[0].bounds.extents.x : 1;
         // Which side of the cart the skid is on, in world x: -1 or 1.
@@ -57,6 +59,7 @@ namespace CoalRun.Stations
         // Why a wheel can't be bolted on right now, or null if it can.
         public string WheelBlocker =>
             Wheels >= 2 ? "The cart has both its wheels." :
+            Parked ? "Not now." :
             InCradle ? "Lower the cart off the cradle first." :
             Mathf.Cos(Angle) < .87f ? "Right the cart first." :
             !Lifted && Body.linearVelocity.magnitude > 1 ? "The cart has to stop first." : null;
@@ -239,10 +242,18 @@ namespace CoalRun.Stations
             _game.Sound("spill", .3f);
         }
 
-        // Stands the cart back up on its wheels where it lies, as the JS rightCart does: no animation yet.
+        // Stands the cart back up on its wheels where it lies, as the JS rightCart does.
         public void Right()
         {
             if (!Righting) StartCoroutine(Heave());
+        }
+
+        public void Park(bool parked)
+        {
+            Parked = parked;
+            Body.bodyType = parked ? RigidbodyType2D.Kinematic : RigidbodyType2D.Dynamic;
+            Body.linearVelocity = Vector2.zero;
+            Body.angularVelocity = 0;
         }
 
         // Tipped back up over half a second rather than snapped upright: lifted a little on the way so it

@@ -17,8 +17,9 @@ namespace CoalRun.Core
         public int Dash;        // A/D double-tapped this step: 1 right, -1 left
         public int Tap;         // A/D pressed this step, double or not
         public bool Restart;    // R pressed this step
+        public bool Begin;      // Enter pressed this step
         public bool Click;      // Left mouse button pressed this step
-        public int DebugKey;    // F2, F4, F5 or F6 pressed this step (2, 4, 5, 6), else 0. See ShiftManager.DebugCommand.
+        public int DebugKey;    // F2, F4–F8 pressed this step (2, 4–8), else 0. See ShiftManager.DebugCommand.
         public Vector2 Aim;     // The cursor, in world space
     }
 
@@ -34,7 +35,7 @@ namespace CoalRun.Core
 
         public Controls Current { get; private set; }
 
-        private bool _interactPressed, _restartPressed, _clickPressed;
+        private bool _interactPressed, _restartPressed, _beginPressed, _clickPressed;
         private int _debugPressed;
         private int _lanePressed, _dashPressed, _tapPressed;
         private bool _wasLeft, _wasRight;
@@ -53,11 +54,14 @@ namespace CoalRun.Core
             _wasRight = right;
             if (k.eKey.wasPressedThisFrame) _interactPressed = true;
             if (k.rKey.wasPressedThisFrame) _restartPressed = true;
+            if (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame) _beginPressed = true;
             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) _clickPressed = true;
             if (k.f2Key.wasPressedThisFrame) _debugPressed = 2;
             if (k.f4Key.wasPressedThisFrame) _debugPressed = 4;
             if (k.f5Key.wasPressedThisFrame) _debugPressed = 5;
             if (k.f6Key.wasPressedThisFrame) _debugPressed = 6;
+            if (k.f7Key.wasPressedThisFrame) _debugPressed = 7;
+            if (k.f8Key.wasPressedThisFrame) _debugPressed = 8;
             if (k.wKey.wasPressedThisFrame || k.upArrowKey.wasPressedThisFrame) _lanePressed = 1;
             if (k.sKey.wasPressedThisFrame || k.downArrowKey.wasPressedThisFrame) _lanePressed = -1;
         }
@@ -81,11 +85,12 @@ namespace CoalRun.Core
                 Dash = _dashPressed,
                 Tap = _tapPressed,
                 Restart = _restartPressed,
+                Begin = _beginPressed,
                 Click = _clickPressed,
                 DebugKey = _debugPressed,
                 Aim = Aim()
             };
-            _interactPressed = _restartPressed = _clickPressed = false;
+            _interactPressed = _restartPressed = _beginPressed = _clickPressed = false;
             _debugPressed = 0;
             _lanePressed = _dashPressed = _tapPressed = 0;
         }

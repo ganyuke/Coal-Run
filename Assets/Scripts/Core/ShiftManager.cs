@@ -29,6 +29,7 @@ namespace CoalRun.Core
         [SerializeField] private TipCradle cradle;
         [SerializeField] private StaffLift staffLift;
         [SerializeField] private RedPhone phone;
+        [SerializeField] private Tutorial tutorial;
 
         public Tuning Tune => tuning;
         public DayConfig Day => day;
@@ -40,8 +41,11 @@ namespace CoalRun.Core
         public Furnace Furnace => furnace;
         public TipCradle Cradle => cradle;
         public RedPhone Phone => phone;
+        public Tutorial Tutorial => tutorial;
 
         public Phase Phase { get; private set; } = Phase.Shift;
+        // Training counts as going on while a replacement is on the way in the middle of it.
+        public bool InTraining => Phase == Phase.Tutorial || Phase == Phase.Replacement && _resume == Phase.Tutorial;
         public bool Ended => Phase is Phase.Complete or Phase.Frozen;
         public bool CanAct => Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving;
         // The shift's clock and the building's heat run on while a replacement is on the way.
@@ -74,10 +78,17 @@ namespace CoalRun.Core
         // The phase to go back to once the replacement arrives.
         private Phase _resume;
         private bool _doorOpened;
+        // The training plays once a session: a restart goes straight to the briefing. Static, so it
+        // survives the scene reload; cleared on entering Play mode, since domain reload may be off.
+        private static bool _trained;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetTraining() => _trained = false;
 
         private void Awake()
         {
             Instance = this;
+            Phase = day.training && !_trained ? Phase.Tutorial : Phase.Briefing;
             Time.fixedDeltaTime = tuning.step;
             Physics2D.gravity = new Vector2(0, tuning.gravity);
             GameLayers.ConfigureCollisions();
@@ -99,6 +110,7 @@ namespace CoalRun.Core
             if (ShiftRunning) StepHeat(dt);
             if (Phase == Phase.Replacement) StepReplacement(dt);
             if (Ended && input.Current.Restart) Restart();
+            if (Phase == Phase.Briefing && input.Current.Begin) BeginShift();
             RecoverLost();
         }
 
@@ -129,6 +141,22 @@ namespace CoalRun.Core
             if (Phase != Phase.Leaving) return;
             if (staffLift) staffLift.Cycle();
             SetPhase(Phase.Complete);
+        }
+
+        public void FinishTraining()
+        {
+            _trained = true;
+            SetPhase(Phase.Briefing);
+        }
+
+        // The clock starts from the briefing, and the training's deaths don't go on the report.
+        public void BeginShift()
+        {
+            if (Phase != Phase.Briefing) return;
+            Clock = 0;
+            Deaths = 0;
+            Temperature = tuning.comfortable;
+            SetPhase(Phase.Shift);
         }
 
         // Once the shift has ended the world keeps running, but nobody can act, the clock stops and the
@@ -168,6 +196,14 @@ namespace CoalRun.Core
                 case 5: // Loose coal back to the bunker.
                     Coal.ReturnAll();
                     Say("Debug: loose coal cleaned up.", 2);
+                    break;
+                case 7: // The training again, from the top.
+                    _trained = false;
+                    Restart();
+                    break;
+                case 8: // Past the training and the briefing, into the shift.
+                    tutorial.Skip();
+                    BeginShift();
                     break;
                 case 6: // The cart, upright and still, beside the operator on their floor.
                     var p = player.Position;

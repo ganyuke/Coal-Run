@@ -49,6 +49,8 @@ namespace CoalRun.Stations
 
         public float Value { get; private set; }
         public float RestValue => restValue;
+        // How far over it goes by hand: less than 1 while it's stuck (see Tutorial).
+        public float Limit { get; set; } = 1;
         public string Prompt => prompt;
         // The nearest notch, 0 at the left end; 0 on a lever without notches.
         public int Notch => notches > 1 ? Mathf.RoundToInt(Value * (notches - 1)) : 0;
@@ -129,13 +131,13 @@ namespace CoalRun.Stations
         {
             if ((mouse - _lastMouse).sqrMagnitude < 1e-6f) return;
             _lastMouse = mouse;
-            Value = Mathf.Clamp01(FromMouse(mouse) + _grabOffset);
+            Value = Mathf.Clamp(FromMouse(mouse) + _grabOffset, 0, Limit);
         }
 
         // Walking while holding it pulls the knob along by as much as the operator moved.
         public override void Walk(float dx)
         {
-            Value = AtX(Knob.x + dx);
+            Value = Mathf.Min(Limit, AtX(Knob.x + dx));
             _grabOffset = Value - FromMouse(_lastMouse);
         }
 

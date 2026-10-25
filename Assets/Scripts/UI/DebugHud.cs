@@ -34,8 +34,10 @@ namespace CoalRun.UI
             var width = Screen.width / scale;
 
             if (game.Ended) { Report(game, width); return; }
+            if (game.Phase == Phase.Briefing) { Briefing(game, width); return; }
             if (game.MessageFor > 0) GUI.Box(new Rect(width / 2 - 360, 600, 720, 80), game.Message, _box);
-            if (game.Phase == Phase.Replacement) GUI.Box(new Rect(width / 2 - 200, 24, 400, 44), $"Replacement arriving in {Mathf.CeilToInt(game.ReplacementIn)} s", _box);
+            var objective = game.Phase == Phase.Replacement ? $"Replacement arriving in {Mathf.CeilToInt(game.ReplacementIn)} s" : game.Tutorial.Objective;
+            if (objective != "") GUI.Box(new Rect(width / 2 - 300, 24, 600, 44), objective, new GUIStyle(_box) { fontSize = 17 });
 
             float y = 16;
             foreach (var (key, label) in player.Prompts())
@@ -47,7 +49,8 @@ namespace CoalRun.UI
             if (!_readout) return;
             var cart = game.Cart;
             var text =
-                "F3 hides this · F2 knock a wheel off · F4 cart load 0/6/10/12 · F5 clean up coal · F6 cart to me\n" +
+                "F3 hides this · F2 knock a wheel off · F4 cart load 0/6/10/12 · F5 clean up coal · F6 cart to me · F7 replay the training · F8 skip to the shift\n" +
+                $"Phase {game.Phase}  training {game.Tutorial.Current}\n" +
                 $"Operator {player.Position.x:0.0}, {player.Position.y:0.0}  lane {player.Lane}  holding {player.Holding}\n" +
                 $"Cart {cart.Body.position.x:0.0}, {cart.Body.position.y:0.0}  speed {cart.Body.linearVelocity.magnitude:0.0}  wheels {cart.Wheels}  coal {cart.Coal:0.0}\n" +
                 $"Lift {game.Lift.Y:0.00}  speed {game.Lift.Speed:0.00}\n" +
@@ -61,6 +64,18 @@ namespace CoalRun.UI
             GUI.Label(new Rect(width - 620, 12, 610, 200), text, _small);
         }
 
+        // Between the training and the shift. The real one is the M5 notepad.
+        private void Briefing(ShiftManager game, float width)
+        {
+            var text =
+                $"DAY {game.Day.day:00} · BRIEFING\n\n<b>Keep the building warm until the blizzard passes.</b>\n" +
+                "Haul coal from the chute to the furnace. Feed it, light it, and set the burn lever: the colder it gets outside, the harder it has to burn." +
+                $"\n\nElectrical output target  {game.Day.target:0} kWh\nThe cart has {game.Cart.Wheels} wheel{(game.Cart.Wheels == 1 ? "" : "s")}.";
+            var card = Card(width, text, 380);
+            if (GUI.Button(new Rect(width / 2 - 140, card.yMax - 64, 280, 44), "[Enter]  Begin the shift", new GUIStyle(GUI.skin.button) { fontSize = 18 }))
+                game.BeginShift();
+        }
+
         // The end-of-shift card, worded as in the JS. The real one comes with the M5 UI.
         private void Report(ShiftManager game, float width)
         {
@@ -69,7 +84,14 @@ namespace CoalRun.UI
                 $"DAY 01 · SHIFT REPORT\n\n<b>{(complete ? "You kept them alive." : "No one is coming down.")}</b>\n" +
                 (complete ? "The shift is over. The furnace is still your problem tomorrow." : "The offices froze first. There is nobody left to send a replacement.") +
                 $"\n\nElectrical output  {game.Furnace.Output:0.0} / {game.Day.target:0} kWh\nCoal delivered  {game.Furnace.Delivered:0.0}\nOperators lost  {game.Deaths}";
-            var card = new Rect(width / 2 - 300, 160, 600, 330);
+            var card = Card(width, text);
+            if (GUI.Button(new Rect(width / 2 - 140, card.yMax - 64, 280, 44), "[R]  Run the shift again", new GUIStyle(GUI.skin.button) { fontSize = 18 }))
+                game.Restart();
+        }
+
+        private Rect Card(float width, string text, float height = 330)
+        {
+            var card = new Rect(width / 2 - 300, 160, 600, height);
             if (!_cardBack)
             {
                 _cardBack = new Texture2D(1, 1);
@@ -80,8 +102,7 @@ namespace CoalRun.UI
             var style = new GUIStyle(_box) { richText = true, alignment = TextAnchor.UpperCenter, padding = new RectOffset(24, 24, 28, 16) };
             style.normal.background = _cardBack;
             GUI.Box(card, text, style);
-            if (GUI.Button(new Rect(width / 2 - 140, card.yMax - 64, 280, 44), "[R]  Run the shift again", new GUIStyle(GUI.skin.button) { fontSize = 18 }))
-                game.Restart();
+            return card;
         }
     }
 }

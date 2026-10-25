@@ -14,6 +14,7 @@ namespace CoalRun.Stations
         public float Bunker { get => bunker; set => bunker = value; }
         // 0 shut, 1 fully open.
         public float Pull => lever ? lever.Value : 0;
+        public FloorLever Lever => lever;
 
         private ShiftManager _game;
         private float _accumulator;
@@ -22,7 +23,7 @@ namespace CoalRun.Stations
 
         private void FixedUpdate()
         {
-            if (Pull <= 0) return;
+            if (Pull <= 0 || _game.Tutorial.HoldsChute) return;
             _accumulator += Pull * _game.Tune.chuteRate * Time.fixedDeltaTime;
             while (_accumulator >= .5f)
             {

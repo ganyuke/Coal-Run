@@ -42,6 +42,8 @@ namespace CoalRun.Stations
         public float Injury { get; private set; }
         public float Burial { get; private set; }
         // A wheel off the cart, in hands. Hands full: no gripping, shoveling, levers or doors.
+        // Coal shoveled up this shift; the tutorial watches it.
+        public float Scooped { get; private set; }
         public bool CarryingWheel { get; private set; }
         // Going up or down the control room stairs (see Climb).
         public bool Climbing { get; private set; }
@@ -490,7 +492,9 @@ namespace CoalRun.Stations
             foreach (var (s, i) in _spots)
             {
                 if (s.Heights[i] <= .001f) continue;
-                Hands += coal.TakeFromPile(s, i, Mathf.Min(t.shovelRate * dt, t.handCapacity - Hands));
+                var taken = coal.TakeFromPile(s, i, Mathf.Min(t.shovelRate * dt, t.handCapacity - Hands));
+                Hands += taken;
+                Scooped += taken;
                 _game.Sound("shovel", .22f);
                 return;
             }
@@ -557,7 +561,7 @@ namespace CoalRun.Stations
             if (Burial > 5 || Injury > 7) _game.Die(Burial > 5 ? "Buried under coal" : _hurtBy);
         }
 
-        // Drops whatever was in hand, leaves the body where it stood, and takes the operator out of the
+        // Drops whatever was in hand, leaves the body where it stood (see Corpse), and takes the operator out of the
         // world until the replacement arrives (see Respawn). Returns the body.
         public Rigidbody2D Kill()
         {
@@ -569,35 +573,10 @@ namespace CoalRun.Stations
             _fit = 0;
             Body.bodyType = RigidbodyType2D.Dynamic;
             if (CarryingWheel) ReleaseWheel(Vector2.zero);
-            var body = LeaveBody();
+            var body = Corpse.Topple(Instantiate(visual.gameObject), "Dead operator", Body.position, Body.linearVelocity);
             Body.simulated = false;
             visual.gameObject.SetActive(false);
             return body;
-        }
-
-        // A copy of the operator's art that topples over where they stood and stays. It lies on floors and
-        // coal piles and rides the lift, but nothing else touches it, so it's never in the way.
-        private Rigidbody2D LeaveBody()
-        {
-            var body = new GameObject("Dead operator") { layer = GameLayers.Part };
-            // Already leaning past its balance point, so over it goes, either way.
-            var side = Random.value < .5f ? -1 : 1;
-            body.transform.SetPositionAndRotation(Body.position, Quaternion.Euler(0, 0, side * 25));
-            var art = Instantiate(visual.gameObject, body.transform);
-            art.transform.localPosition = Vector3.zero;
-            art.transform.localScale = Vector3.one;
-            foreach (Transform t in art.transform)
-                if (t.name is "Held wheel" or "Striker") t.gameObject.SetActive(false);
-            art.GetComponent<SortingGroup>().sortingOrder = 3;
-            foreach (var r in art.GetComponentsInChildren<SpriteRenderer>()) r.color *= new Color(.65f, .65f, .65f);
-            var rb = body.AddComponent<Rigidbody2D>();
-            rb.mass = 2;
-            rb.linearVelocity = Body.linearVelocity;
-            rb.angularVelocity = side * 90;
-            var box = body.AddComponent<BoxCollider2D>();
-            box.size = new Vector2(.48f, 1.33f);
-            box.excludeLayers = GameLayers.Mask(GameLayers.Player, GameLayers.Cart, GameLayers.Part);
-            return rb;
         }
 
         public void Respawn(Vector2 at)
