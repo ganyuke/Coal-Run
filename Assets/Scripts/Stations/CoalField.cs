@@ -44,6 +44,9 @@ namespace CoalRun.Stations
         [SerializeField]
         private float groundDrag = 30;
 
+        // The least coal that goes into the air as a lump (see Emit).
+        private const float MinLump = .05f;
+
         public Surface[] Surfaces { get; private set; }
         public int ActiveLumps { get; private set; }
 
@@ -111,6 +114,10 @@ namespace CoalRun.Stations
             };
         }
 
+        // What something dropped at (x, y) lands on: over the shaft, the platform if it's below.
+        private Surface SurfaceBelow(float x, float y) =>
+            x is >= .55f and <= 3.95f && y >= _game.Lift.Y - .3f ? Surfaces[2] : SurfaceAt(x, y);
+
         public int Index(Surface s, float x) => Mathf.Clamp(Mathf.FloorToInt((x - s.Start) / _game.Tune.columnWidth), 0, s.Heights.Length - 1);
         public float PileHeight(Surface s, float x) => s.Heights[Index(s, x)];
         // Top of the floor plus any pile, at x.
@@ -154,6 +161,18 @@ namespace CoalRun.Stations
             var i = Index(s, x);
             s.Heights[i] += ToHeight(amount);
             Mark(s, i);
+        }
+
+        // Anything steeper than .3 between neighbouring columns flows downhill.
+        private static void Slump(Surface a, int i, Surface b, int j)
+        {
+            var d = a.Heights[i] - b.Heights[j];
+            if (Mathf.Abs(d) <= .3f) return;
+            var flow = (Mathf.Abs(d) - .3f) * .38f * Mathf.Sign(d);
+            a.Heights[i] -= flow;
+            b.Heights[j] += flow;
+            Mark(a, i);
+            Mark(b, j);
         }
 
         private static bool OnHopperGrate(Surface s, float x) => s.Id == SurfaceId.Upper && x is >= Room.HopperStart and <= Room.HopperEnd;
@@ -206,12 +225,19 @@ namespace CoalRun.Stations
 
         // ---- Lumps ------------------------------------------------------------------------------
 
-        // Throws `amount` coal into the air as lumps of at most half a unit each.
+        // Throws `amount` coal into the air as lumps of at most half a unit each. Less than `MinLump` is
+        // too little to see and goes straight onto the pile below: the slump feeds a floor's edge by
+        // specks, and shedding each one as a lump made an endless stream of empty lumps.
         public void Emit(float x, float y, float amount, float vx = 0, float vy = 0, float spread = 1)
         {
+            if (amount < MinLump)
+            {
+                if (amount > 0) AddToPile(SurfaceBelow(x, y), x, amount);
+                return;
+            }
             while (amount > 1e-8f)
             {
-                var q = Mathf.Min(.5f, amount);
+                var q = amount - .5f < MinLump ? amount : .5f; // The last lump takes any speck left over.
                 amount -= q;
                 var lump = _lumps.Find(l => !l.Active);
                 if (lump == null && _lumps.Count >= maxLumps)
@@ -346,49 +372,31 @@ namespace CoalRun.Stations
 
         private void UpdatePiles()
         {
-            // A platform resting on the floor picks up whatever coal lay in the shaft.
-            if (_game.Lift.Y <= Room.Lower + .02f)
+            Surface lowerFloor = Surfaces[0], upperFloor = Surfaces[1], platform = Surfaces[2];
+            var edge = platform.Heights.Length - 1;
+            // A platform resting on the floor picks up whatever coal lay in the shaft, and its open side
+            // joins the floor.
+            var resting = _game.Lift.Y <= Room.Lower + .02f;
+            if (resting)
             {
-                Surface lower = Surfaces[0], lift = Surfaces[2];
-                for (var i = 0; i < lower.Heights.Length; i++)
+                for (var i = 0; i < lowerFloor.Heights.Length; i++)
                 {
-                    float x = lower.Start + (i + .5f) * _game.Tune.columnWidth, h = lower.Heights[i];
-                    if (h <= 0 || x < lift.Start || x > lift.End) continue;
-                    lower.Heights[i] = 0;
-                    Mark(lower, i);
-                    AddToPile(lift, x, ToCoal(h));
+                    float x = lowerFloor.Start + (i + .5f) * _game.Tune.columnWidth, h = lowerFloor.Heights[i];
+                    if (h <= 0 || x < platform.Start || x > platform.End) continue;
+                    lowerFloor.Heights[i] = 0;
+                    Mark(lowerFloor, i);
+                    AddToPile(platform, x, ToCoal(h));
                 }
+                Slump(platform, edge, lowerFloor, Index(lowerFloor, platform.End + _game.Tune.columnWidth / 2));
             }
-            // The platform up level with the upper floor: coal slumps across the join like between any two columns.
+            // The platform up level with the upper floor joins it.
             var level = Mathf.Abs(_game.Lift.Y - Room.Upper) < .15f;
-            if (level)
-            {
-                Surface lift = Surfaces[2], upper = Surfaces[1];
-                var last = lift.Heights.Length - 1;
-                var d = lift.Heights[last] - upper.Heights[0];
-                if (Mathf.Abs(d) > .3f)
-                {
-                    var flow = (Mathf.Abs(d) - .3f) * .38f * Mathf.Sign(d);
-                    lift.Heights[last] -= flow;
-                    upper.Heights[0] += flow;
-                    Mark(lift, last);
-                    Mark(upper, 0);
-                }
-            }
+            if (level) Slump(platform, edge, upperFloor, 0);
             foreach (var s in Surfaces)
             {
-                // Slump: anything steeper than .3 between neighbours flows downhill.
                 for (var pass = 0; pass < 4; pass++)
                     for (var i = 0; i < s.Heights.Length - 1; i++)
-                    {
-                        var d = s.Heights[i] - s.Heights[i + 1];
-                        if (Mathf.Abs(d) <= .3f) continue;
-                        var flow = (Mathf.Abs(d) - .3f) * .38f * Mathf.Sign(d);
-                        s.Heights[i] -= flow;
-                        s.Heights[i + 1] += flow;
-                        Mark(s, i);
-                        Mark(s, i + 1);
-                    }
+                        Slump(s, i, s, i + 1);
                 if (s.Id == SurfaceId.Lower)
                     for (var i = 0; i < s.Heights.Length; i++)
                     {
@@ -397,16 +405,16 @@ namespace CoalRun.Stations
                         s.Heights[i] = 0;
                         Mark(s, i);
                     }
-                // The upper floor sheds coal off both ends, the lift platform only off its open side. Level
-                // with each other, the platform and the floor are one surface (see below), so neither sheds there.
+                // The upper floor sheds coal off both ends, the lift platform only off its open side. Joined
+                // to a floor (see above), the platform and the floor are one surface, so neither sheds there:
+                // resting, the platform shed onto the floor, the floor slumped it back into the shaft and the
+                // platform picked it up again, round and round.
                 if (s.Id != SurfaceId.Lower)
                     foreach (var i in s.Id == SurfaceId.Lift ? new[] { s.Heights.Length - 1 } : new[] { 0, s.Heights.Length - 1 })
                     {
-                        if (level && (s.Id == SurfaceId.Lift || i == 0)) continue;
-                        // Under a twentieth of a unit stays put: the slump tops the end column up by specks,
-                        // and shedding each one made an endless stream of lumps with next to no coal in them.
+                        if (s.Id == SurfaceId.Lift ? level || resting : level && i == 0) continue;
+                        if (s.Heights[i] <= .22f) continue;
                         var q = Mathf.Min(.5f, ToCoal(s.Heights[i] - .22f));
-                        if (q < .05f) continue;
                         s.Heights[i] -= ToHeight(q);
                         Mark(s, i);
                         // Straight past the edge with no scatter: scattered, it could land back where it fell

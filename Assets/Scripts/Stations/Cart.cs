@@ -207,7 +207,7 @@ namespace CoalRun.Stations
         {
             var t = _game.Tune;
             var q = Mathf.Min(Coal, t.joltSpill * speed * Coal / t.overfillCapacity);
-            if (q <= .01f) return;
+            if (q <= 0) return;
             Coal -= q;
             foreach (var end in new[] { -1f, 1f })
             {
