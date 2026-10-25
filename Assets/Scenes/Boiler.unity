@@ -1099,6 +1099,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
+      propertyPath: prompt
+      value: Burn lever
+      objectReference: {fileID: 0}
+    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: notches
       value: 5
       objectReference: {fileID: 0}
@@ -3293,6 +3297,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
+      propertyPath: prompt
+      value: Tip lever
+      objectReference: {fileID: 0}
+    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: restValue
       value: 0.5
       objectReference: {fileID: 0}
@@ -4052,6 +4060,10 @@ PrefabInstance:
     - target: {fileID: 6151289955162622955, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
+      propertyPath: prompt
+      value: Chute lever
       objectReference: {fileID: 0}
     - target: {fileID: 8561629909725014136, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: m_Name

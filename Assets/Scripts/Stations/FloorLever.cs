@@ -25,6 +25,9 @@ namespace CoalRun.Stations
         [Range(0, 1)]
         [SerializeField]
         private float restValue;
+        [Tooltip("What the key prompt calls it.")]
+        [SerializeField]
+        private string prompt = "Lever";
         [SerializeField] private string farMessage = "Walk up to the lever.";
         [SerializeField] private string wrongLaneMessage = "The lever is inside the control room.";
 
@@ -46,6 +49,7 @@ namespace CoalRun.Stations
 
         public float Value { get; private set; }
         public float RestValue => restValue;
+        public string Prompt => prompt;
         // The nearest notch, 0 at the left end; 0 on a lever without notches.
         public int Notch => notches > 1 ? Mathf.RoundToInt(Value * (notches - 1)) : 0;
         // Set by the station the lever works: while it returns false, the lever can't be taken hold of.

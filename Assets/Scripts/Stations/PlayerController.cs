@@ -472,8 +472,8 @@ namespace CoalRun.Stations
             foreach (var m in Machine.All)
             {
                 if (m is LiftCrank && m.CanOperate(this)) { list.Add(("W S", "Crank")); break; }
-                if (m is not FloorLever || !m.CanOperate(this)) continue;
-                list.Add(("Mouse", "Tip lever"));
+                if (m is not FloorLever lever || !m.CanOperate(this)) continue;
+                list.Add(("Mouse", lever.Prompt));
                 break;
             }
             if (list.Count > 2) list.RemoveRange(2, list.Count - 2);
