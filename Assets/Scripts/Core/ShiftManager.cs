@@ -30,6 +30,9 @@ namespace CoalRun.Core
         [SerializeField] private StaffLift staffLift;
         [SerializeField] private RedPhone phone;
         [SerializeField] private Tutorial tutorial;
+        [Tooltip("Seconds from Play until the first operator steps out of the staff lift.")]
+        [SerializeField]
+        private float firstArrival = 1.2f;
 
         public Tuning Tune => tuning;
         public DayConfig Day => day;
@@ -99,6 +102,9 @@ namespace CoalRun.Core
             InitialCoal = TotalCoal;
             Temperature = tuning.comfortable;
             Outside = day.OutsideAt(0);
+            // The training opens with the new operator (and the helper, see Tutorial) riding down the staff
+            // lift, the same way a replacement arrives.
+            if (Phase == Phase.Tutorial) SendOperator(firstArrival);
         }
 
         private void FixedUpdate()
@@ -146,6 +152,8 @@ namespace CoalRun.Core
         public void FinishTraining()
         {
             _trained = true;
+            // Skipped (F8) before they've even stepped out of the lift.
+            if (Phase == Phase.Replacement) Arrive();
             SetPhase(Phase.Briefing);
         }
 
@@ -237,14 +245,22 @@ namespace CoalRun.Core
         public void Die(string reason)
         {
             if (!CanAct) return;
-            _resume = Phase;
             Deaths++;
-            ReplacementIn = tuning.replacementDelay;
-            _doorOpened = false;
             Bodies.Add(player.Kill());
-            SetPhase(Phase.Replacement);
+            SendOperator(tuning.replacementDelay);
             Say($"{reason}. Another worker is on the way.", 7);
             Sound("hurt");
+        }
+
+        // An operator on the way down the staff lift, out in `delay` seconds. Only a replacement once
+        // someone has died (Deaths); the first one down is just arriving.
+        private void SendOperator(float delay)
+        {
+            _resume = Phase;
+            ReplacementIn = delay;
+            _doorOpened = false;
+            player.Hide();
+            SetPhase(Phase.Replacement);
         }
 
         private void StepReplacement(float dt)
@@ -257,10 +273,13 @@ namespace CoalRun.Core
                 if (staffLift) staffLift.Cycle();
             }
             if (ReplacementIn > 0) return;
-            player.Respawn(new Vector2(30.5f, Room.Lower + .72f));
+            Arrive();
             SetPhase(_resume);
-            Say("Management sent another operator.", 4);
+            if (Deaths > 0) Say("Management sent another operator.", 4);
         }
+
+        // Out of the staff lift.
+        private void Arrive() => player.Respawn(new Vector2(30.5f, Room.Lower + .72f));
 
         // Nothing can leave the room. Anything physics squeezes through a wall or floor is put back on the lower floor.
         private void RecoverLost()

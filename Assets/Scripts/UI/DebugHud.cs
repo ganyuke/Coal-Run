@@ -36,8 +36,8 @@ namespace CoalRun.UI
             if (game.Ended) { Report(game, width); return; }
             if (game.Phase == Phase.Briefing) { Briefing(game, width); return; }
             if (game.MessageFor > 0) GUI.Box(new Rect(width / 2 - 360, 600, 720, 80), game.Message, _box);
-            var objective = game.Phase == Phase.Replacement ? $"Replacement arriving in {Mathf.CeilToInt(game.ReplacementIn)} s" : game.Tutorial.Objective;
-            if (objective != "") GUI.Box(new Rect(width / 2 - 300, 24, 600, 44), objective, new GUIStyle(_box) { fontSize = 17 });
+            var objective = game.Phase == Phase.Replacement && game.Deaths > 0 ? $"Replacement arriving in {Mathf.CeilToInt(game.ReplacementIn)} s" : game.Tutorial.Objective;
+            if (objective != "") GUI.Box(new Rect(width / 2 - 380, 24, 760, 44), objective, new GUIStyle(_box) { fontSize = 17 });
 
             float y = 16;
             foreach (var (key, label) in player.Prompts())

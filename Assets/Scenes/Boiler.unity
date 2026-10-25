@@ -2090,7 +2090,7 @@ SortingGroup:
   m_Enabled: 1
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 15
+  m_SortingOrder: 17
   m_SortAtRoot: 0
   m_Sort3DAs2D: 0
 --- !u!1 &735041353
@@ -3335,7 +3335,7 @@ Transform:
   m_GameObject: {fileID: 1021818591}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 25.15, y: 2.72, z: 0}
+  m_LocalPosition: {x: 24.45, y: 2.72, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5192,6 +5192,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Stations.Tutorial
   helper: {fileID: 1021818591}
+  helperWalk: 2.2
+  buriedOrder: 15
   machines: {fileID: 1727399066}
   stickAt: 0.3
   avalanche: 32
@@ -6276,6 +6278,7 @@ MonoBehaviour:
   staffLift: {fileID: 825623891}
   phone: {fileID: 1882790907}
   tutorial: {fileID: 1419860674}
+  firstArrival: 1.2
 --- !u!4 &1727399069
 Transform:
   m_ObjectHideFlags: 0

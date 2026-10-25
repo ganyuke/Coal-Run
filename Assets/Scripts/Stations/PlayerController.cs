@@ -574,9 +574,15 @@ namespace CoalRun.Stations
             Body.bodyType = RigidbodyType2D.Dynamic;
             if (CarryingWheel) ReleaseWheel(Vector2.zero);
             var body = Corpse.Topple(Instantiate(visual.gameObject), "Dead operator", Body.position, Body.linearVelocity);
+            Hide();
+            return body;
+        }
+
+        // Out of the world until Respawn: dead, or still riding down the staff lift.
+        public void Hide()
+        {
             Body.simulated = false;
             visual.gameObject.SetActive(false);
-            return body;
         }
 
         public void Respawn(Vector2 at)

@@ -1,4 +1,5 @@
 using CoalRun.Core;
+using UnityEngine.Rendering;
 using UnityEngine;
 
 namespace CoalRun.Stations
@@ -11,9 +12,13 @@ namespace CoalRun.Stations
     {
         public enum Stage { Arrival, Lever, Stuck, Avalanche, Dig, Deliver, Done }
 
-        [Tooltip("Stands by the cart under the chute, drawn behind the coal piles so they cover him. Its art becomes his body when the coal comes down.")]
+        [Tooltip("Comes down the staff lift with the operator and walks over to where it's placed, beside the cart under the chute. Drawn in front of the cart, then behind the coal piles once the avalanche starts, so they cover him. Its art becomes his body when the coal comes down.")]
         [SerializeField]
         private GameObject helper;
+        [SerializeField] private float helperWalk = 2.2f;
+        [Tooltip("His sorting order once the coal comes down: behind the coal piles (16).")]
+        [SerializeField]
+        private int buriedOrder = 15;
         [SerializeField] private MachineInput machines;
         [Tooltip("How far the chute lever goes before it sticks.")]
         [SerializeField]
@@ -24,7 +29,7 @@ namespace CoalRun.Stations
         [SerializeField] private float avalancheRate = 18;
         [Tooltip("The backed-up coal bursts out of the chute sideways, toward the helper, at up to this speed.")]
         [SerializeField]
-        private float avalancheThrow = 2.2f;
+        private float avalancheThrow = 3.2f;
 
         public Stage Current { get; private set; }
         // Until the avalanche is over, the chute only does what the training says.
@@ -38,12 +43,15 @@ namespace CoalRun.Stations
         // buried or knocked down, and how much he's still flinching from the last hit.
         private float _helperInjury, _helperBurial, _flinch;
         private bool _nagged;
+        // Where the helper stands, and whether he's walking there.
+        private Vector3 _spot;
+        private bool _walking;
 
         private void Start()
         {
             _game = ShiftManager.Instance;
             _lever = _game.Chute.Lever;
-            if (_game.Phase != Phase.Tutorial)
+            if (!_game.InTraining)
             {
                 Current = Stage.Done;
                 if (helper) helper.SetActive(false);
@@ -52,7 +60,10 @@ namespace CoalRun.Stations
             // Parked under the chute until the coal has buried it.
             _game.Cart.Park(true);
             _lever.Limit = stickAt;
-            _game.Say("“Alright newbie, just get up there and pull the lever. I’ll handle everything after this.”", 8);
+            // Out of sight in the staff lift until the door opens.
+            _spot = helper.transform.position;
+            helper.transform.position = new Vector3(29.9f, _spot.y, _spot.z);
+            helper.SetActive(false);
         }
 
         private void FixedUpdate()
@@ -85,8 +96,19 @@ namespace CoalRun.Stations
             _timer += dt;
             switch (Current)
             {
-                case Stage.Arrival when _timer > 2:
+                // He steps out with the operator and walks over to the cart, then sends them up.
+                case Stage.Arrival when _game.Phase == Phase.Tutorial:
+                    if (!helper.activeSelf)
+                    {
+                        helper.SetActive(true);
+                        _walking = true;
+                    }
+                    helper.transform.position = Vector3.MoveTowards(helper.transform.position, _spot, helperWalk * dt);
+                    if (helper.transform.position != _spot) break;
+                    _walking = false;
                     Current = Stage.Lever;
+                    _timer = 0;
+                    _game.Say("“Alright newbie, just get up there and pull the lever. I’ll handle everything after this.”", 8);
                     break;
                 case Stage.Lever when _lever.Value >= stickAt - .05f:
                     // It sticks, and lets one lump out.
@@ -106,6 +128,7 @@ namespace CoalRun.Stations
                     Current = Stage.Avalanche;
                     _left = avalanche;
                     _timer = 0;
+                    helper.GetComponentInChildren<SortingGroup>().sortingOrder = buriedOrder;
                     _game.Sound("crash");
                     break;
                 // He always dies, even when the coal happens to fall around him.
@@ -159,6 +182,8 @@ namespace CoalRun.Stations
             if (!helper || !helper.activeSelf) return;
             _flinch = Mathf.Max(0, _flinch - Time.deltaTime * 3);
             var art = helper.transform.GetChild(0);
+            // A bob in his step while he walks over.
+            art.localPosition = new Vector3(0, _walking ? Mathf.Abs(Mathf.Sin(Time.time * 9)) * .06f : 0, 0);
             var lean = Mathf.Sign(helper.transform.position.x - Room.Chute) * (_flinch * 14 + Mathf.Min(3, _helperInjury) * 4);
             art.localRotation = Quaternion.Euler(0, 0, -lean + Mathf.Sin(Time.time * 40) * 4 * _flinch);
         }
@@ -179,7 +204,8 @@ namespace CoalRun.Stations
             var cart = _game.Cart.Body.position;
             switch (Current)
             {
-                case Stage.Arrival or Stage.Lever:
+                case Stage.Arrival: return "";
+                case Stage.Lever:
                     return p.Lane == 1 ? "Pull the chute lever over with the mouse." : "Go up to the control room (W at the stairs) and pull the chute lever.";
                 case Stage.Stuck: return "Pull the lever again, all the way over.";
                 case Stage.Avalanche: return "Stay in the control room.";
