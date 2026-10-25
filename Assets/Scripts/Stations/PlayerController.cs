@@ -121,9 +121,11 @@ namespace CoalRun.Stations
             var cart = _game.Cart;
             var t = _game.Tune;
             if (!c.Grip) _gripBlocked = false;
-            if (c.Move != 0) Facing = (int)Mathf.Sign(c.Move);
             var digging = Digging(c);
             _digging = digging;
+            // With the shovel out they face the cursor, even walking backwards; otherwise the way they walk.
+            if (digging && Mathf.Abs(c.Aim.x - Body.position.x) > .05f) Facing = (int)Mathf.Sign(c.Aim.x - Body.position.x);
+            else if (c.Move != 0) Facing = (int)Mathf.Sign(c.Move);
             Vector2 p = Body.position, cp = cart.Body.position;
 
             if (Holding && (!c.Grip || digging || Machine || Lane != 0 || cart.InCradle || cart.Busy || CarryingWheel)) ReleaseGrip();
@@ -501,6 +503,8 @@ namespace CoalRun.Stations
                 foreach (var x in new[] { cp.x - .6f, cp.x, cp.x + .6f }) if (Mathf.Abs(x - p.x) < 2.6f) Reach(x, cp.y);
             // Digs where the cursor points: the coal in reach nearest it first, then on from there.
             var aim = c.Aim.x;
+            // Held toward the cursor while there's nothing to dig.
+            _digSide = Facing;
             _spots.Sort((a, b) => Mathf.Abs(ColumnX(a) - aim).CompareTo(Mathf.Abs(ColumnX(b) - aim)));
             foreach (var (s, i) in _spots)
             {
