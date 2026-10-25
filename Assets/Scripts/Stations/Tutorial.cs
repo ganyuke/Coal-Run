@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using CoalRun.Core;
 using UnityEngine.Rendering;
 using UnityEngine;
@@ -20,6 +21,13 @@ namespace CoalRun.Stations
         [SerializeField]
         private int buriedOrder = 15;
         [SerializeField] private MachineInput machines;
+        [Tooltip("Leaning on the furnace. Digging is locked until it's picked up (E).")]
+        [SerializeField]
+        private GameObject shovel;
+        [SerializeField] private float shovelReach = 1;
+        [Tooltip("Walking speed while the helper talks or walks over, so the player hears him out.")]
+        [SerializeField]
+        private float listeningWalk = .45f;
         [Tooltip("How far the chute lever goes before it sticks.")]
         [SerializeField]
         private float stickAt = .3f;
@@ -35,6 +43,11 @@ namespace CoalRun.Stations
         // Until the avalanche is over, the chute only does what the training says.
         public bool HoldsChute => Current < Stage.Dig;
         public string Objective => _game.InTraining ? Text() : "";
+        // Until the avalanche is over, the chute lever is the only thing that works.
+        public bool Restricts => _game.InTraining && Current < Stage.Dig;
+        public bool Allows(Machine machine) => !Restricts || machine == _lever;
+        public bool CanDig => !_game.InTraining || _shovelTaken;
+        public float WalkFactor => _game.InTraining && (_walking || _talk > 0) ? listeningWalk : 1;
 
         private ShiftManager _game;
         private FloorLever _lever;
@@ -46,6 +59,11 @@ namespace CoalRun.Stations
         // Where the helper stands, and whether he's walking there.
         private Vector3 _spot;
         private bool _walking;
+        private bool _shovelTaken, _saidOw;
+        // His lines wait their turn: seconds left to read the current one, and the next ones up. The stuck
+        // lever's line waits `_greaseIn`, so a lump on his head gets its "Ow" in first.
+        private readonly Queue<(string text, float duration)> _lines = new();
+        private float _talk, _greaseIn;
 
         private void Start()
         {
@@ -55,6 +73,7 @@ namespace CoalRun.Stations
             {
                 Current = Stage.Done;
                 if (helper) helper.SetActive(false);
+                if (shovel) shovel.SetActive(false);
                 return;
             }
             // Parked under the chute until the coal has buried it.
@@ -70,6 +89,15 @@ namespace CoalRun.Stations
         {
             if (Current == Stage.Done) return;
             var dt = Time.fixedDeltaTime;
+            _talk -= dt;
+            if (_talk <= 0 && _lines.Count > 0)
+            {
+                var (text, duration) = _lines.Dequeue();
+                _game.Say(text, duration);
+                _talk = Mathf.Min(duration, .6f + text.Length / 20f);
+            }
+
+            if (_greaseIn > 0 && (_greaseIn -= dt) <= 0) Speak("“Gotta put in a little more elbow grease.”", 8);
             // The coal comes down whatever else happens, even with the operator dead.
             if (_left > 0)
             {
@@ -108,21 +136,21 @@ namespace CoalRun.Stations
                     _walking = false;
                     Current = Stage.Lever;
                     _timer = 0;
-                    _game.Say("“Alright newbie, just get up there and pull the lever. I’ll handle everything after this.”", 8);
+                    Speak("“Alright newbie, just get up there and pull the lever. I’ll handle everything after this.”", 8);
                     break;
                 case Stage.Lever when _lever.Value >= stickAt - .05f:
                     // It sticks, and lets one lump out.
                     Current = Stage.Stuck;
                     _lever.Limit = 1;
                     machines.Release();
-                    // Onto his head, so the first lump out makes him flinch.
-                    _game.Chute.Dispense(.5f, Mathf.Sign(helper.transform.position.x - Room.Chute) * 1.7f);
+                    // Right onto his head, clear of the cart.
+                    _game.Chute.Dispense(.5f, (helper.transform.position.x - Room.Chute) / .6f, 0);
                     _game.Sound("clunk");
-                    _game.Say("“Gotta put in a little more elbow grease.”", 8);
+                    _greaseIn = 1;
                     break;
                 case Stage.Lever when _timer > 14 && !_nagged:
                     _nagged = true;
-                    _game.Say("“No, it’ll be fine. I’ve done this hundreds of times. Just do it so we can get this done and report back to those pencil-pushers upstairs.”", 9);
+                    Speak("“No, it’ll be fine. I’ve done this hundreds of times. Just do it so we can get this done and report back to those pencil-pushers upstairs.”", 9);
                     break;
                 case Stage.Stuck when _lever.Value > .8f:
                     Current = Stage.Avalanche;
@@ -159,6 +187,9 @@ namespace CoalRun.Stations
             Current = Stage.Done;
             _left = 0;
             if (helper) helper.SetActive(false);
+            if (shovel) shovel.SetActive(false);
+            _shovelTaken = true;
+            _lines.Clear();
             _game.Cart.Park(false);
             _lever.Limit = 1;
             _game.FinishTraining();
@@ -173,7 +204,22 @@ namespace CoalRun.Stations
             _helperInjury += amount;
             _flinch = 1;
             _game.Sound("hurt", .4f, .5f);
+            if (!_saidOw) Speak("“Ow! Maybe I should’ve brought the hard hat today.”", 3);
+            _saidOw = true;
             return true;
+        }
+
+        private void Speak(string text, float duration) => _lines.Enqueue((text, duration));
+
+        public bool ShovelInReach(PlayerController player) =>
+            _game.InTraining && Current >= Stage.Dig && shovel && shovel.activeSelf && player.Lane == 0 &&
+            Mathf.Abs(player.Position.x - shovel.transform.position.x) < shovelReach && player.Position.y < 4.3f;
+
+        public void TakeShovel()
+        {
+            shovel.SetActive(false);
+            _shovelTaken = true;
+            _game.Sound("clank");
         }
 
         // He staggers back from each hit, and sinks a little lower the more he's taken.
@@ -195,6 +241,8 @@ namespace CoalRun.Stations
             _game.Bodies.Add(Corpse.Topple(art, "Dead helper", at, Vector2.zero, true));
             helper.SetActive(false);
             _game.Sound("hurt");
+            _lines.Clear();
+            _greaseIn = _talk = 0;
             _game.Say("“Well, the help is all dead. That’s awesome.”", 6);
         }
 
@@ -210,7 +258,7 @@ namespace CoalRun.Stations
                 case Stage.Stuck: return "Pull the lever again, all the way over.";
                 case Stage.Avalanche: return "Stay in the control room.";
                 case Stage.Dig:
-                    return p.Lane == 1 ? "Go down and dig the cart out." : "Dig the cart out. Stand at the coal and hold F.";
+                    return p.Lane == 1 ? "Go down and dig the cart out." : _shovelTaken ? "Dig the cart out. Stand at the coal and hold F." : "Grab the shovel by the furnace (E).";
             }
             if (_game.Coal.CartBurial(_game.Cart) > .5f && cart.x > Room.Edge) return "Keep digging until the cart is free.";
             if (cart.y < Room.Upper - .5f) return "Haul the cart onto the freight lift (hold Space and walk), then turn the crank to go up.";

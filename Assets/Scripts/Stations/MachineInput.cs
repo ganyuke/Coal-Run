@@ -21,7 +21,7 @@ namespace CoalRun.Stations
             if (mouse == null) return;
             Vector2 p = cam.ScreenToWorldPoint(mouse.position.ReadValue());
             // Hands full of wheel: a click throws it instead (see PlayerController).
-            Hover = game.CanAct && !player.CarryingWheel ? Pick(p) : null;
+            Hover = game.CanAct && !player.CarryingWheel ? Pick(p, game.Tutorial) : null;
             if (Active && (!mouse.leftButton.isPressed || !game.CanAct || !Active.CanOperate(player))) Release();
             if (!Active && mouse.leftButton.wasPressedThisFrame && Hover)
             {
@@ -43,12 +43,13 @@ namespace CoalRun.Stations
             Active = null;
         }
 
-        private static Machine Pick(Vector2 p)
+        private static Machine Pick(Vector2 p, Tutorial tutorial)
         {
             Machine best = null;
             var bestDistance = float.PositiveInfinity;
             foreach (var m in Machine.All)
             {
+                if (!tutorial.Allows(m)) continue;
                 var d = Vector2.Distance(p, m.HandlePosition);
                 if (!m.Hit(p) || d >= bestDistance) continue;
                 best = m;

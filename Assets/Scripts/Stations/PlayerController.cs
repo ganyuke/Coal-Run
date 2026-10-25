@@ -129,7 +129,7 @@ namespace CoalRun.Stations
             // pushing. A body contact would push on the bin's top corner and lever it over its wheel.
             _box.excludeLayers = Lane == 1 ? ~GameLayers.Mask(GameLayers.Terrain) : GameLayers.Mask(GameLayers.Cart);
 
-            var target = c.Move * t.walkSpeed * (Machine ? t.machineWalk : digging ? t.digWalk : 1) * Rush * (Stagger > 0 ? .25f : 1);
+            var target = c.Move * t.walkSpeed * (Machine ? t.machineWalk : digging ? t.digWalk : 1) * Rush * (Stagger > 0 ? .25f : 1) * _game.Tutorial.WalkFactor;
             // The dash speeds up as it goes (a run-up), set directly so it follows the ramp exactly.
             if (_dashFor > 0)
             {
@@ -261,6 +261,8 @@ namespace CoalRun.Stations
         private void Interact()
         {
             if (Machine || Lane != 0) return;
+            if (_game.Tutorial.ShovelInReach(this)) { _game.Tutorial.TakeShovel(); return; }
+            if (_game.Tutorial.Restricts) return;
             if (_game.Phone.CanAnswer(this)) { _game.Phone.Answer(); return; }
             if (CartOverturnedInReach()) { RightCart(); return; }
             if (CarryingWheel)
@@ -457,7 +459,7 @@ namespace CoalRun.Stations
         private Machine _held;
         private float _grabbedAt, _lastX;
 
-        private bool Digging(Controls c) => c.Shovel && Lane == 0 && !Machine && !CarryingWheel;
+        private bool Digging(Controls c) => c.Shovel && Lane == 0 && !Machine && !CarryingWheel && _game.Tutorial.CanDig;
 
         // The cart pushes loose coal ahead of it. That's harder work than shoveling it out of the way:
         // the pile pushes back, and past 1.2 high it doesn't budge.
@@ -727,6 +729,12 @@ namespace CoalRun.Stations
                 MachinePrompt(list);
                 return list;
             }
+            if (_game.Tutorial.ShovelInReach(this)) list.Add(("E", "Pick up the shovel"));
+            if (_game.Tutorial.Restricts)
+            {
+                if (AtDoor) list.Add(("W", "Up to the control room"));
+                return list;
+            }
             if (_game.Phone.CanAnswer(this)) list.Add(("E", "Answer the phone"));
             if (CarryingWheel)
             {
@@ -740,7 +748,7 @@ namespace CoalRun.Stations
             if (_game.Furnace.CanLight(this)) list.Add(("Hold E", "Light the fire"));
             if (CartNear() && _game.Cradle.Prompt != null) list.Add(("E", _game.Cradle.Prompt));
             if (CartOverturnedInReach()) list.Add(("E", "Right cart"));
-            if (PileInReach()) list.Add(("F", "Shovel"));
+            if (PileInReach() && _game.Tutorial.CanDig) list.Add(("F", "Shovel"));
             if (!Holding && CartInGrip() && Mathf.Cos(_game.Cart.Angle) > .3f) list.Add(("Space", "Grip cart"));
             MachinePrompt(list);
             if (list.Count > 2) list.RemoveRange(2, list.Count - 2);
@@ -751,6 +759,7 @@ namespace CoalRun.Stations
         {
             foreach (var m in Machine.All)
             {
+                if (!_game.Tutorial.Allows(m)) continue;
                 if (m is LiftCrank && m.CanOperate(this)) { list.Add(("W S", "Crank")); return; }
                 if (m is not FloorLever lever || !m.CanOperate(this)) continue;
                 list.Add(("Mouse", lever.Prompt));

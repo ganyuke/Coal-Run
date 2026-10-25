@@ -47,7 +47,7 @@ namespace CoalRun.Stations
                 requested = Mathf.Clamp(spun.Rate, -22, 22);
                 _driver = spun;
             }
-            else if (input.Current.CrankKey != 0 && !player.Machine && player.Lane == 0 && _game.CanAct && CrankInReach(player) is { } keyed)
+            else if (input.Current.CrankKey != 0 && !player.Machine && player.Lane == 0 && _game.CanAct && !_game.Tutorial.Restricts && CrankInReach(player) is { } keyed)
             {
                 requested = input.Current.CrankKey * t.liftKeyCrank;
                 _driver = keyed;

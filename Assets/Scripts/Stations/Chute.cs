@@ -33,12 +33,13 @@ namespace CoalRun.Stations
             _game.Sound("coal", .13f);
         }
 
-        // Drops up to `amount` from the bunker out of the chute mouth, thrown sideways at `vx`.
-        public void Dispense(float amount, float vx = 0)
+        // Drops up to `amount` from the bunker out of the chute mouth, thrown sideways at `vx`, scattered
+        // by `spread` (see CoalField.Emit).
+        public void Dispense(float amount, float vx = 0, float spread = 1)
         {
             var q = Mathf.Min(bunker, amount);
             bunker -= q;
-            _game.Coal.Emit(Room.Chute, 6.7f, q, vx);
+            _game.Coal.Emit(Room.Chute, 6.7f, q, vx, 0, spread);
         }
     }
 }

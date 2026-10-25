@@ -134,7 +134,7 @@ namespace CoalRun.Stations
         }
 
         public bool CanLight(PlayerController player) =>
-            !Lit && player.Lane == 0 && !player.Holding && !player.CarryingWheel && Mathf.Abs(player.Position.x - transform.position.x) < 1.3f &&
+            !Lit && !_game.Tutorial.Restricts && player.Lane == 0 && !player.Holding && !player.CarryingWheel && Mathf.Abs(player.Position.x - transform.position.x) < 1.3f &&
             Mathf.Abs(player.Position.y - transform.position.y) < 1.6f;
 
         // Called every step with whether the operator is holding E at the firebox. Letting go starts over.
