@@ -8,6 +8,10 @@ namespace CoalRun.Stations
     // platform without breaking the gesture. Clockwise is up.
     public class LiftCrank : Machine
     {
+        [Tooltip("Turned by however far the lift moves while this crank drives it.")]
+        [SerializeField]
+        private Transform wheel;
+
         // Smoothed spin in rad/s, positive clockwise.
         public float Rate { get; private set; }
 
@@ -52,5 +56,10 @@ namespace CoalRun.Stations
         }
 
         protected override void OnEnd() => Rate = 0;
+
+        public void Turn(float degrees)
+        {
+            if (wheel) wheel.Rotate(0, 0, degrees);
+        }
     }
 }

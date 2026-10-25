@@ -139,8 +139,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LiftCrank
   handle: {fileID: 3848957566621474157}
   grabRadius: 1
-  spot: 1
-  lift: {fileID: 0}
+  wheel: {fileID: 821727023529697314}
 --- !u!1 &6603395029717038704
 GameObject:
   m_ObjectHideFlags: 0

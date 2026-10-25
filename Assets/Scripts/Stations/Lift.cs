@@ -14,7 +14,6 @@ namespace CoalRun.Stations
     {
         [SerializeField] private InputReader input;
         [SerializeField] private LiftCrank[] cranks;
-        [SerializeField] private Transform wheelVisual;
 
         // Height of the platform's top surface.
         public float Y { get; private set; }
@@ -23,6 +22,8 @@ namespace CoalRun.Stations
         private Rigidbody2D _body;
         private ShiftManager _game;
         private readonly List<Collider2D> _colliders = new();
+        // The crank that last drove the lift. Its wheel turns with the platform, coasting included.
+        private LiftCrank _driver;
 
         private void Awake()
         {
@@ -40,9 +41,16 @@ namespace CoalRun.Stations
 
             float requested = 0;
             var spun = System.Array.Find(cranks, c => c.InUse);
-            if (spun) requested = Mathf.Clamp(spun.Rate, -22, 22);
-            else if (input.Current.CrankKey != 0 && !player.Machine && player.Lane == 0 && _game.CanAct && CrankInReach(player))
+            if (spun)
+            {
+                requested = Mathf.Clamp(spun.Rate, -22, 22);
+                _driver = spun;
+            }
+            else if (input.Current.CrankKey != 0 && !player.Machine && player.Lane == 0 && _game.CanAct && CrankInReach(player) is { } keyed)
+            {
                 requested = input.Current.CrankKey * t.liftKeyCrank;
+                _driver = keyed;
+            }
             requested *= t.liftGear / (1 + Load() / 90);
 
             float floor = Floor(out var under), ceiling = Ceiling(out var hangingOff);
@@ -79,7 +87,7 @@ namespace CoalRun.Stations
             if (next < floor) { Jam(-Speed, under); next = floor; }
             Speed = (next - Y) / dt;
 
-            if (wheelVisual) wheelVisual.Rotate(0, 0, -Speed * dt / 1.4f * Mathf.Rad2Deg);
+            if (_driver) _driver.Turn(-Speed * dt / 1.4f * Mathf.Rad2Deg);
             if (Mathf.Abs(Speed) > .02f) _game.Sound("crank", .1f, Mathf.Abs(Speed));
 
             // Going down, whatever stands on the platform is carried with it instead of floating off.
@@ -107,7 +115,7 @@ namespace CoalRun.Stations
             }
         }
 
-        private bool CrankInReach(PlayerController player) => System.Array.Exists(cranks, c => c.CanOperate(player));
+        private LiftCrank CrankInReach(PlayerController player) => System.Array.Find(cranks, c => c.CanOperate(player));
 
         private IEnumerable<(Rigidbody2D body, string kind)> Riders()
         {
