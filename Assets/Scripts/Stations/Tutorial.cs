@@ -20,6 +20,9 @@ namespace CoalRun.Stations
         [Tooltip("His sorting order once the coal comes down: behind the coal piles (16).")]
         [SerializeField]
         private int buriedOrder = 15;
+        [Tooltip("Sorting order while he rides down in the staff lift, behind its door.")]
+        [SerializeField]
+        private int liftOrder = -17;
         [SerializeField] private MachineInput machines;
         [Tooltip("Leaning on the furnace. Digging is locked until it's picked up (E).")]
         [SerializeField]
@@ -59,6 +62,8 @@ namespace CoalRun.Stations
         // Where the helper stands, and whether he's walking there.
         private Vector3 _spot;
         private bool _walking;
+        private SortingGroup _helperGroup;
+        private int _helperOrder;
         private bool _shovelTaken, _saidOw;
         // His lines wait their turn: seconds left to read the current one, and the next ones up. The stuck
         // lever's line waits `_greaseIn`, so a lump on his head gets its "Ow" in first.
@@ -79,10 +84,12 @@ namespace CoalRun.Stations
             // Parked under the chute until the coal has buried it.
             _game.Cart.Park(true);
             _lever.Limit = stickAt;
-            // Out of sight in the staff lift until the door opens.
+            // Riding down in the staff lift with the operator, behind its door until it opens.
             _spot = helper.transform.position;
             helper.transform.position = new Vector3(29.9f, _spot.y, _spot.z);
-            helper.SetActive(false);
+            _helperGroup = helper.GetComponentInChildren<SortingGroup>();
+            _helperOrder = _helperGroup.sortingOrder;
+            _helperGroup.sortingOrder = liftOrder;
         }
 
         private void FixedUpdate()
@@ -126,9 +133,9 @@ namespace CoalRun.Stations
             {
                 // He steps out with the operator and walks over to the cart, then sends them up.
                 case Stage.Arrival when _game.Phase == Phase.Tutorial:
-                    if (!helper.activeSelf)
+                    if (!_walking)
                     {
-                        helper.SetActive(true);
+                        _helperGroup.sortingOrder = _helperOrder;
                         _walking = true;
                     }
                     helper.transform.position = Vector3.MoveTowards(helper.transform.position, _spot, helperWalk * dt);

@@ -18,6 +18,9 @@ namespace CoalRun.Stations
         [SerializeField]
         private SortingGroup visual;
         [SerializeField] private int frontOrder = 20, backOrder = 4;
+        [Tooltip("Sorting order while riding down the staff lift: behind its door (-16), in front of the car (-18).")]
+        [SerializeField]
+        private int liftOrder = -17;
         [Tooltip("The wheel in the operator's hands, shown while carrying one.")]
         [SerializeField]
         private Transform heldWheel;
@@ -631,6 +634,15 @@ namespace CoalRun.Stations
         {
             Body.simulated = false;
             visual.gameObject.SetActive(false);
+        }
+
+        // Riding down the staff lift: standing in the car behind the closed door, so they're already there
+        // when it opens, but out of the world until Respawn.
+        public void WaitInLift(Vector2 at)
+        {
+            Respawn(at);
+            Body.simulated = false;
+            if (visual) visual.sortingOrder = liftOrder;
         }
 
         public void Respawn(Vector2 at)

@@ -5756,7 +5756,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: -17
+  m_SortingOrder: -16
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: a8d398dd802b605ec8ad250d487f39fc, type: 3}
   m_Color: {r: 0.36, g: 0.37, b: 0.35, a: 1}
@@ -12939,6 +12939,7 @@ MonoBehaviour:
   helper: {fileID: 1021818591}
   helperWalk: 2.2
   buriedOrder: 15
+  liftOrder: -17
   machines: {fileID: 1727399066}
   shovel: {fileID: 1302746863}
   shovelReach: 1

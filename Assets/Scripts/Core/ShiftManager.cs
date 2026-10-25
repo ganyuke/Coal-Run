@@ -259,7 +259,7 @@ namespace CoalRun.Core
             _resume = Phase;
             ReplacementIn = delay;
             _doorOpened = false;
-            player.Hide();
+            player.WaitInLift(ArrivalSpot);
             SetPhase(Phase.Replacement);
         }
 
@@ -279,7 +279,9 @@ namespace CoalRun.Core
         }
 
         // Out of the staff lift.
-        private void Arrive() => player.Respawn(new Vector2(30.5f, Room.Lower + .72f));
+        private static readonly Vector2 ArrivalSpot = new(30.5f, Room.Lower + .72f);
+
+        private void Arrive() => player.Respawn(ArrivalSpot);
 
         // Nothing can leave the room. Anything physics squeezes through a wall or floor is put back on the lower floor.
         private void RecoverLost()
