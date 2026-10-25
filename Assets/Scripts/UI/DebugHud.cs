@@ -14,6 +14,8 @@ namespace CoalRun.UI
 
         private bool _readout = true;
         private GUIStyle _box, _small;
+        // The report card's solid backing; the default box skin shows the room through it.
+        private Texture2D _cardBack;
 
         private void Update()
         {
@@ -31,6 +33,7 @@ namespace CoalRun.UI
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
             var width = Screen.width / scale;
 
+            if (game.Ended) { Report(game, width); return; }
             if (game.MessageFor > 0) GUI.Box(new Rect(width / 2 - 360, 600, 720, 80), game.Message, _box);
 
             float y = 16;
@@ -55,6 +58,29 @@ namespace CoalRun.UI
                 $"Machine {(machines.Active ? machines.Active.name : "-")}  hover {(machines.Hover ? machines.Hover.name : "-")}\n" +
                 $"{1f / Mathf.Max(Time.smoothDeltaTime, 1e-4f):0} fps";
             GUI.Label(new Rect(width - 620, 12, 610, 200), text, _small);
+        }
+
+        // The end-of-shift card, worded as in the JS. The real one comes with the M5 UI.
+        private void Report(ShiftManager game, float width)
+        {
+            var complete = game.Phase == Phase.Complete;
+            var text =
+                $"DAY 01 · SHIFT REPORT\n\n<b>{(complete ? "You kept them alive." : "No one is coming down.")}</b>\n" +
+                (complete ? "The shift is over. The furnace is still your problem tomorrow." : "The offices froze first. There is nobody left to send a replacement.") +
+                $"\n\nElectrical output  {game.Furnace.Output:0.0} / {game.Day.target:0} kWh\nCoal delivered  {game.Furnace.Delivered:0.0}";
+            var card = new Rect(width / 2 - 300, 170, 600, 300);
+            if (!_cardBack)
+            {
+                _cardBack = new Texture2D(1, 1);
+                _cardBack.SetPixel(0, 0, new Color(.08f, .08f, .09f, .96f));
+                _cardBack.Apply();
+            }
+
+            var style = new GUIStyle(_box) { richText = true, alignment = TextAnchor.UpperCenter, padding = new RectOffset(24, 24, 28, 16) };
+            style.normal.background = _cardBack;
+            GUI.Box(card, text, style);
+            if (GUI.Button(new Rect(width / 2 - 140, card.yMax - 64, 280, 44), "[R]  Run the shift again", new GUIStyle(GUI.skin.button) { fontSize = 18 }))
+                game.Restart();
         }
     }
 }

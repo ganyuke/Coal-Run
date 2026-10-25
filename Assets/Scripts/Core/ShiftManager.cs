@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System;
 using CoalRun.Stations;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 
 namespace CoalRun.Core
 {
-    public enum Phase { Tutorial, Briefing, Shift, Replacement, Complete, Frozen }
+    // Leaving: the clock has run out and the operator is on their way to the staff lift to clock out.
+    public enum Phase { Tutorial, Briefing, Shift, Leaving, Replacement, Complete, Frozen }
 
     // The hub. Holds the state every station shares (phase, clock, the day's settings) and the
     // references stations use to find each other. UI and audio listen to its events instead of
@@ -36,8 +38,9 @@ namespace CoalRun.Core
         public Furnace Furnace => furnace;
         public TipCradle Cradle => cradle;
 
-        public Phase Phase { get; } = Phase.Shift;
-        public bool CanAct => Phase is Phase.Tutorial or Phase.Shift;
+        public Phase Phase { get; private set; } = Phase.Shift;
+        public bool Ended => Phase is Phase.Complete or Phase.Frozen;
+        public bool CanAct => Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving;
         public float Elapsed { get; private set; }
         // Seconds into the shift, the temperature outside from the day's forecast, and inside the building.
         public float Clock { get; private set; }
@@ -51,6 +54,7 @@ namespace CoalRun.Core
 
         // name, loudness
         public event Action<string, float> OnSound;
+        public event Action<Phase> OnPhase;
 
         private readonly Dictionary<string, float> _soundTimers = new();
 
@@ -76,6 +80,7 @@ namespace CoalRun.Core
             MessageFor -= dt;
             if (input.Current.DebugKey != 0) DebugCommand(input.Current.DebugKey);
             if (Phase == Phase.Shift) StepHeat(dt);
+            if (Ended && input.Current.Restart) Restart();
             RecoverLost();
         }
 
@@ -88,7 +93,31 @@ namespace CoalRun.Core
             Clock += dt;
             Outside = day.OutsideAt(Clock);
             Temperature += (furnace.BurnRate - tuning.heatLoss * (Temperature - Outside)) / tuning.heatCapacity * dt;
+            if (Temperature <= tuning.freeze) SetPhase(Phase.Frozen);
+            else if (Clock >= tuning.shiftLength)
+            {
+                SetPhase(Phase.Leaving);
+                Say("The shift is over. Take the staff lift up.", 6);
+            }
         }
+
+        // At the staff lift once the shift is over.
+        public void ClockOut()
+        {
+            if (Phase == Phase.Leaving) SetPhase(Phase.Complete);
+        }
+
+        // Once the shift has ended the world keeps running, but nobody can act, the clock stops and the
+        // furnace stops burning. While leaving, the clock is stopped and the building can't freeze any more.
+        private void SetPhase(Phase phase)
+        {
+            Phase = phase;
+            OnPhase?.Invoke(phase);
+            Sound(phase.ToString().ToLowerInvariant());
+        }
+
+        // Reloading the scene puts every station back as it was.
+        public void Restart() => SceneManager.LoadScene(gameObject.scene.path);
 
         // Testing shortcuts, by F key. Public so the editor CLI can call them too. Coal is moved to and from
         // the bunker, so the total stays intact.

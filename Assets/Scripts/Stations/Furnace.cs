@@ -73,7 +73,7 @@ namespace CoalRun.Stations
 
         private void FixedUpdate()
         {
-            if (_game.Phase != Phase.Shift) { BurnRate = 0; return; }
+            if (_game.Phase is not (Phase.Shift or Phase.Leaving)) { BurnRate = 0; return; }
             var dt = Time.fixedDeltaTime;
             var t = _game.Tune;
             if (!Lit) { BurnRate = 0; return; }

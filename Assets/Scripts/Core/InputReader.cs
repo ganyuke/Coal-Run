@@ -16,6 +16,7 @@ namespace CoalRun.Core
         public bool Heave;      // Shift held
         public int Dash;        // A/D double-tapped this step: 1 right, -1 left
         public int Tap;         // A/D pressed this step, double or not
+        public bool Restart;    // R pressed this step
         public int DebugKey;    // F2, F4, F5 or F6 pressed this step (2, 4, 5, 6), else 0. See ShiftManager.DebugCommand.
         public Vector2 Aim;     // The cursor, in world space
     }
@@ -32,7 +33,7 @@ namespace CoalRun.Core
 
         public Controls Current { get; private set; }
 
-        private bool _interactPressed;
+        private bool _interactPressed, _restartPressed;
         private int _debugPressed;
         private int _lanePressed, _dashPressed, _tapPressed;
         private bool _wasLeft, _wasRight;
@@ -50,6 +51,7 @@ namespace CoalRun.Core
             _wasLeft = left;
             _wasRight = right;
             if (k.eKey.wasPressedThisFrame) _interactPressed = true;
+            if (k.rKey.wasPressedThisFrame) _restartPressed = true;
             if (k.f2Key.wasPressedThisFrame) _debugPressed = 2;
             if (k.f4Key.wasPressedThisFrame) _debugPressed = 4;
             if (k.f5Key.wasPressedThisFrame) _debugPressed = 5;
@@ -76,10 +78,11 @@ namespace CoalRun.Core
                 Heave = k.leftShiftKey.isPressed || k.rightShiftKey.isPressed,
                 Dash = _dashPressed,
                 Tap = _tapPressed,
+                Restart = _restartPressed,
                 DebugKey = _debugPressed,
                 Aim = Aim()
             };
-            _interactPressed = false;
+            _interactPressed = _restartPressed = false;
             _debugPressed = 0;
             _lanePressed = _dashPressed = _tapPressed = 0;
         }

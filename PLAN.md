@@ -24,11 +24,11 @@ Each milestone ends with something you can play. Don't start the next one until 
   - [ ] **Playtest:** fill the cart from the lever without burying it; dig a buried cart out; haul through a spill
 - [ ] **M3 · Furnace and the shift** (Mon 10/26)
   - [x] Tip cradle + tip handle, pour into the hopper, spill the wrong way
-  - [ ] Furnace: burn lever notches, heat model, output meter
+  - [x] Furnace: burn lever notches, heat model, output meter
     - [x] Step 1: notched burn lever, burning from the hopper, clock + outside + building temperature (F3 HUD)
     - [x] Step 2: fire glow in the firebox mouth (grows and brightens with the notch, Perlin flicker) and a spinning meter disc for output
     - [x] Step 3: blue → red colour bands with 1–5 snowflakes under the lever's notches (instead of number labels; the notepad graph uses the same bands in M5)
-  - [ ] Shift clock, forecast, complete / frozen
+  - [x] Shift clock, forecast, complete / frozen; clock out at the staff lift
 - [ ] **M4 · Things going wrong** (Tue 10/27)
   - [ ] Crashes knock wheels off; pick up and refit (E)
   - [x] Right the cart: E or ram it (done early, 10/24)
@@ -94,6 +94,7 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - **Fire and meter (step 2):** the fire is a particle system (`Furnace/Fire/Flames`): soft additive particles (`Assets/Art/Fire.mat`, URP Particles/Unlit, `soft.png`) rising off the coal bed, yellow → orange → red → gone, wobbled by the noise module, clipped to the mouth by a `SpriteMask`. The burn sets emission, size and rise speed; a few `Sparks` escape the mouth (rate ∝ heat²). The coal bed strip and the mouth's glow follow the heat with Perlin breathing, so a starved fire dies to red embers over a second or two. Tuning: `flameRate`, `sparkRate` and the colours on Furnace; shape and lifetime on the particle systems. The output meter (in the Furnace prefab, on the wall above the furnace, clear of the dial) is a disc with a stripe spinning at `meterSpin` 1000°/s per coal/s, about once a second at the top notch, still with no coal. Floor levers name themselves in the key prompt (`FloorLever.prompt`): it said "Tip lever" for all of them.
 - **Burn dial (step 3):** a fan behind the burn lever (`Burn lever/Dial`, `NotchDial`), one ray per notch at the knob's angle for it: a colour tile (blue → light blue → yellow → orange → red) and 1–5 snowflakes beyond it (`snowflake.png`, generated) for how much cold it holds off. The current notch is lit, the rest drawn at `dim` .25. Tiles sit at radius 2 so the operator's head doesn't cover the red one. The dial is added to the lever's prefab instance in the scene, not to the Floor lever prefab.
 - **Lighting (your call, 10/25):** the shift starts with the fire out (10 coal in the hopper). Hold E at the firebox mouth on the lower floor for `lightTime` 2 s (letting go starts over; refused with an empty hopper); the coal bed warms up as you hold. A fresh fire comes up to the notch's full burn over `catchTime` 5 s. With the hopper empty, the embers last `emberTime` 10 s, cooling, then the fire goes out and has to be lit again. `Controls.InteractHeld` (E held) is new; at the firebox E lights instead of doing its usual press action.
+- **Shift end (your calls, 10/25):** at 10:00 the clock stops and the phase goes to `Leaving` ("The shift is over. Take the staff lift up."): you can still act, the furnace keeps burning, the building can't freeze any more. E in front of the staff lift (lower floor, x > 29.4, lane 0) clocks out → `Complete`. The building at 0° → `Frozen` at once. Ended, the world keeps running but nobody can act. The report is a placeholder IMGUI card in `DebugHud` (the JS wording, output vs target, coal delivered); R or its button reloads the scene to restart. `ShiftManager.OnPhase` fires on each change for the real UI and audio later. The shift starts at Play for now (briefing and tutorial come in M4/M5).
 
 ### M2 decisions (10/24)
 

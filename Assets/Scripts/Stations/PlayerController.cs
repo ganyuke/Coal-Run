@@ -225,12 +225,13 @@ namespace CoalRun.Stations
         }
 
         // E: one press, one action, picked by what the operator is standing next to: hooking the cart onto
-        // the tip cradle or lowering it, or righting it. The phone and wheels come in M4.
+        // the tip cradle or lowering it, righting it, or clocking out at the staff lift. The phone and wheels come in M4.
         private void Interact()
         {
             if (Machine || Lane != 0) return;
             var cart = _game.Cart;
             if (CartNear() && _game.Cradle.Interact()) return;
+            if (CanClockOut) { _game.ClockOut(); return; }
             if (!CartOverturnedInReach()) return;
             var cp = cart.Body.position;
             var floor = _game.Coal.SurfaceAt(cp.x, cp.y).Floor();
@@ -432,6 +433,9 @@ namespace CoalRun.Stations
             _game.Sound("step");
         }
 
+        // In front of the staff lift, past the control room glass, with the shift over.
+        private bool CanClockOut => _game.Phase == Phase.Leaving && Lane == 0 && Body.position is { y: < 4.3f, x: > Room.EntranceStart + .2f };
+
         private bool AtDoor => Body.position is { y: < 4.3f, x: > 29.4f or > 22.7f and < 24.2f };
 
         private bool DoorBlocked
@@ -467,6 +471,7 @@ namespace CoalRun.Stations
                 if (AtDoor && !DoorBlocked) list.Add(("S", "Leave"));
                 return list;
             }
+            if (CanClockOut) list.Add(("E", "Clock out"));
             if (AtDoor) list.Add(("W", "Enter"));
             if (_game.Furnace.CanLight(this)) list.Add(("Hold E", "Light the fire"));
             if (CartNear() && _game.Cradle.Prompt != null) list.Add(("E", _game.Cradle.Prompt));
