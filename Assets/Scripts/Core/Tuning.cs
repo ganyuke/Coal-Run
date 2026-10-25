@@ -124,6 +124,8 @@ namespace CoalRun.Core
         public float heatCapacity = .28f;
         public float comfortable = 20;
         public float freeze = 0;
+        [Tooltip("Seconds the building can sit at or below freezing before the operator freezes. Never shown; it drains back at the same rate once it's above.")]
+        public float freezeGrace = 30;
         [Tooltip("Seconds of holding E at the firebox to light it.")]
         public float lightTime = 2;
         [Tooltip("Seconds a fresh fire takes to come up to the notch's full burn.")]

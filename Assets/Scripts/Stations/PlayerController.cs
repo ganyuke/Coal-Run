@@ -75,6 +75,9 @@ namespace CoalRun.Stations
             CheckBurial(dt);
         }
 
+        // Slower in the cold: a little below 6° (as in the JS), then more and more as the freeze grace runs out.
+        private float Cold => (_game.Temperature < 6 ? .72f : 1) * (1 - .55f * _game.Chill);
+
         private void Move(Controls c, float dt)
         {
             var cart = _game.Cart;
@@ -97,8 +100,7 @@ namespace CoalRun.Stations
             // pushing. A body contact would push on the bin's top corner and lever it over its wheel.
             _box.excludeLayers = Lane == 1 ? ~GameLayers.Mask(GameLayers.Terrain) : GameLayers.Mask(GameLayers.Cart);
 
-            const float cold = 1; // Slows the operator when the building freezes; arrives with the furnace.
-            var target = digging ? 0 : c.Move * t.walkSpeed * (Machine ? t.machineWalk : 1) * cold * (Stagger > 0 ? .25f : 1);
+            var target = digging ? 0 : c.Move * t.walkSpeed * (Machine ? t.machineWalk : 1) * Cold * (Stagger > 0 ? .25f : 1);
             // The dash speeds up as it goes (a run-up), set directly so it follows the ramp exactly.
             if (_dashFor > 0)
             {
@@ -119,7 +121,7 @@ namespace CoalRun.Stations
             // A dragging skid makes it slow work: the operator can't haul it at walking pace however hard they
             // push. Heaved off the floor, it nearly rolls like a two-wheel cart.
             var wheels = cart.Wheels >= 2 ? 1 : cart.Wheels == 1 ? cart.SkidClear ? t.heaveHaul : t.oneWheelHaul : t.noWheelHaul;
-            var effective = holding ? c.Move * Mathf.Min(t.walkSpeed, 4.8f / (1 + cart.Coal * .038f)) * wheels * bury : target;
+            var effective = holding ? c.Move * Mathf.Min(t.walkSpeed, 4.8f / (1 + cart.Coal * .038f)) * wheels * bury * Cold : target;
             // Mid-lurch, neither the operator nor the haul force holds the cart back to the hauling pace.
             if (holding && _lurchFor > 0) effective = _dashDir * Mathf.Max(effective * _dashDir, cart.Body.linearVelocity.x * _dashDir);
             Body.AddForce(new Vector2(Mathf.Clamp((effective - v.x) * Body.mass * 18, -800, 800), 0));

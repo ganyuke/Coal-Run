@@ -46,6 +46,10 @@ namespace CoalRun.Core
         public float Clock { get; private set; }
         public float Outside { get; private set; }
         public float Temperature { get; private set; }
+        // How far through the freeze grace the operator is, 0 to 1 (1 is frozen). Kept hidden: they only
+        // feel it in their legs, and the lamp over the staff lift is lit while it's freezing.
+        public float Chill { get; private set; }
+        public bool Freezing => Temperature <= tuning.freeze;
         public string Message { get; private set; } = "";
         public float MessageFor { get; private set; }
         public float InitialCoal { get; private set; }
@@ -93,7 +97,9 @@ namespace CoalRun.Core
             Clock += dt;
             Outside = day.OutsideAt(Clock);
             Temperature += (furnace.BurnRate - tuning.heatLoss * (Temperature - Outside)) / tuning.heatCapacity * dt;
-            if (Temperature <= tuning.freeze) SetPhase(Phase.Frozen);
+            if (Freezing && Chill == 0) Say("It's freezing in here. Get the fire up.", 4);
+            Chill = Mathf.Clamp01(Chill + (Freezing ? dt : -dt) / tuning.freezeGrace);
+            if (Chill >= 1) SetPhase(Phase.Frozen);
             else if (Clock >= tuning.shiftLength)
             {
                 SetPhase(Phase.Leaving);
