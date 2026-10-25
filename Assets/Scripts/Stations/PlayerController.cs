@@ -253,12 +253,13 @@ namespace CoalRun.Stations
             _game.Sound("ram", .2f, cart.mass);
         }
 
-        // E: one press, one action, picked by what the operator is standing next to: righting the cart,
-        // putting a carried wheel down, picking one up, hooking the cart onto the tip cradle or lowering it,
-        // or clocking out at the staff lift. The phone comes in M4.
+        // E: one press, one action, picked by what the operator is standing next to: answering the phone,
+        // righting the cart, putting a carried wheel down, picking one up, hooking the cart onto the tip
+        // cradle or lowering it, or clocking out at the staff lift.
         private void Interact()
         {
             if (Machine || Lane != 0) return;
+            if (_game.Phone.CanAnswer(this)) { _game.Phone.Answer(); return; }
             if (CartOverturnedInReach()) { RightCart(); return; }
             if (CarryingWheel)
             {
@@ -556,8 +557,54 @@ namespace CoalRun.Stations
             if (Burial > 5 || Injury > 7) _game.Die(Burial > 5 ? "Buried under coal" : _hurtBy);
         }
 
+        // Drops whatever was in hand, leaves the body where it stood, and takes the operator out of the
+        // world until the replacement arrives (see Respawn). Returns the body.
+        public Rigidbody2D Kill()
+        {
+            ThrowHands();
+            ReleaseGrip();
+            machines.Release();
+            StopAllCoroutines();
+            _flying = Climbing = _striking = false;
+            _fit = 0;
+            Body.bodyType = RigidbodyType2D.Dynamic;
+            if (CarryingWheel) ReleaseWheel(Vector2.zero);
+            var body = LeaveBody();
+            Body.simulated = false;
+            visual.gameObject.SetActive(false);
+            return body;
+        }
+
+        // A copy of the operator's art that topples over where they stood and stays. It lies on floors and
+        // coal piles and rides the lift, but nothing else touches it, so it's never in the way.
+        private Rigidbody2D LeaveBody()
+        {
+            var body = new GameObject("Dead operator") { layer = GameLayers.Part };
+            // Already leaning past its balance point, so over it goes, either way.
+            var side = Random.value < .5f ? -1 : 1;
+            body.transform.SetPositionAndRotation(Body.position, Quaternion.Euler(0, 0, side * 25));
+            var art = Instantiate(visual.gameObject, body.transform);
+            art.transform.localPosition = Vector3.zero;
+            art.transform.localScale = Vector3.one;
+            foreach (Transform t in art.transform)
+                if (t.name is "Held wheel" or "Striker") t.gameObject.SetActive(false);
+            art.GetComponent<SortingGroup>().sortingOrder = 3;
+            foreach (var r in art.GetComponentsInChildren<SpriteRenderer>()) r.color *= new Color(.65f, .65f, .65f);
+            var rb = body.AddComponent<Rigidbody2D>();
+            rb.mass = 2;
+            rb.linearVelocity = Body.linearVelocity;
+            rb.angularVelocity = side * 90;
+            var box = body.AddComponent<BoxCollider2D>();
+            box.size = new Vector2(.48f, 1.33f);
+            box.excludeLayers = GameLayers.Mask(GameLayers.Player, GameLayers.Cart, GameLayers.Part);
+            return rb;
+        }
+
         public void Respawn(Vector2 at)
         {
+            Body.simulated = true;
+            visual.gameObject.SetActive(true);
+            Facing = -1;
             ReleaseGrip();
             machines.Release();
             StopAllCoroutines();
@@ -700,6 +747,7 @@ namespace CoalRun.Stations
                 MachinePrompt(list);
                 return list;
             }
+            if (_game.Phone.CanAnswer(this)) list.Add(("E", "Answer the phone"));
             if (CarryingWheel)
             {
                 list.Add(CartNear() && _game.Cart.Wheels < 2 ? ("Hold E", "Fit wheel") : ("E", "Put wheel down"));

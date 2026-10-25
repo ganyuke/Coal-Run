@@ -35,6 +35,7 @@ namespace CoalRun.UI
 
             if (game.Ended) { Report(game, width); return; }
             if (game.MessageFor > 0) GUI.Box(new Rect(width / 2 - 360, 600, 720, 80), game.Message, _box);
+            if (game.Phase == Phase.Replacement) GUI.Box(new Rect(width / 2 - 200, 24, 400, 44), $"Replacement arriving in {Mathf.CeilToInt(game.ReplacementIn)} s", _box);
 
             float y = 16;
             foreach (var (key, label) in player.Prompts())
@@ -67,8 +68,8 @@ namespace CoalRun.UI
             var text =
                 $"DAY 01 · SHIFT REPORT\n\n<b>{(complete ? "You kept them alive." : "No one is coming down.")}</b>\n" +
                 (complete ? "The shift is over. The furnace is still your problem tomorrow." : "The offices froze first. There is nobody left to send a replacement.") +
-                $"\n\nElectrical output  {game.Furnace.Output:0.0} / {game.Day.target:0} kWh\nCoal delivered  {game.Furnace.Delivered:0.0}";
-            var card = new Rect(width / 2 - 300, 170, 600, 300);
+                $"\n\nElectrical output  {game.Furnace.Output:0.0} / {game.Day.target:0} kWh\nCoal delivered  {game.Furnace.Delivered:0.0}\nOperators lost  {game.Deaths}";
+            var card = new Rect(width / 2 - 300, 160, 600, 330);
             if (!_cardBack)
             {
                 _cardBack = new Texture2D(1, 1);

@@ -128,6 +128,7 @@ namespace CoalRun.Stations
             yield return (_game.Cart.Body, "cart");
             if (_game.Player.Body.simulated && _game.Player.Lane == 0) yield return (_game.Player.Body, "operator");
             foreach (var wheel in _game.Cart.LooseWheels) yield return (wheel, "wheel");
+            foreach (var body in _game.Bodies) yield return (body, "body");
         }
 
         private float Load()
@@ -148,7 +149,7 @@ namespace CoalRun.Stations
             blocker = "";
             foreach (var (rider, kind) in Riders())
             {
-                float half = kind == "cart" ? 1.02f : .3f, top = kind switch { "cart" => .75f, "wheel" => .3f, _ => .7f };
+                float half = kind switch { "cart" => 1.02f, "body" => .66f, _ => .3f }, top = kind switch { "cart" => .75f, "wheel" or "body" => .3f, _ => .7f };
                 var p = rider.position;
                 // The platform's underside, .3 below its top, touching the top of the cart or the operator's head.
                 var clear = p.y + top + .32f;

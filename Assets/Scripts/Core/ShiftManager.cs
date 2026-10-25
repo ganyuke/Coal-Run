@@ -27,6 +27,8 @@ namespace CoalRun.Core
         [SerializeField] private Chute chute;
         [SerializeField] private Furnace furnace;
         [SerializeField] private TipCradle cradle;
+        [SerializeField] private StaffLift staffLift;
+        [SerializeField] private RedPhone phone;
 
         public Tuning Tune => tuning;
         public DayConfig Day => day;
@@ -37,10 +39,18 @@ namespace CoalRun.Core
         public Chute Chute => chute;
         public Furnace Furnace => furnace;
         public TipCradle Cradle => cradle;
+        public RedPhone Phone => phone;
 
         public Phase Phase { get; private set; } = Phase.Shift;
         public bool Ended => Phase is Phase.Complete or Phase.Frozen;
         public bool CanAct => Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving;
+        // The shift's clock and the building's heat run on while a replacement is on the way.
+        public bool ShiftRunning => Phase == Phase.Shift || Phase == Phase.Replacement && _resume == Phase.Shift;
+        // Operators lost this shift, and the seconds until the next one steps out of the staff lift.
+        public int Deaths { get; private set; }
+        public float ReplacementIn { get; private set; }
+        // Dead operators, left where they fell for the rest of the shift.
+        public List<Rigidbody2D> Bodies { get; } = new();
         public float Elapsed { get; private set; }
         // Seconds into the shift, the temperature outside from the day's forecast, and inside the building.
         public float Clock { get; private set; }
@@ -61,6 +71,9 @@ namespace CoalRun.Core
         public event Action<Phase> OnPhase;
 
         private readonly Dictionary<string, float> _soundTimers = new();
+        // The phase to go back to once the replacement arrives.
+        private Phase _resume;
+        private bool _doorOpened;
 
         private void Awake()
         {
@@ -83,7 +96,8 @@ namespace CoalRun.Core
             Elapsed += dt;
             MessageFor -= dt;
             if (input.Current.DebugKey != 0) DebugCommand(input.Current.DebugKey);
-            if (Phase == Phase.Shift) StepHeat(dt);
+            if (ShiftRunning) StepHeat(dt);
+            if (Phase == Phase.Replacement) StepReplacement(dt);
             if (Ended && input.Current.Restart) Restart();
             RecoverLost();
         }
@@ -102,7 +116,9 @@ namespace CoalRun.Core
             if (Chill >= 1) SetPhase(Phase.Frozen);
             else if (Clock >= tuning.shiftLength)
             {
-                SetPhase(Phase.Leaving);
+                // A replacement still on the way arrives to a finished shift.
+                if (Phase == Phase.Replacement) _resume = Phase.Leaving;
+                else SetPhase(Phase.Leaving);
                 Say("The shift is over. Take the staff lift up.", 6);
             }
         }
@@ -110,7 +126,9 @@ namespace CoalRun.Core
         // At the staff lift once the shift is over.
         public void ClockOut()
         {
-            if (Phase == Phase.Leaving) SetPhase(Phase.Complete);
+            if (Phase != Phase.Leaving) return;
+            if (staffLift) staffLift.Cycle();
+            SetPhase(Phase.Complete);
         }
 
         // Once the shift has ended the world keeps running, but nobody can act, the clock stops and the
@@ -178,13 +196,34 @@ namespace CoalRun.Core
             OnSound?.Invoke(sound, amount);
         }
 
-        // Accidents kill only the operator. Placeholder until M4's replacement worker: the next one
-        // walks in from the staff lift straight away.
+        // Accidents kill only the operator. Brass sends a replacement down the staff lift, and the furnace
+        // keeps burning while they ride down: a death costs time and nothing else.
         public void Die(string reason)
         {
-            Say($"{reason}. Another worker is on the way.");
+            if (!CanAct) return;
+            _resume = Phase;
+            Deaths++;
+            ReplacementIn = tuning.replacementDelay;
+            _doorOpened = false;
+            Bodies.Add(player.Kill());
+            SetPhase(Phase.Replacement);
+            Say($"{reason}. Another worker is on the way.", 7);
             Sound("hurt");
-            player.Respawn(new Vector2(30.5f, Room.Lower + .75f));
+        }
+
+        private void StepReplacement(float dt)
+        {
+            ReplacementIn -= dt;
+            // The door opens just before they step out.
+            if (!_doorOpened && ReplacementIn <= .5f)
+            {
+                _doorOpened = true;
+                if (staffLift) staffLift.Cycle();
+            }
+            if (ReplacementIn > 0) return;
+            player.Respawn(new Vector2(30.5f, Room.Lower + .72f));
+            SetPhase(_resume);
+            Say("Management sent another operator.", 4);
         }
 
         // Nothing can leave the room. Anything physics squeezes through a wall or floor is put back on the lower floor.
@@ -198,6 +237,9 @@ namespace CoalRun.Core
             foreach (var wheel in cart.LooseWheels)
                 if (Lost(wheel.position))
                     Put(wheel, Room.Lower + .35f);
+            foreach (var body in Bodies)
+                if (Lost(body.position))
+                    Put(body, Room.Lower + .3f);
             if (!player.Body.simulated || !Lost(player.Body.position)) return;
             player.ReleaseGrip();
             Put(player.Body, Room.Lower + .72f);

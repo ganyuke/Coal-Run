@@ -32,7 +32,7 @@ Each milestone ends with something you can play. Don't start the next one until 
 - [ ] **M4 · Things going wrong** (Tue 10/27)
   - [x] Crashes knock wheels off; pick up, carry, throw and refit (hold E)
   - [x] Right the cart: E or ram it (done early, 10/24)
-  - [ ] Death and the replacement worker; red phone
+  - [x] Death and the replacement worker; red phone
   - [ ] Tutorial: helper, stuck lever, avalanche, dig out
 - [ ] **M5 · Day 2 and the real UI** (Wed 10/28)
   - [ ] Day flow: Day 1 → memo → Day 2 (DayConfig per day)
@@ -59,7 +59,7 @@ About a day ahead: M1 and M2 are done, and M3 is a third done, all on the first 
 1. **M3 Furnace:** burn lever with notches labelled "holds −10°" and so on, burning coal from the hopper, building temperature with inertia, output meter next to the lever.
 2. **M3 Shift:** 10-minute clock, Day 1 forecast, shift complete, frozen = game over.
 3. ~~**M4 Crashes:**~~ done 10/25.
-4. **M4 Death:** replacement worker down the staff lift (now an instant respawn); red phone that rings more as the building cools.
+4. ~~**M4 Death:**~~ done 10/25.
 5. **M4 Tutorial:** the helper, the stuck lever, the avalanche, digging the cart out.
 6. **M5 Days:** Day 1 → morning memo → Day 2; real Day 2 forecast and target; the axle installer beat (push the cart into him or away).
 7. **M5 UI:** notepad with the forecast graph, output target and objective; menus; replaces the debug HUD.
@@ -100,6 +100,7 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - **Control room up the stairs (your calls, 10/25):** the glass used to cover the whole floor from the chute to the staff lift, tinting the cart. The control room is now a booth on a concrete slab over the staff lift (`Room.BoothStart` 27.4 to the wall, floor `Room.BoothFloor` 6.6), with the chute lever inside at x 29.8 and the glass over the booth only. Stairs are background art from x 23 to the booth door. W at the foot (`Room.StairsFoot` 23.5) or S at the booth door glides the operator along the stairs (`PlayerController.Climb`, kinematic, about .5 s); it's still lane 1 in code, so everything gated on lane 0 still is. The booth floor collider only touches the operator. Coal over 1 m deep at the foot of the stairs keeps you up there. The freeze lamp moved down under the slab.
 - **Cart heap (your call, 10/25: fake it):** the cart's load is still the one number `Cart.Coal`; only the picture changed. The flat `Fill` rectangle is now 12 columns (`Cart.heap`, Art/Heap on the prefab): a mound in the middle when the load is light, flat to the rim at `cartCapacity`, heaped above it when overfilled. Its top stays about level with the world as the cart tilts (the columns slide to the low end), eased so it sloshes. Spilling still comes from the tilt angle.
 - **Movement locks (your calls, 10/25):** shoveling slows you to `digWalk` 30% instead of stopping you. Fitting a wheel: holding E lifts the end missing the wheel (`Cart.HoldUp`, kinematic, about the far wheel's foot) to `fitLift` 9° above level and rocks it while the wheel is jiggled onto its slot, settling as it lines up; done, the cart is let down level, and let go early, back as it lay (a wheelless cart rests nose down at about -23°). Lighting: the operator crouches and strikes a flint and steel at the firebox, a scrape every .3 s with a burst of sparks (`Striker`, `Strike sparks` on the Operator prefab). Locks left as they were: levers and the crank (35% and tethered), the stairs (.5 s), stagger.
+- **Death and the phone (your calls, 10/25):** `ShiftManager.Die` (accidents only) drops whatever the operator held, leaves a body, and goes to `Replacement` for `replacementDelay` 7 s: no control, but the clock, heat and furnace run on (`ShiftRunning`), with a "Replacement arriving in N s" box. The staff lift door (`StaffLift`) slides open half a second before the new operator steps out ("Management sent another operator."); it also opens when you clock out. The clock running out mid-replacement resumes into `Leaving`. Bodies stay for the shift (your call): a dimmed copy of the operator's art that topples over, lies on floors and piles and rides the lift (the lift stops above one like a wheel), touching nothing else. `Deaths` is on the report card. The red phone (`RedPhone`) rings below 13°: every 15 s, 8 s below 9°, 4 s below 6°, rattling until answered with E nearby; then 10 s quiet. Answering is just brass's message (your call), as in the JS.
 
 ### M2 decisions (10/24)
 
@@ -160,7 +161,6 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - **Pouring is the cart's ordinary spill**, untouched: lumps go over the low rim. Lumps landing on the hopper grate go into `Furnace.Hopper` (like the return grate), and coal piled on the grate drains in as the hopper makes room; a full hopper leaves coal heaping on the grate. Shovelled coal counts too. Tipped left, it lands on the floor on the operator's side, and can hit them.
 - `Furnace` holds the hopper only so far (starts at `DayConfig.startingHopper`, has a fill gauge, counts `Delivered`). It's in `TotalCoal`.
 - First pass (replaced the same day): grabbing the lever teleported the cart up and pivoted it about its middle, with the coal counted straight into the hopper. You called it jank.
-- Death is a placeholder (`ShiftManager.Die` respawns at the staff lift at once). M4 adds the replacement delay.
 
 ## Open questions
 
