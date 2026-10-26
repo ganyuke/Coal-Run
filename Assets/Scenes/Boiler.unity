@@ -24973,7 +24973,12 @@ MonoBehaviour:
   width: 6
   outline: 0.3
   ink: {r: 1, g: 0.96, b: 0.85, a: 1}
-  charsPerSecond: 16
+  charsPerSecond: 14
+  holdAfter: 1.8
+  gap: 0.6
+  maxQueued: 2
+  repeatAfter: 6
+  stackGap: 0.12
   fadeTime: 0.5
   sortingOrder: 60
 --- !u!1 &828493249
@@ -27195,6 +27200,11 @@ MonoBehaviour:
   outline: 0.3
   ink: {r: 1, g: 0.96, b: 0.85, a: 1}
   charsPerSecond: 16
+  holdAfter: 1.8
+  gap: 0.6
+  maxQueued: 2
+  repeatAfter: 6
+  stackGap: 0.12
   fadeTime: 0.5
   sortingOrder: 60
 --- !u!1 &1056430566
@@ -38826,7 +38836,12 @@ MonoBehaviour:
   width: 6
   outline: 0.3
   ink: {r: 1, g: 0.96, b: 0.85, a: 1}
-  charsPerSecond: 16
+  charsPerSecond: 14
+  holdAfter: 1.8
+  gap: 0.6
+  maxQueued: 2
+  repeatAfter: 6
+  stackGap: 0.12
   fadeTime: 0.5
   sortingOrder: 60
 --- !u!1 &1889384120
@@ -38984,7 +38999,12 @@ MonoBehaviour:
   width: 6
   outline: 0.3
   ink: {r: 1, g: 0.96, b: 0.85, a: 1}
-  charsPerSecond: 16
+  charsPerSecond: 11
+  holdAfter: 1.8
+  gap: 0.6
+  maxQueued: 2
+  repeatAfter: 6
+  stackGap: 0.12
   fadeTime: 0.5
   sortingOrder: 60
 --- !u!1 &1901404867
