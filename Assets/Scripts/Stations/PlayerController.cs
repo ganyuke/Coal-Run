@@ -892,6 +892,15 @@ namespace CoalRun.Stations
                 MachinePrompt(list);
                 return list;
             }
+            if (Holding)
+            {
+                // What the cart can be made to do while it's held: hauled, and (from the skid end of a one-wheel
+                // cart) heaved up like a wheelbarrow.
+                list.Add(("A/D", "Haul the cart"));
+                if (_game.Cart.Wheels == 1 && Mathf.Approximately(Mathf.Sign(Body.position.x - _game.Cart.Body.position.x), _game.Cart.SkidSide)) list.Add(("Shift", "Heave the skid up"));
+                list.Add(("Space", "Let go to drop it"));
+                return list;
+            }
             if (_game.Tutorial.ShovelInReach(this)) list.Add(("E", "Pick up the shovel"));
             if (_game.Tutorial.Restricts)
             {

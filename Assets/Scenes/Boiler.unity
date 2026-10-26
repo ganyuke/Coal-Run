@@ -25618,7 +25618,7 @@ MonoBehaviour:
   sheetY: 70
   briefingDim: 0.55
   reportDim: 0.8
-  stickyGap: 1
+  stickyGap: 2
   stickyShift: 3
   keyColors:
   - key: E
@@ -25637,6 +25637,8 @@ MonoBehaviour:
     color: {r: 0.8, g: 0.71, b: 1, a: 1}
   - key: Click
     color: {r: 1, g: 0.7, b: 0.8, a: 1}
+  - key: A/D
+    color: {r: 0.58, g: 0.92, b: 0.88, a: 1}
   shutY: -280
   openY: 16
   nudgeTime: 2.5

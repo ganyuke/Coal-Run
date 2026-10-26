@@ -46,7 +46,7 @@ namespace CoalRun.UI
         [Header("Sticky notes")]
         [Tooltip("Space between stacked notes, and how far each is shifted left of the one under it.")]
         [SerializeField]
-        private float stickyGap = 1, stickyShift = 3;
+        private float stickyGap = 2, stickyShift = 3;
         [Tooltip("The colour of a note by the key it's for, so the keys you can press are told apart at a glance. Anything else is the first colour.")]
         [SerializeField]
         private KeyColor[] keyColors =
@@ -58,7 +58,8 @@ namespace CoalRun.UI
             new() { key = "F", color = new Color(1f, .68f, .48f) },
             new() { key = "Space", color = new Color(.66f, .9f, .62f) },
             new() { key = "Shift", color = new Color(.8f, .71f, 1f) },
-            new() { key = "Click", color = new Color(1f, .7f, .8f) }
+            new() { key = "Click", color = new Color(1f, .7f, .8f) },
+            new() { key = "A/D", color = new Color(.58f, .92f, .88f) }
         };
         [Header("Where the book sits")]
         [Tooltip("Vertical position when shut, with just the top edge showing.")]
