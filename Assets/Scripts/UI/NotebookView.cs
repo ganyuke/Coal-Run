@@ -258,7 +258,7 @@ namespace CoalRun.UI
         private static void Press(ShiftManager game)
         {
             if (game.Phase == Phase.Briefing) game.BeginShift();
-            else if (game.Ended) game.Restart();
+            else if (game.Ended) game.Continue();
         }
 
         // What's written on the page between shifts.
@@ -269,7 +269,7 @@ namespace CoalRun.UI
             if (game.Phase == Phase.Briefing)
             {
                 sheetHeadline.text = "Keep the building warm until the blizzard passes.";
-                sheetBody.text =
+                sheetBody.text = (string.IsNullOrEmpty(game.Day.memo) ? "" : $"<i>{game.Day.memo}</i>\n\n") +
                     "Haul coal from the chute to the furnace. Feed it, light it, and set the burn lever: the colder it gets outside, the harder it has to burn." +
                     $"\n\nElectrical output target\n<b>{game.Day.target:0} kWh</b>\n\nThe cart has {game.Cart.Wheels} wheel{(game.Cart.Wheels == 1 ? "" : "s")}.";
                 buttonLabel.text = "Begin the shift   [Enter]";
@@ -278,9 +278,9 @@ namespace CoalRun.UI
             var complete = game.Phase == Phase.Complete;
             sheetHeadline.text = complete ? "You kept them alive." : "No one is coming down.";
             sheetBody.text =
-                (complete ? "The shift is over. The furnace is still your problem tomorrow." : "The offices froze first. There is nobody left to send a replacement.") +
+                (complete ? (game.Furnace.Output >= game.Day.target ? "Brass is pleased with the output." : "Brass is not pleased with the output.") + (game.HasNextDay ? " A memo is waiting for you in the morning." : " That is all the shifts there are, for now.") : "The offices froze first. There is nobody left to send a replacement.") +
                 $"\n\nElectrical output\n<b>{game.Furnace.Output:0.0} / {game.Day.target:0} kWh</b>\n\nCoal delivered  <b>{game.Furnace.Delivered:0.0}</b>\nOperators lost  <b>{game.Deaths}</b>";
-            buttonLabel.text = "Run the shift again   [R]";
+            buttonLabel.text = !complete ? "Run the shift again   [R]" : game.HasNextDay ? "Next day   [R]" : "Play again from Day 1   [R]";
         }
 
         // Ticked pages above, the open one big, then empty boxes for what's still to come.

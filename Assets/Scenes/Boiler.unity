@@ -42011,6 +42011,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShiftManager
   tuning: {fileID: 11400000, guid: f427860b05c010ad9a7132cb3a6d27fc, type: 2}
   day: {fileID: 11400000, guid: d2622aafa26ba7426876ac84a923dd74, type: 2}
+  days:
+  - {fileID: 11400000, guid: d2622aafa26ba7426876ac84a923dd74, type: 2}
+  - {fileID: 11400000, guid: 46d9664756e2302de96ede6b33df8493, type: 2}
   input: {fileID: 1727399067}
   player: {fileID: 1137301203}
   cart: {fileID: 1021323406}

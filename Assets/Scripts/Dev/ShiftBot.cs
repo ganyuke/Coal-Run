@@ -167,6 +167,8 @@ namespace CoalRun.Dev
         private IEnumerator Turn()
         {
             var cart = _game.Cart;
+            // A cart bounced up off the lift's end stop is airborne for a moment, not stuck.
+            for (var i = 0; i < 6 && Mathf.Abs(cart.Body.linearVelocity.y) > 1; i++) yield return Wait(.2f);
             var p = cart.Body.position;
             var lift = _game.Lift;
             var onLift = p.x < 4.3f && Mathf.Abs(p.y - (lift.Y + .7f)) < .3f;
@@ -462,7 +464,8 @@ namespace CoalRun.Dev
                 float angle = 0;
                 for (float t = 0; t < 10 && Mathf.Abs(lift.Y - end) > .01f; t += Time.fixedDeltaTime)
                 {
-                    angle -= direction * SpinRate * Time.fixedDeltaTime;
+                    // Easing off for the last stretch: the platform stops dead at the ends of the shaft, and a loaded cart rammed into them spills.
+                    angle -= direction * SpinRate * Mathf.Clamp(Mathf.Abs(lift.Y - end) / 2f, .2f, 1) * Time.fixedDeltaTime;
                     _wheel.Drag(centre + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * SpinRadius, Time.fixedDeltaTime);
                     yield return null;
                 }

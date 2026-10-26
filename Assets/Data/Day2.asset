@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DayConfig
   day: 2
   training: 0
+  memo: Engineering sent the other axle down overnight, so the cart has both wheels
+    again. It is colder tomorrow. Brass wants more.
   startingWheels: 2
   startingHopper: 15
   target: 240

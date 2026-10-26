@@ -20,6 +20,9 @@ namespace CoalRun.Core
 
         [SerializeField] private Tuning tuning;
         [SerializeField] private DayConfig day;
+        [Tooltip("The shifts in order. A survived shift moves on to the next; empty: just the one above.")]
+        [SerializeField]
+        private DayConfig[] days;
         [SerializeField] private InputReader input;
         [SerializeField] private PlayerController player;
         [SerializeField] private Cart cart;
@@ -44,7 +47,8 @@ namespace CoalRun.Core
         private float firstArrival = 1.2f;
 
         public Tuning Tune => tuning;
-        public DayConfig Day => day;
+        public DayConfig Day => days is { Length: > 0 } ? days[Mathf.Clamp(_dayIndex, 0, days.Length - 1)] : day;
+        public bool HasNextDay => days != null && _dayIndex < days.Length - 1;
         public PlayerController Player => player;
         public Cart Cart => cart;
         public Lift Lift => lift;
@@ -103,14 +107,20 @@ namespace CoalRun.Core
         // The training plays once a session: a restart goes straight to the briefing. Static, so it
         // survives the scene reload; cleared on entering Play mode, since domain reload may be off.
         private static bool _trained;
+        // Which shift we are on. Static like _trained, for the same reason.
+        private static int _dayIndex;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetTraining() => _trained = false;
+        private static void ResetTraining()
+        {
+            _trained = false;
+            _dayIndex = 0;
+        }
 
         private void Awake()
         {
             Instance = this;
-            Phase = day.training && !_trained ? Phase.Tutorial : Phase.Briefing;
+            Phase = Day.training && !_trained ? Phase.Tutorial : Phase.Briefing;
             Time.fixedDeltaTime = tuning.step;
             Physics2D.gravity = new Vector2(0, tuning.gravity);
             GameLayers.ConfigureCollisions();
@@ -120,7 +130,7 @@ namespace CoalRun.Core
         {
             InitialCoal = TotalCoal;
             Temperature = tuning.comfortable;
-            Outside = day.OutsideAt(0);
+            Outside = Day.OutsideAt(0);
             // The training opens with the new operator (and the helper, see Tutorial) riding down the staff
             // lift, the same way a replacement arrives.
             if (Phase == Phase.Tutorial) SendOperator(firstArrival);
@@ -135,7 +145,7 @@ namespace CoalRun.Core
             if (ShiftRunning) StepHeat(dt);
             if (Phase == Phase.Replacement) StepReplacement(dt);
             if (Phase == Phase.Leaving && !Departing) StepLeaving(dt);
-            if (Ended && input.Current.Restart) Restart();
+            if (Ended && input.Current.Restart) Continue();
             if (Phase == Phase.Briefing && input.Current.Begin) BeginShift();
             RecoverLost();
         }
@@ -147,7 +157,7 @@ namespace CoalRun.Core
         private void StepHeat(float dt)
         {
             Clock += dt;
-            Outside = day.OutsideAt(Clock);
+            Outside = Day.OutsideAt(Clock);
             Temperature += (furnace.BurnRate - tuning.heatLoss * (Temperature - Outside)) / tuning.heatCapacity * dt;
             if (Freezing && Chill == 0) Say("God, it's freezing in here. Gotta get the fire up.", 4);
             Chill = Mathf.Clamp01(Chill + (Freezing ? dt : -dt) / tuning.freezeGrace);
@@ -249,6 +259,14 @@ namespace CoalRun.Core
 
         // Reloading the scene puts every station back as it was.
         public void Restart() => SceneManager.LoadScene(gameObject.scene.path);
+
+        // What the report's button does: a survived shift goes on to the next day (or back to the first after the last);
+        // a lost one is run again.
+        public void Continue()
+        {
+            if (Phase == Phase.Complete) _dayIndex = HasNextDay ? _dayIndex + 1 : 0;
+            Restart();
+        }
 
         // Testing shortcuts, by F key. Public so the editor CLI can call them too. Coal is moved to and from
         // the bunker, so the total stays intact.
