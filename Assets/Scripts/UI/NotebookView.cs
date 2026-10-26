@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using CoalRun.Core;
 using CoalRun.Stations;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace CoalRun.UI
 {
@@ -45,6 +47,19 @@ namespace CoalRun.UI
         [Tooltip("Space between stacked notes, and how far each is shifted left of the one under it.")]
         [SerializeField]
         private float stickyGap = 1, stickyShift = 3;
+        [Tooltip("The colour of a note by the key it's for, so the keys you can press are told apart at a glance. Anything else is the first colour.")]
+        [SerializeField]
+        private KeyColor[] keyColors =
+        {
+            new() { key = "E", color = new Color(1f, .91f, .45f) },
+            new() { key = "Hold E", color = new Color(1f, .78f, .35f) },
+            new() { key = "W", color = new Color(.62f, .85f, 1f) },
+            new() { key = "S", color = new Color(.62f, .85f, 1f) },
+            new() { key = "F", color = new Color(1f, .68f, .48f) },
+            new() { key = "Space", color = new Color(.66f, .9f, .62f) },
+            new() { key = "Shift", color = new Color(.8f, .71f, 1f) },
+            new() { key = "Click", color = new Color(1f, .7f, .8f) }
+        };
         [Header("Where the book sits")]
         [Tooltip("Vertical position when shut, with just the top edge showing.")]
         [SerializeField]
@@ -76,12 +91,20 @@ namespace CoalRun.UI
         [SerializeField] private float tickedSize = 17, currentSize = 22;
         [SerializeField] private Color ink = new(.16f, .13f, .1f), fadedInk = new(.5f, .46f, .4f), urgentInk = new(.7f, .12f, .08f);
 
+        [Serializable]
+        public struct KeyColor
+        {
+            public string key;
+            public Color color;
+        }
+
         // The cursor is on the book, so clicks belong to it and not the room.
         public static bool PointerOver { get; private set; }
 
         private readonly List<NotebookRow> _rows = new();
         private readonly List<RectTransform> _stickies = new();
         private readonly List<TMP_Text> _stickyText = new();
+        private readonly List<Image> _stickyImage = new();
         private bool _open, _dirty = true, _pressing, _dragging;
         private float _nudgeUntil, _dimmed, _restY, _dragY, _pressY, _grab, _overlapFor, _peek;
         // Whether the page was laid out for an open book: shut, it's just the open page.
@@ -301,6 +324,12 @@ namespace CoalRun.UI
             return y + height;
         }
 
+        private Color KeyColorFor(string key)
+        {
+            foreach (var k in keyColors) if (k.key == key) return k.color;
+            return keyColors.Length > 0 ? keyColors[0].color : Color.white;
+        }
+
         // One sticky note a prompt, stacked up from the top edge of the book, each turned a little.
         private void Stickies()
         {
@@ -311,6 +340,7 @@ namespace CoalRun.UI
                 note.localRotation = Quaternion.Euler(0, 0, (_stickies.Count % 2 == 0 ? 1.5f : -1.5f) * (1 + _stickies.Count % 3));
                 _stickies.Add(note);
                 _stickyText.Add(note.GetComponentInChildren<TMP_Text>());
+                _stickyImage.Add(note.GetComponent<Image>());
             }
             for (var i = 0; i < _stickies.Count; i++)
             {
@@ -318,6 +348,7 @@ namespace CoalRun.UI
                 _stickies[i].gameObject.SetActive(on);
                 if (!on) continue;
                 _stickyText[i].text = $"<b>[{prompts[i].key}]</b>  {prompts[i].label}";
+                _stickyImage[i].color = KeyColorFor(prompts[i].key);
                 var size = _stickies[i].sizeDelta;
                 _stickies[i].anchoredPosition = new Vector2(stickyTemplate.anchoredPosition.x - i * stickyShift, stickyTemplate.anchoredPosition.y + i * (size.y + stickyGap));
             }
