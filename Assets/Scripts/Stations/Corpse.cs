@@ -31,6 +31,7 @@ namespace CoalRun.Stations
             var box = body.AddComponent<BoxCollider2D>();
             box.size = new Vector2(.48f, 1.33f);
             box.excludeLayers = buried ? GameLayers.Mask(GameLayers.Player, GameLayers.Cart, GameLayers.Part, GameLayers.Pile) : GameLayers.Mask(GameLayers.Player, GameLayers.Cart, GameLayers.Part);
+            body.AddComponent<CorpseBody>();
             return rb;
         }
     }

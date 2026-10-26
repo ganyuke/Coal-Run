@@ -16,6 +16,10 @@ namespace CoalRun.Stations
         [SerializeField]
         private FloorLever burnLever;
 
+        [Tooltip("The firebox mouth in world space, down to the hearth floor: a body that ends up inside is burned up.")]
+        [SerializeField]
+        private Bounds mouth = new(new Vector3(17, 3.2f, 0), new Vector3(2.8f, 2.4f, 20));
+
         [Header("Fire and meter")]
         [Tooltip("Flames rising off the coal bed, masked to the firebox mouth. Its emission, size and rise speed follow the burn; its noise module makes them lick.")]
         [SerializeField]
@@ -84,6 +88,16 @@ namespace CoalRun.Stations
         {
             _game = ShiftManager.Instance;
             Hopper = _game.Day.startingHopper;
+        }
+
+        public bool InMouth(Vector2 p) => mouth.Contains(new Vector3(p.x, p.y, 0));
+
+        // Something thrown in: a shower of sparks and a flare of glow, and nothing left of it.
+        public void Burn(Vector2 at)
+        {
+            if (sparks) sparks.Emit(50);
+            if (emberGlow) emberGlow.Emit(6);
+            _game.Sound("ignite", .5f);
         }
 
         private void FixedUpdate()

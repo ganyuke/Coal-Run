@@ -75241,6 +75241,18 @@ PrefabInstance:
       propertyPath: lightRange.y
       value: 3.2
       objectReference: {fileID: 0}
+    - target: {fileID: 833257843521387964, guid: afa4a296994e41fe5a070dae82e25087, type: 3}
+      propertyPath: mouth.m_Center.y
+      value: 3.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 833257843521387964, guid: afa4a296994e41fe5a070dae82e25087, type: 3}
+      propertyPath: mouth.m_Extent.x
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 833257843521387964, guid: afa4a296994e41fe5a070dae82e25087, type: 3}
+      propertyPath: mouth.m_Extent.y
+      value: 1.2
+      objectReference: {fileID: 0}
     - target: {fileID: 962792148152841011, guid: afa4a296994e41fe5a070dae82e25087, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 

@@ -66,6 +66,9 @@ namespace CoalRun.Stations
         // Coal shoveled up this shift; the tutorial watches it.
         public float Scooped { get; private set; }
         public bool CarryingWheel { get; private set; }
+        // A body carried in the wheel's place: heavier, slower and shorter to throw (see PickUpBody).
+        private Rigidbody2D _carriedBody;
+        private CorpseBody _carriedCorpse;
         // Going up or down the control room stairs (see Climb).
         public bool Climbing { get; private set; }
 
@@ -157,7 +160,7 @@ namespace CoalRun.Stations
             // pushing. A body contact would push on the bin's top corner and lever it over its wheel.
             _box.excludeLayers = Lane == 1 ? ~GameLayers.Mask(GameLayers.Terrain) : GameLayers.Mask(GameLayers.Cart);
 
-            var target = c.Move * t.walkSpeed * (Machine ? t.machineWalk : digging ? t.digWalk : 1) * Rush * (Stagger > 0 ? .25f : 1) * _game.Tutorial.WalkFactor;
+            var target = c.Move * t.walkSpeed * (_carriedBody ? .6f : 1) * (Machine ? t.machineWalk : digging ? t.digWalk : 1) * Rush * (Stagger > 0 ? .25f : 1) * _game.Tutorial.WalkFactor;
             // The dash speeds up as it goes (a run-up), set directly so it follows the ramp exactly.
             if (_dashFor > 0)
             {
@@ -365,6 +368,11 @@ namespace CoalRun.Stations
             if (_game.Tutorial.Restricts) return;
             if (_game.Phone.CanAnswer(this)) { _game.Phone.Answer(); return; }
             if (CartOverturnedInReach()) { RightCart(); return; }
+            if (_carriedBody)
+            {
+                ReleaseWheel(Body.linearVelocity + new Vector2(Facing * 1.2f, .5f));
+                return;
+            }
             if (CarryingWheel)
             {
                 // Away from the cart, E puts the wheel down; at the cart, holding it bolts it on (see Fit).
@@ -373,6 +381,7 @@ namespace CoalRun.Stations
                 return;
             }
             if (WheelInReach() is { } wheel) { PickUp(wheel); return; }
+            if (BodyInReach() is { } body) { PickUpBody(body); return; }
             if (CartNear() && _game.Cradle.Interact()) return;
         }
 
@@ -415,8 +424,74 @@ namespace CoalRun.Stations
             _game.Sound("clank");
         }
 
+        private Rigidbody2D BodyInReach()
+        {
+            Rigidbody2D best = null;
+            var reach = _game.Tune.wheelReach * 1.4f;
+            foreach (var b in _game.Bodies)
+            {
+                if (!b || !b.gameObject.activeSelf || b == _carriedBody) continue;
+                var d = Vector2.Distance(b.position, Body.position);
+                if (d >= reach) continue;
+                best = b;
+                reach = d;
+            }
+            return best;
+        }
+
+        // Carried like a wheel (the same hands, the same throw), but slung over the shoulder, slower and shorter.
+        private void PickUpBody(Rigidbody2D body)
+        {
+            ThrowHands();
+            ReleaseGrip();
+            _carriedBody = body;
+            _carriedCorpse = body.GetComponent<CorpseBody>();
+            CarryingWheel = true;
+            if (heldWheel) heldWheel.gameObject.SetActive(false);
+            body.simulated = false;
+            body.linearVelocity = Vector2.zero;
+            if (_carriedCorpse)
+            {
+                _carriedCorpse.Carried = true;
+                _carriedCorpse.Lift(true);
+            }
+            _game.Sound("clank");
+        }
+
+        private void ReleaseBody(Vector2 velocity)
+        {
+            var body = _carriedBody;
+            _carriedBody = null;
+            CarryingWheel = false;
+            // A body that isn't simulated has to be moved by its transform.
+            body.transform.position = HandPoint + Vector2.up * .3f;
+            body.simulated = true;
+            body.linearVelocity = velocity;
+            body.angularVelocity = -Facing * 220;
+            if (_carriedCorpse)
+            {
+                _carriedCorpse.Carried = false;
+                _carriedCorpse.Lift(false);
+                _carriedCorpse.Throw(velocity.magnitude > 3 ? .9f : 0);
+            }
+            _carriedCorpse = null;
+            _game.Sound("clank");
+        }
+
+        // The body hangs across the operator's shoulders while carried.
+        private void HeldBody()
+        {
+            if (!_carriedBody) return;
+            _carriedBody.transform.SetPositionAndRotation(Body.position + new Vector2(Facing * .1f, .35f), Quaternion.Euler(0, 0, -Facing * 78));
+        }
+
         private void ReleaseWheel(Vector2 velocity)
         {
+            if (_carriedBody)
+            {
+                ReleaseBody(velocity);
+                return;
+            }
             CarryingWheel = false;
             if (heldWheel) heldWheel.gameObject.SetActive(false);
             _game.Cart.DropWheel(HandPoint, velocity);
@@ -427,7 +502,7 @@ namespace CoalRun.Stations
         private void ThrowWheel(Vector2 aim)
         {
             if (Mathf.Abs(aim.x - Body.position.x) > .05f) Facing = (int)Mathf.Sign(aim.x - Body.position.x);
-            ReleaseWheel(ThrowVelocity(HandPoint, aim, _game.Tune.wheelThrowSpeed));
+            ReleaseWheel(ThrowVelocity(HandPoint, aim, _game.Tune.wheelThrowSpeed * (_carriedBody ? .85f : 1)));
         }
 
         private Vector2 HandPoint => Body.position + new Vector2(Facing * .45f, .05f);
@@ -438,7 +513,7 @@ namespace CoalRun.Stations
         private void Fit(Controls c, float dt)
         {
             var cart = _game.Cart;
-            if (!CarryingWheel || _flying || !c.InteractHeld || Lane != 0 || !CartNear() || cart.WheelBlocker != null || CartOverturnedInReach())
+            if (!CarryingWheel || _carriedBody || _flying || !c.InteractHeld || Lane != 0 || !CartNear() || cart.WheelBlocker != null || CartOverturnedInReach())
             {
                 _fit = 0;
                 return;
@@ -479,6 +554,7 @@ namespace CoalRun.Stations
         private void Update()
         {
             HeldWheel();
+            HeldBody();
             Strike();
             HeldShovel();
             ScoopOutline();
@@ -954,6 +1030,12 @@ namespace CoalRun.Stations
                 return list;
             }
             if (_game.Phone.CanAnswer(this)) list.Add(("E", "Answer the phone"));
+            if (_carriedBody)
+            {
+                list.Add(("E", "Put body down"));
+                list.Add(("Click", "Throw body"));
+                return list;
+            }
             if (CarryingWheel)
             {
                 list.Add(CartNear() && _game.Cart.Wheels < 2 ? ("Hold E", "Fit wheel") : ("E", "Put wheel down"));
@@ -961,6 +1043,7 @@ namespace CoalRun.Stations
                 return list;
             }
             if (WheelInReach()) list.Add(("E", "Pick up wheel"));
+            else if (BodyInReach()) list.Add(("E", "Pick up body"));
             if (AtDoor) list.Add(("W", "Up to the control room"));
             if (_game.Furnace.CanLight(this)) list.Add(("Hold E", "Light the fire"));
             if (CartNear() && _game.Cradle.Prompt != null) list.Add(("E", _game.Cradle.Prompt));
