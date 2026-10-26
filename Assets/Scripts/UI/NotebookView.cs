@@ -41,6 +41,10 @@ namespace CoalRun.UI
         [SerializeField] private Vector2 sheetSize = new(520, 560);
         [SerializeField] private float sheetY = 80;
         [SerializeField] private float briefingDim = .55f, reportDim = .8f;
+        [Header("Sticky notes")]
+        [Tooltip("Space between stacked notes, and how far each is shifted left of the one under it.")]
+        [SerializeField]
+        private float stickyGap = 1, stickyShift = 3;
         [Header("Where the book sits")]
         [Tooltip("Vertical position when shut, with just the top edge showing.")]
         [SerializeField]
@@ -68,7 +72,8 @@ namespace CoalRun.UI
         [Header("The page")]
         [SerializeField] private int tickedShown = 3;
         [SerializeField] private int emptyShown = 2;
-        [SerializeField] private float rowHeight = 46, currentHeight = 86;
+        [SerializeField] private float rowHeight = 38, currentHeight = 66;
+        [SerializeField] private float tickedSize = 17, currentSize = 22;
         [SerializeField] private Color ink = new(.16f, .13f, .1f), fadedInk = new(.5f, .46f, .4f), urgentInk = new(.7f, .12f, .08f);
 
         // The cursor is on the book, so clicks belong to it and not the room.
@@ -266,15 +271,15 @@ namespace CoalRun.UI
             _laidOutOpen = history;
             var used = 0;
             var y = 0f;
-            if (history) foreach (var p in ticked) y = Row(ref used, y, p.Text, true, rowHeight, 20, fadedInk, false);
+            if (history) foreach (var p in ticked) y = Row(ref used, y, p.Text, true, rowHeight, tickedSize, fadedInk, false);
             var peek = 100f;
             if (current != null)
             {
                 var before = y;
-                y = Row(ref used, y, current.Text, false, currentHeight, 26, current.Urgent ? urgentInk : ink, true);
+                y = Row(ref used, y, current.Text, false, currentHeight, currentSize, current.Urgent ? urgentInk : ink, true);
                 peek = pageTop + (history ? 0 : y - before) + peekPadding;
             }
-            if (history) for (var i = 0; i < emptyShown; i++) y = Row(ref used, y, "", false, rowHeight, 20, fadedInk, false);
+            if (history) for (var i = 0; i < emptyShown; i++) y = Row(ref used, y, "", false, rowHeight, tickedSize, fadedInk, false);
             _peek = peek;
             for (var i = used; i < _rows.Count; i++) _rows[i].gameObject.SetActive(false);
         }
@@ -314,7 +319,7 @@ namespace CoalRun.UI
                 if (!on) continue;
                 _stickyText[i].text = $"<b>[{prompts[i].key}]</b>  {prompts[i].label}";
                 var size = _stickies[i].sizeDelta;
-                _stickies[i].anchoredPosition = new Vector2(stickyTemplate.anchoredPosition.x - i * 6, stickyTemplate.anchoredPosition.y + i * (size.y + 4));
+                _stickies[i].anchoredPosition = new Vector2(stickyTemplate.anchoredPosition.x - i * stickyShift, stickyTemplate.anchoredPosition.y + i * (size.y + stickyGap));
             }
         }
     }
