@@ -19,7 +19,7 @@ namespace CoalRun.Core
         public bool Restart;    // R pressed this step
         public bool Begin;      // Enter pressed this step
         public bool Click;      // Left mouse button pressed this step
-        public int DebugKey;    // F2, F4–F8 pressed this step (2, 4–8), else 0. See ShiftManager.DebugCommand.
+        public int DebugKey;    // F2, F4–F9 pressed this step (2, 4–9), else 0. See ShiftManager.DebugCommand.
         public Vector2 Aim;     // The cursor, in world space
     }
 
@@ -62,6 +62,7 @@ namespace CoalRun.Core
             if (k.f6Key.wasPressedThisFrame) _debugPressed = 6;
             if (k.f7Key.wasPressedThisFrame) _debugPressed = 7;
             if (k.f8Key.wasPressedThisFrame) _debugPressed = 8;
+            if (k.f9Key.wasPressedThisFrame) _debugPressed = 9;
             if (k.wKey.wasPressedThisFrame || k.upArrowKey.wasPressedThisFrame) _lanePressed = 1;
             if (k.sKey.wasPressedThisFrame || k.downArrowKey.wasPressedThisFrame) _lanePressed = -1;
         }

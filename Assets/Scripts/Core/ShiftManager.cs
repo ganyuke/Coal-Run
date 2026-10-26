@@ -213,6 +213,9 @@ namespace CoalRun.Core
                     tutorial.Skip();
                     BeginShift();
                     break;
+                case 9: // The bot plays the shift (balance testing); F9 again stops it.
+                    Dev.ShiftBot.Run(this);
+                    break;
                 case 6: // The cart, upright and still, beside the operator on their floor.
                     var p = player.Position;
                     float side = player.Facing, floor = Coal.SurfaceAt(p.x, p.y).Y;
