@@ -23,11 +23,15 @@ namespace CoalRun.UI
         [SerializeField]
         private Rect graph = new(-1.65f, -.85f, 3.3f, 1.4f);
         [SerializeField] private int samples = 60;
+        [Tooltip("How many dots across the holds line while the fire is out.")]
+        [SerializeField]
+        private int dots = 22;
         [SerializeField] private Color normal = new(.55f, 1, .6f), warning = new(1, .35f, .3f);
 
         private ShiftManager _game;
         private float _low, _high;
         private Vector3[] _points;
+        private Material _holdsMaterial;
 
         private void Start()
         {
@@ -46,6 +50,14 @@ namespace CoalRun.UI
                 var time = _game.Tune.shiftLength * i / samples;
                 _points[i] = Point(time, day.OutsideAt(time));
             }
+            // The holds line is solid while the fire's lit and dotted once it's out: the temperature it would hold
+            // against, if it were burning. A one-pixel-wide dot texture, tiled along the line.
+            var dot = new Texture2D(2, 1, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Repeat };
+            dot.SetPixels(new[] { Color.white, Color.clear });
+            dot.Apply();
+            _holdsMaterial = holdsLine.material;
+            _holdsMaterial.mainTexture = dot;
+            holdsLine.textureMode = LineTextureMode.Tile;
             forecast.positionCount = _points.Length;
             forecast.SetPositions(_points);
         }
@@ -71,7 +83,8 @@ namespace CoalRun.UI
             var x = graph.xMin + time / length * graph.width;
             nowLine.SetPosition(0, new Vector3(x, graph.yMin));
             nowLine.SetPosition(1, new Vector3(x, graph.yMax));
-            holdsLine.enabled = _game.Furnace.Lit;
+            // Scaled to a sliver, the texture stays on its solid first pixel.
+            holdsLine.textureScale = new Vector2(_game.Furnace.Lit ? .01f : dots / graph.width, 1);
             var y = Point(0, held).y;
             holdsLine.SetPosition(0, new Vector3(graph.xMin, y));
             holdsLine.SetPosition(1, new Vector3(graph.xMax, y));
