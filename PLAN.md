@@ -214,3 +214,9 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 ## Audio (polish branch)
 - `AudioDirector` (Systems/Audio) plays cues for `ShiftManager.Sound` names and keeps beds (wind, fire, lift hum, drone, heartbeat, shiver). Cue/bed table lives in `Assets/Editor/AudioSetup.cs`; re-run `AudioSetup.Build()` after changing it.
 - Clips: synthesized by `Tools/AudioGen/make_audio.py` (Assets/Audio/Synth) plus Kenney Impact Sounds, CC0 (Assets/Audio/Kenney).
+
+## Art and lighting (polish branch)
+- Art is generated: `Tools/ArtGen/*.py` draw flat-shaded low-poly sprites into `Assets/Art/Generated`; `Assets/Editor/ArtApplier.cs` swaps them into the scene. Objects whose scale code drives need 64x64 unit-square sprites.
+- Lighting: 2D lights under Systems/Lights (fire, lamps with `LightFlicker`, window, phone, freeze lamp), bloom/vignette/grade in `GameVolume`, renderer HDR emulation 2.5.
+- `InstrumentPanel` (thermometer + chart) replaced the TV. Fonts: Special Elite (notebook), Barlow Condensed (speech). Cold breath on the operator (`Speaker.breathBelow`).
+- Bot note: the freight lift stops dead at the shaft ends, so a loaded cart rammed into them spills; `ShiftBot` eases off in the last 2 units.
