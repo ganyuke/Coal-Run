@@ -41,8 +41,9 @@ Each milestone ends with something you can play. Don't start the next one until 
   - [x] Briefing and report as notebook pages (10/26)
   - [x] Frost vignette in uGUI; what people say is little text above their heads (10/26)
   - [ ] Morning memo page; the F3 readout and replacement countdown out of IMGUI
-- [ ] **M6 · Art and sound** (Thu 10/29)
+- [x] **M6 · Art and sound** (Thu 10/29): done early on `polish`; the audio mix is untuned by ear, needs a listen.
 - [ ] **M7 · Build, playtest, submit** (Fri 10/30)
+  - [x] Linux standalone build (112 MB) made from the editor and smoke-run headless for 25 s without errors; the editor runs ~350 fps with 12 lights + post. Still to do: a human playtest, the Windows/Mac builds if wanted, submission.
 
 ## Status (Sun 10/25, 1 am)
 
