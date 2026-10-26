@@ -549,14 +549,24 @@ namespace CoalRun.Stations
         private void Shovel(Controls c, float dt)
         {
             var t = _game.Tune;
-            if (!Digging(c)) { ThrowHands(); return; }
+            if (!Digging(c)) { _idleFor = 0; _digSide = Facing; ThrowHands(); return; }
             if (Hands >= t.handCapacity - .001f) { ThrowHands(); return; }
-            // Held toward the cursor (they face it) while there's nothing to dig.
-            _digSide = Facing;
-            if (ScoopTarget(Facing) is not { } target) { ThrowHands(); return; }
+            if (ScoopTarget(Facing) is not { } target)
+            {
+                // Walking over scattered chunks, the pile keeps dropping out of reach for a moment: the shovel stays
+                // out, on the side it was digging, and only gives up (and throws what's on it) once nothing has
+                // turned up for a while. Held toward the cursor (they face it) while there's nothing to dig.
+                _idleFor += dt;
+                if (_idleFor <= t.scoopLinger) return;
+                _digSide = Facing;
+                ThrowHands();
+                return;
+            }
+            _idleFor = 0;
             var (s, i) = target;
             var dx = s.Start + (i + .5f) * t.columnWidth - Body.position.x;
-            _digSide = Mathf.Abs(dx) > .1f ? (int)Mathf.Sign(dx) : Facing;
+            // A pile right under their feet doesn't flip the shovel from one side to the other.
+            if (Mathf.Abs(dx) > .3f) _digSide = (int)Mathf.Sign(dx);
             var taken = _game.Coal.TakeFromPile(s, i, Mathf.Min(t.shovelRate * dt, t.handCapacity - Hands));
             Hands += taken;
             Scooped += taken;
@@ -649,9 +659,11 @@ namespace CoalRun.Stations
                 var swing = throwing < .12f ? Mathf.SmoothStep(0, 1, throwing / .12f) : 1 - Mathf.SmoothStep(0, 1, (throwing - .12f) / .28f);
                 angle = Mathf.Lerp(angle, Facing * 145, swing);
             }
-            var toward = angle >= 0 ? 1 : -1;
+            // Eased, so a pile appearing and vanishing under the cursor as they walk doesn't snap it about.
+            _shovelAngle = Mathf.LerpAngle(_shovelAngle, angle, 1 - Mathf.Exp(-22 * Time.deltaTime));
+            var toward = _shovelAngle >= 0 ? 1 : -1;
             heldShovel.localPosition = new Vector3(Mathf.Lerp(heldShovel.localPosition.x, toward * .2f, Time.deltaTime * 20), -.08f, 0);
-            heldShovel.localRotation = Quaternion.Euler(0, 0, angle);
+            heldShovel.localRotation = Quaternion.Euler(0, 0, _shovelAngle);
             if (!shovelLoad) return;
             shovelLoad.gameObject.SetActive(full > .01f);
             // On the blade's upper face.
@@ -661,6 +673,8 @@ namespace CoalRun.Stations
 
         private bool _digging;
         private int _digSide = 1;
+        // Seconds the shovel has been out with nothing in reach to dig, and how it's turned (smoothed).
+        private float _idleFor, _shovelAngle;
         private float _thrownAt = -1;
 
         // The launch velocity that reaches `to` after a flight time that grows with distance, so near

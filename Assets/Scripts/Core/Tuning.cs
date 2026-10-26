@@ -90,6 +90,8 @@ namespace CoalRun.Core
         public float handCapacity = 3;
         public float chuteRate = 5;
         public float shovelRate = 2.8f;
+        [Tooltip("Seconds the shovel stays out, and keeps what's on it, once the coal drops out of its reach (walking over scattered chunks), before it throws it.")]
+        public float scoopLinger = .6f;
         [Tooltip("Fastest a shovelful can be thrown. Throws aimed further than this allows fall short.")]
         public float throwSpeed = 10;
         [Tooltip("How much the lumps of one throw scatter, as a fraction of the chute's scatter.")]
