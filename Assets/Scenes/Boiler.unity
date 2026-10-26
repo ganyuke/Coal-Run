@@ -16288,6 +16288,7 @@ MonoBehaviour:
   cradle: {fileID: 4074597142719355249}
   staffLift: {fileID: 825623891}
   phone: {fileID: 1882790907}
+  liftShaft: {fileID: 1271085895}
   tutorial: {fileID: 1419860674}
   firstArrival: 1.2
 --- !u!4 &1727399069

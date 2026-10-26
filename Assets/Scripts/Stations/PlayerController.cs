@@ -203,7 +203,8 @@ namespace CoalRun.Stations
             if (holding && c.Move == 0 && _lurchFor <= 0) cart.Body.AddForce(new Vector2(Mathf.Clamp(-cart.Body.linearVelocity.x * 300, -350, 350), 0));
         }
 
-        // The hurt of hitting the floor hard: a sudden stop from a fast fall.
+        // Coal kicked up where it's walked on or pushed through, and the hurt of hitting the floor hard. The
+        // dust is the lift's, so squashed coal and trampled coal look alike.
         private void Effects(Controls c, float dt)
         {
             var t = _game.Tune;
@@ -217,9 +218,21 @@ namespace CoalRun.Stations
             }
             _lastFall = v.y;
 
+            if (Lane != 0 || Body.bodyType != RigidbodyType2D.Dynamic) return;
+            Vector2 p = Body.position;
+            var surface = _game.Coal.SurfaceAt(p.x, p.y);
+            var pile = _game.Coal.PileHeight(surface, p.x);
+            var feet = new Vector2(p.x, _game.Coal.GroundAt(p.x, p.y));
+            // Walking through coal throws it up behind them, more the deeper it is and the faster they go.
+            if (pile > .05f && Mathf.Abs(v.x) > .6f && Mathf.Abs(v.y) < 1)
+            {
+                _footDust += Mathf.Abs(v.x) * (1 + pile * 6) * 2 * dt;
+                for (; _footDust >= 1; _footDust--)
+                    _game.CoalDust(feet, new Vector2(-Mathf.Sign(v.x) * Random.Range(.2f, 1.2f), Random.Range(.3f, 1.1f)), Random.Range(.06f, .12f), Random.Range(.5f, .9f));
+            }
         }
 
-        private float _lastFall;
+        private float _lastFall, _footDust;
 
         // A double tap. Free, the operator dashes and can ram the cart; holding it, they heave it along in
         // one lurch, which a full cart barely feels.

@@ -30,6 +30,9 @@ namespace CoalRun.Core
         [SerializeField] private TipCradle cradle;
         [SerializeField] private StaffLift staffLift;
         [SerializeField] private RedPhone phone;
+        [Tooltip("Owns the coal dust particles, which the rest of the room's coal borrows (CoalDust).")]
+        [SerializeField]
+        private LiftShaft liftShaft;
         [SerializeField] private Tutorial tutorial;
         [Tooltip("Seconds from Play until the first operator steps out of the staff lift.")]
         [SerializeField]
@@ -145,6 +148,12 @@ namespace CoalRun.Core
                 else SetPhase(Phase.Leaving);
                 Say("The shift is over. Step into the staff lift.", 6);
             }
+        }
+
+        // A speck of the lift shaft's coal dust, for coal being trampled or heaved about elsewhere.
+        public void CoalDust(Vector2 at, Vector2 velocity, float size, float life)
+        {
+            if (liftShaft) liftShaft.Dust(at, velocity, size, life);
         }
 
         // The shift is over and the staff lift's door stands open. Standing still inside it for a moment ends the shift.

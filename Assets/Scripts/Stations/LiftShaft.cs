@@ -128,6 +128,9 @@ namespace CoalRun.Stations
             }
         }
 
+        // For the rest of the room's coal, so it kicks up the same dust as coal squashed in the shaft.
+        public void Dust(Vector2 at, Vector2 velocity, float size, float life) => Emit(dust, at, velocity, size, life);
+
         private static void Emit(ParticleSystem system, Vector2 at, Vector2 velocity, float size, float life) =>
             system.Emit(new ParticleSystem.EmitParams { position = at, velocity = velocity, startSize = size, startLifetime = life }, 1);
 
