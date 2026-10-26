@@ -24,12 +24,12 @@ namespace CoalRun.Stations
         [SerializeField]
         private float joltAt = .3f;
 
-        [Tooltip("Big sparks per shoe when the platform arrives at the top or the bottom, at a crawl, and at its top speed.")]
+        [Tooltip("Sparks per shoe when the platform arrives at the top or the bottom, at a crawl, and at its top speed.")]
         [SerializeField]
-        private Vector2 endSparks = new(8, 30);
-        [Tooltip("The size of those sparks, bigger than the running ones.")]
+        private Vector2 endSparks = new(4, 10);
+        [Tooltip("The size of those sparks, about the same as the running ones.")]
         [SerializeField]
-        private Vector2 endSparkSize = new(.12f, .24f);
+        private Vector2 endSparkSize = new(.06f, .12f);
         [Tooltip("Slower than this over the trip and it arrives quietly, with no burst.")]
         [SerializeField]
         private float endSparkSpeed = .8f;
@@ -129,7 +129,7 @@ namespace CoalRun.Stations
             }
         }
 
-        // Big sparks off both shoes: sprayed up and out off the floor of the shaft, or down and out off the top.
+        // A burst off both shoes like the running sparks, but thrown the other way: up and out off the floor of the shaft, or down and out off the top.
         private void EndSparks(float y, float peak, bool top)
         {
             if (!sparks) return;
@@ -139,7 +139,7 @@ namespace CoalRun.Stations
                 var at = new Vector2(Room.LiftX + shoe.x, y + shoe.y);
                 var inward = -Mathf.Sign(shoe.x);
                 for (var i = 0; i < count; i++)
-                    Emit(sparks, at, new Vector2(inward * Random.Range(.5f, 5f), top ? Random.Range(-4f, 1.5f) : Random.Range(1f, 6f)), Random.Range(endSparkSize.x, endSparkSize.y), Random.Range(.35f, .8f));
+                    Emit(sparks, at, new Vector2(inward * Random.Range(.5f, 3.5f), top ? Random.Range(-3f, 1f) : Random.Range(.5f, 4f)), Random.Range(endSparkSize.x, endSparkSize.y), Random.Range(.25f, .5f));
             }
         }
 

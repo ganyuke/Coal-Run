@@ -29619,6 +29619,9 @@ MonoBehaviour:
   sparksPerMetre: 3
   sparks: {fileID: 2044776512}
   joltAt: 0.3
+  endSparks: {x: 4, y: 10}
+  endSparkSize: {x: 0.06, y: 0.12}
+  endSparkSpeed: 0.8
   pulley: {fileID: 2032490532}
   pulleyRadius: 0.4
   counterweight: {fileID: 1299211332}
