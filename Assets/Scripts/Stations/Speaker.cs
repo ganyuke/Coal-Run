@@ -47,6 +47,7 @@ namespace CoalRun.Stations
         [Tooltip("The pitch of the little blip that goes with each couple of letters: higher for a lighter voice.")]
         [SerializeField]
         private float voicePitch = 1;
+        [SerializeField] private TMP_FontAsset font;
 
         public bool Talking => Time.time < _talkUntil;
         // The line is up (being typed or held), not yet faded out.
@@ -69,6 +70,7 @@ namespace CoalRun.Stations
             var go = new GameObject("Speech: " + name);
             _text = go.AddComponent<TextMeshPro>();
             _text.fontSize = textSize;
+            if (font) _text.font = font;
             _text.alignment = TextAlignmentOptions.Bottom;
             _text.textWrappingMode = TextWrappingModes.Normal;
             _text.rectTransform.sizeDelta = new Vector2(width, 3);

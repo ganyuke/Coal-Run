@@ -362,8 +362,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd1590861c13796db99723a50f031031, type: 2}
+  m_sharedMaterial: {fileID: -8859382417649730054, guid: fd1590861c13796db99723a50f031031, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -806,8 +806,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd1590861c13796db99723a50f031031, type: 2}
+  m_sharedMaterial: {fileID: -8859382417649730054, guid: fd1590861c13796db99723a50f031031, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -27675,6 +27675,7 @@ MonoBehaviour:
   fadeTime: 0.5
   sortingOrder: 60
   voicePitch: 1
+  font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
 --- !u!1 &828493249
 GameObject:
   m_ObjectHideFlags: 0
@@ -29490,8 +29491,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd1590861c13796db99723a50f031031, type: 2}
+  m_sharedMaterial: {fileID: -8859382417649730054, guid: fd1590861c13796db99723a50f031031, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -30144,8 +30145,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd1590861c13796db99723a50f031031, type: 2}
+  m_sharedMaterial: {fileID: -8859382417649730054, guid: fd1590861c13796db99723a50f031031, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -30341,6 +30342,7 @@ MonoBehaviour:
   fadeTime: 0.5
   sortingOrder: 60
   voicePitch: 1
+  font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
 --- !u!1 &1052661936
 GameObject:
   m_ObjectHideFlags: 0
@@ -37847,8 +37849,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: DAY 01
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd1590861c13796db99723a50f031031, type: 2}
+  m_sharedMaterial: {fileID: -8859382417649730054, guid: fd1590861c13796db99723a50f031031, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -39250,6 +39252,7 @@ MonoBehaviour:
   fadeTime: 0.5
   sortingOrder: 60
   voicePitch: 1
+  font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
 --- !u!4 &1391554280
 Transform:
   m_ObjectHideFlags: 0
@@ -47270,8 +47273,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: fd1590861c13796db99723a50f031031, type: 2}
+  m_sharedMaterial: {fileID: -8859382417649730054, guid: fd1590861c13796db99723a50f031031, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -48702,6 +48705,7 @@ MonoBehaviour:
   fadeTime: 0.5
   sortingOrder: 60
   voicePitch: 1
+  font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
 --- !u!1 &1889384120
 GameObject:
   m_ObjectHideFlags: 0
@@ -48866,6 +48870,7 @@ MonoBehaviour:
   fadeTime: 0.5
   sortingOrder: 60
   voicePitch: 1
+  font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
 --- !u!1 &1901404867
 GameObject:
   m_ObjectHideFlags: 0
