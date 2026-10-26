@@ -222,3 +222,4 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - Lighting: 2D lights under Systems/Lights (fire, lamps with `LightFlicker`, window, phone, freeze lamp), bloom/vignette/grade in `GameVolume`, renderer HDR emulation 2.5.
 - `InstrumentPanel` (thermometer + chart) replaced the TV. Fonts: Special Elite (notebook), Barlow Condensed (speech). Cold breath on the operator (`Speaker.breathBelow`).
 - Bot note: the freight lift stops dead at the shaft ends, so a loaded cart rammed into them spills; `ShiftBot` eases off in the last 2 units.
+- Effects check (10/26, bot-driven Day 1, 8 full-room frames over 2 minutes): mean luminance 65-70/255 and only ~1% of pixels near white (window, lamps, fire), steady across the run, so bloom and lights are not blowing out the picture.
