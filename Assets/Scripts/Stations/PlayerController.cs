@@ -230,9 +230,21 @@ namespace CoalRun.Stations
                 for (; _footDust >= 1; _footDust--)
                     _game.CoalDust(feet, new Vector2(-Mathf.Sign(v.x) * Random.Range(.2f, 1.2f), Random.Range(.3f, 1.1f)), Random.Range(.06f, .12f), Random.Range(.5f, .9f));
             }
+            // Hauling a cart that's stuck in it: coal heaves up around its end, so it's plain what's holding it.
+            var cart = _game.Cart;
+            if (Holding && c.Move != 0 && cart.Burial > .3f && Mathf.Abs(cart.Body.linearVelocity.x) < .8f)
+            {
+                _stuckDust += (14 + cart.Burial * 30) * dt;
+                var side = Mathf.Sign(c.Move);
+                for (; _stuckDust >= 1; _stuckDust--)
+                {
+                    var x = cart.Body.position.x + side * Random.Range(.7f, 1.1f);
+                    _game.CoalDust(new Vector2(x, _game.Coal.GroundAt(x, cart.Body.position.y)), new Vector2(Random.Range(-1.2f, 1.2f) - side * .5f, Random.Range(1.5f, 3.5f)), Random.Range(.1f, .2f), Random.Range(.7f, 1.2f));
+                }
+            }
         }
 
-        private float _lastFall, _footDust;
+        private float _lastFall, _footDust, _stuckDust;
 
         // A double tap. Free, the operator dashes and can ram the cart; holding it, they heave it along in
         // one lurch, which a full cart barely feels.
