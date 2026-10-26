@@ -71,7 +71,7 @@ About a day ahead: M1 and M2 are done, and M3 is a third done, all on the first 
 8. **M6 Art and sound:** a sound on every manual action, art over the greybox, frost on the glass as the last freeze warning.
 9. **M7:** build, playtest, submit.
 
-Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or a slower heave), and merging the audio slots into one AudioSource with clip fields. The M2 playtest box is still open.
+Decided while you slept (overrule freely): the heave fast-tap exploit stays as it is, since it costs time rather than coal and the bot never needed it; merging the audio slots into one AudioSource is a post-jam cleanup, left alone so nothing sounds different after the audio pass.
 
 ## Architecture (decided 10/24)
 
