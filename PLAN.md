@@ -21,7 +21,7 @@ Each milestone ends with something you can play. Don't start the next one until 
   - [x] Cart absorbs lumps; burial slows the cart; bulldozing
   - [x] Shovel (F), throwing into the cart, step-up onto piles, operator burial
   - [x] Chute lever in the control room (lane 1, up the stairs over the staff lift), analog pull
-  - [ ] **Playtest:** fill the cart from the lever without burying it; dig a buried cart out; haul through a spill
+  - [x] **Playtest** (ShiftBot, 10/26): filled the cart from the lever without burying it every lap on both days; dug out and hauled through spills in the rescue and sweep legs. A human pass is still welcome.
 - [x] **M3 · Furnace and the shift** (Mon 10/26)
   - [x] Tip cradle + tip handle, pour into the hopper, spill the wrong way
   - [x] Furnace: burn lever notches, heat model, output meter
