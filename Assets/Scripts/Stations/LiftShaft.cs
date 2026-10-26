@@ -24,6 +24,16 @@ namespace CoalRun.Stations
         [SerializeField]
         private float joltAt = .3f;
 
+        [Tooltip("Big sparks per shoe when the platform arrives at the top or the bottom, at a crawl, and at its top speed.")]
+        [SerializeField]
+        private Vector2 endSparks = new(8, 30);
+        [Tooltip("The size of those sparks, bigger than the running ones.")]
+        [SerializeField]
+        private Vector2 endSparkSize = new(.12f, .24f);
+        [Tooltip("Slower than this over the trip and it arrives quietly, with no burst.")]
+        [SerializeField]
+        private float endSparkSpeed = .8f;
+
         [Header("Counterweight")]
         [SerializeField] private Transform pulley;
         [SerializeField] private float pulleyRadius = .4f;
@@ -60,6 +70,9 @@ namespace CoalRun.Stations
         private ShiftManager _game;
         private float _lastSpeed, _sparkDebt, _dustDebt;
         private float _swing, _swingSpeed;
+        // The fastest it went since it left an end of the shaft, and whether it was at one last step.
+        private float _peak;
+        private bool _wasAtEnd = true;
         private Color _glowColor;
 
         private void Start()
@@ -88,6 +101,17 @@ namespace CoalRun.Stations
             else if (squashing && Random.value < .3f) Puff(y, 1);
             _lastSpeed = speed;
 
+            // Arriving at the top or the bottom throws a big burst off the shoes, more the faster the trip was.
+            var atTop = y >= Room.Upper - .03f;
+            var atEnd = atTop || y <= Room.Lower + .03f;
+            if (!atEnd) _peak = Mathf.Max(_peak, Mathf.Abs(speed));
+            else if (!_wasAtEnd)
+            {
+                if (_peak > endSparkSpeed) EndSparks(y, _peak, atTop);
+                _peak = 0;
+            }
+            _wasAtEnd = atEnd;
+
             var crawl = Mathf.Abs(speed) - .3f;
             if (crawl <= 0) return;
             _sparkDebt += crawl * sparksPerMetre * dt;
@@ -102,6 +126,20 @@ namespace CoalRun.Stations
                 _dustDebt--;
                 var side = Random.value < .5f ? -1 : 1;
                 Emit(dust, new Vector2(Room.LiftX + side * (Room.LiftWidth / 2 - .05f), y - .1f), new Vector2(side * Random.Range(0, .3f), speed * .5f), Random.Range(.03f, .06f), 1.2f);
+            }
+        }
+
+        // Big sparks off both shoes: sprayed up and out off the floor of the shaft, or down and out off the top.
+        private void EndSparks(float y, float peak, bool top)
+        {
+            if (!sparks) return;
+            var count = Mathf.RoundToInt(Mathf.Lerp(endSparks.x, endSparks.y, Mathf.InverseLerp(endSparkSpeed, _game.Tune.liftMaxSpeed, peak)));
+            foreach (var shoe in shoes)
+            {
+                var at = new Vector2(Room.LiftX + shoe.x, y + shoe.y);
+                var inward = -Mathf.Sign(shoe.x);
+                for (var i = 0; i < count; i++)
+                    Emit(sparks, at, new Vector2(inward * Random.Range(.5f, 5f), top ? Random.Range(-4f, 1.5f) : Random.Range(1f, 6f)), Random.Range(endSparkSize.x, endSparkSize.y), Random.Range(.35f, .8f));
             }
         }
 
