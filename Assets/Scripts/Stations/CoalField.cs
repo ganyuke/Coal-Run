@@ -125,6 +125,20 @@ namespace CoalRun.Stations
         public float PileHeight(Surface s, float x) => s.Heights[Index(s, x)];
         // Top of the floor plus any pile, at x.
         public float GroundAt(float x, float y) { var s = SurfaceAt(x, y); return s.Y + PileHeight(s, x); }
+        // The highest pile top under a walker's next step. Unlike GroundAt this looks at every surface whose columns
+        // cover x: the lift's last column pokes past the edge SurfaceAt switches floors at, and its lip blocked the step-up.
+        public float WalkGroundAt(float x, float y)
+        {
+            var best = GroundAt(x, y);
+            var width = _game.Tune.columnWidth;
+            foreach (var s in Surfaces)
+            {
+                if (x < s.Start || x >= s.Start + s.Heights.Length * width || Mathf.Abs(s.Y - (y - .72f)) > .35f) continue;
+                best = Mathf.Max(best, s.Y + s.Heights[Index(s, x)]);
+            }
+            return best;
+        }
+
         private float ToHeight(float coal) => coal * _game.Tune.pileVolume / _game.Tune.columnWidth;
         private float ToCoal(float height) => height * _game.Tune.columnWidth / _game.Tune.pileVolume;
 
@@ -495,6 +509,8 @@ namespace CoalRun.Stations
             }
         }
 
+        private static bool Solid(Surface s, int i) => s.Heights[i] >= .05f;
+
         // Rebuilds a floor's pile collider and column art. One quad per column, its top sloping to the
         // average height of each neighbour so the surface reads as a slope rather than steps.
         private void Rebuild(Surface s)
@@ -510,10 +526,13 @@ namespace CoalRun.Stations
                 var x = s.Start + i * w;
                 column.transform.localPosition = new Vector3(x + w / 2, h / 2, 0);
                 column.transform.localScale = new Vector3(w, h, 1);
+                // Coal thinner than the step-up threshold is only drawn: a lip that low stopped the operator
+                // dead (the step-up ignores anything under about 4 cm, and the body rests that far off the floor).
+                if (!Solid(s, i)) continue;
                 // Where the pile ends on bare floor it ramps down to nothing: a lip there, however thin,
                 // stopped the operator dead against a sliver of coal.
-                var left = i == 0 ? h : s.Heights[i - 1] >= .018f ? (h + s.Heights[i - 1]) / 2 : 0;
-                var right = i == s.Heights.Length - 1 ? h : s.Heights[i + 1] >= .018f ? (h + s.Heights[i + 1]) / 2 : 0;
+                var left = i == 0 ? h : Solid(s, i - 1) ? (h + s.Heights[i - 1]) / 2 : 0;
+                var right = i == s.Heights.Length - 1 ? h : Solid(s, i + 1) ? (h + s.Heights[i + 1]) / 2 : 0;
                 var o = s.ShapeOrigin;
                 _quad[0] = o + new Vector2(x, -.05f);
                 _quad[1] = o + new Vector2(x + w, -.05f);
