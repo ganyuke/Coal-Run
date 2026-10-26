@@ -37,7 +37,9 @@ namespace CoalRun.Stations
             _timer -= dt;
             _quiet -= dt;
             var t = _game.Temperature;
-            if (t >= ringBelow || _timer > 0 || _quiet > 0) return;
+            // Warm again: whatever it was ringing about is fixed.
+            if (t >= ringBelow) { Ringing = false; return; }
+            if (_timer > 0 || _quiet > 0) return;
             Ringing = true;
             _timer = t < 6 ? 4 : t < 9 ? 8 : 15;
             _game.Sound("ring", 1);
