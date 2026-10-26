@@ -92,7 +92,7 @@ namespace CoalRun.Stations
 
         public bool InMouth(Vector2 p) => mouth.Contains(new Vector3(p.x, p.y, 0));
 
-        // Something thrown in: a shower of sparks and a flare of glow, and nothing left of it.
+        // Something thrown into the lit furnace (a cold one burns nothing, see CorpseBody): a shower of sparks and a flare of glow, and nothing left of it.
         public void Burn(Vector2 at)
         {
             if (sparks) sparks.Emit(50);

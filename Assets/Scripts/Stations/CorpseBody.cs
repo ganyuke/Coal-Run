@@ -48,7 +48,7 @@ namespace CoalRun.Stations
         private void FixedUpdate()
         {
             if (!_game || Carried) return;
-            if (_game.Furnace.InMouth(_body.position))
+            if (_game.Furnace.Lit && _game.Furnace.InMouth(_body.position))
             {
                 _game.Furnace.Burn(_body.position);
                 _game.Bodies.Remove(_body);
