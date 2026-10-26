@@ -21,10 +21,11 @@ namespace CoalRun.Core
         // Eases in on `at`, showing `size` world units from the middle to the top edge, and returns once it's there.
         public IEnumerator FocusOn(Vector2 at, float size, float time)
         {
-            // Not past the sides of the room, nor far below its floor.
+            // Never showing past the room: the near edge of the view stays inside every wall, floor and ceiling,
+            // so a zoom on someone by a wall sits them off-centre rather than showing the dark outside.
             var half = size * cam.aspect;
             var x = Mathf.Clamp(at.x, Mathf.Min(half, Room.Width / 2), Mathf.Max(Room.Width - half, Room.Width / 2));
-            var y = Mathf.Max(at.y, size - 1);
+            var y = Mathf.Clamp(at.y, Mathf.Min(size, Room.Height / 2), Mathf.Max(Room.Height - size, Room.Height / 2));
             yield return Move(new Vector3(x, y, _home.z), size, time);
         }
 
