@@ -140,6 +140,10 @@ namespace CoalRun.Core
         public float freeze = 0;
         [Tooltip("Seconds the building can sit at or below freezing before the operator freezes. Never shown; it drains back at the same rate once it's above.")]
         public float freezeGrace = 30;
+        [Tooltip("Fastest the operator can hit the floor without being hurt, in m/s: about a 2.7 m drop.")]
+        public float safeFall = 7;
+        [Tooltip("Injury per m/s of landing speed over safeFall. 7 kills: the drop from the upper floor to the lower is about 16 m/s.")]
+        public float fallHurt = .9f;
         [Tooltip("Seconds the operator must stand inside the staff lift, once the shift is over, before the door closes.")]
         public float liftStandTime = .6f;
         [Tooltip("Seconds the screen takes to fade to black once the staff lift's door has closed.")]

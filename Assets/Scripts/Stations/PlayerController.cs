@@ -113,6 +113,7 @@ namespace CoalRun.Stations
             if (CarryingWheel && !_flying && c.Click) ThrowWheel(c.Aim);
             Fit(c, dt);
             Move(c, dt);
+            Effects(c, dt);
             Shovel(c, dt);
             if (Lane == 1) Body.position = new Vector2(Mathf.Clamp(Body.position.x, Room.BoothStart + .3f, Room.Width - .55f), Body.position.y);
             CheckBurial(dt);
@@ -201,6 +202,24 @@ namespace CoalRun.Stations
             }
             if (holding && c.Move == 0 && _lurchFor <= 0) cart.Body.AddForce(new Vector2(Mathf.Clamp(-cart.Body.linearVelocity.x * 300, -350, 350), 0));
         }
+
+        // The hurt of hitting the floor hard: a sudden stop from a fast fall.
+        private void Effects(Controls c, float dt)
+        {
+            var t = _game.Tune;
+            var v = Body.linearVelocity;
+            // A sudden stop from a fast fall is a landing; the lift's own braking is gentler than that.
+            if (Body.bodyType == RigidbodyType2D.Dynamic && _lastFall < -t.safeFall && v.y - _lastFall > 5)
+            {
+                var hurt = (-_lastFall - t.safeFall) * t.fallHurt;
+                Hurt(hurt, "Fell from the upper floor");
+                _game.Say("You hit the floor hard.", 3);
+            }
+            _lastFall = v.y;
+
+        }
+
+        private float _lastFall;
 
         // A double tap. Free, the operator dashes and can ram the cart; holding it, they heave it along in
         // one lurch, which a full cart barely feels.
