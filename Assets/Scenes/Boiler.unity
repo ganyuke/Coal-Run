@@ -25107,379 +25107,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
---- !u!1 &602277736
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 602277737}
-  - component: {fileID: 602277738}
-  m_Layer: 0
-  m_Name: Audio
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &602277737
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 602277736}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 935655279}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &602277738
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 602277736}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 15825726851bbfd0093efab3f653c1a3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Audio.AudioDirector
-  cues:
-  - name: step
-    clips:
-    - {fileID: 8300000, guid: a31ac1231678aa1feb7c7abe5a334280, type: 3}
-    - {fileID: 8300000, guid: ae656efd8f352da7ba5f99fa6e249068, type: 3}
-    - {fileID: 8300000, guid: bc505bb66d6d01382bf5443ee4f269f2, type: 3}
-    - {fileID: 8300000, guid: a2ceecce3013d69e39a5518204ce766b, type: 3}
-    - {fileID: 8300000, guid: a19e35d2a90263dada0337f2fecdff6a, type: 3}
-    volume: 0.5
-    pitch: {x: 0.88, y: 1.08}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: shovel
-    clips:
-    - {fileID: 8300000, guid: 534497da5c9f85be6a6d76833bb45e26, type: 3}
-    - {fileID: 8300000, guid: 633fad50994b06925b584bf236be4476, type: 3}
-    - {fileID: 8300000, guid: ef7e5d5b1a94d399e9ced221b8202725, type: 3}
-    - {fileID: 8300000, guid: c25f2884cddc18b3ea993b649eda7148, type: 3}
-    - {fileID: 8300000, guid: 2d3036bdf4ad9beef925f143019ce5d0, type: 3}
-    volume: 0.5
-    pitch: {x: 0.8, y: 1}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: coal
-    clips:
-    - {fileID: 8300000, guid: 534497da5c9f85be6a6d76833bb45e26, type: 3}
-    - {fileID: 8300000, guid: 633fad50994b06925b584bf236be4476, type: 3}
-    - {fileID: 8300000, guid: ef7e5d5b1a94d399e9ced221b8202725, type: 3}
-    - {fileID: 8300000, guid: c25f2884cddc18b3ea993b649eda7148, type: 3}
-    - {fileID: 8300000, guid: 2d3036bdf4ad9beef925f143019ce5d0, type: 3}
-    volume: 0.3
-    pitch: {x: 0.85, y: 1.25}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: pour
-    clips:
-    - {fileID: 8300000, guid: a723c15010975792db51c8e9881dd280, type: 3}
-    volume: 0.65
-    pitch: {x: 0.95, y: 1.05}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: spill
-    clips:
-    - {fileID: 8300000, guid: 1464b08d68b8bbdaf9b1964fb0ba57ea, type: 3}
-    volume: 0.55
-    pitch: {x: 0.9, y: 1.1}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: clank
-    clips:
-    - {fileID: 8300000, guid: ac073583edf90c9f491aed8e1cf25107, type: 3}
-    - {fileID: 8300000, guid: 924d363d4ff90ae25bf49633ef50bdae, type: 3}
-    - {fileID: 8300000, guid: 01644d7212221ad0786dac47599dc064, type: 3}
-    volume: 0.55
-    pitch: {x: 0.9, y: 1.1}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: clunk
-    clips:
-    - {fileID: 8300000, guid: 283fd63c4e179d7c6bdf185e2a05165c, type: 3}
-    - {fileID: 8300000, guid: f6a5c396df056656aaf72ef84fac9c04, type: 3}
-    - {fileID: 8300000, guid: 0af0dabc09f4b1c969e6a900b5a9a0e0, type: 3}
-    volume: 0.65
-    pitch: {x: 0.9, y: 1.05}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: notch
-    clips:
-    - {fileID: 8300000, guid: 943800c77ff3b0baba8ac2765711fc96, type: 3}
-    - {fileID: 8300000, guid: ecdcda11b8cbba3e5ad34c1e1dcd190f, type: 3}
-    - {fileID: 8300000, guid: 0bcbd2f8a360cd131b83131f295083f8, type: 3}
-    volume: 0.45
-    pitch: {x: 0.95, y: 1.1}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: hurt
-    clips:
-    - {fileID: 8300000, guid: e20b118ce36fc8d6aa46945e8872327f, type: 3}
-    - {fileID: 8300000, guid: 28966f2b4e441c8b2a901061d0370f8f, type: 3}
-    volume: 0.85
-    pitch: {x: 0.9, y: 1.05}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: crash
-    clips:
-    - {fileID: 8300000, guid: 1c3e93e7c821ecc28853d125348c8335, type: 3}
-    - {fileID: 8300000, guid: e0e0ea2e5aa38aebd8de6a50a2749409, type: 3}
-    - {fileID: 8300000, guid: 355f50204aa978dfc9ecb7fce40b1d51, type: 3}
-    volume: 0.85
-    pitch: {x: 0.9, y: 1.05}
-    amountScale: 0.1
-    sustain: 0
-    pitchFromAmount: 0
-  - name: jam
-    clips:
-    - {fileID: 8300000, guid: af620eecbc6fbaeebaacee02f61930bd, type: 3}
-    - {fileID: 8300000, guid: 30bab1415ea17b5aaa32e53f70c51143, type: 3}
-    - {fileID: 8300000, guid: 53aab9df157e6e0e499c5a2e3e04aec5, type: 3}
-    volume: 0.85
-    pitch: {x: 0.85, y: 1}
-    amountScale: 0.12
-    sustain: 0
-    pitchFromAmount: 0
-  - name: jolt
-    clips:
-    - {fileID: 8300000, guid: 9f0e21d67b6de2cb3b186a4c0281dfb8, type: 3}
-    - {fileID: 8300000, guid: e843211757fc34bb7ba681b4ce747482, type: 3}
-    volume: 0.6
-    pitch: {x: 0.9, y: 1.05}
-    amountScale: 0.25
-    sustain: 0
-    pitchFromAmount: 0
-  - name: ram
-    clips:
-    - {fileID: 8300000, guid: 8efab49f1423f1b499a694556a31a5e2, type: 3}
-    - {fileID: 8300000, guid: a6dcaca884b65f83da7d2f626b73bc8d, type: 3}
-    volume: 0.7
-    pitch: {x: 0.9, y: 1.05}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: lurch
-    clips:
-    - {fileID: 8300000, guid: 59c299bd6fe8c10f7b7e95daa7667657, type: 3}
-    volume: 0.5
-    pitch: {x: 0.95, y: 1.05}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: dash
-    clips:
-    - {fileID: 8300000, guid: d453b2f31684af5e685fc9568b385b14, type: 3}
-    volume: 0.45
-    pitch: {x: 0.95, y: 1.1}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: hook
-    clips:
-    - {fileID: 8300000, guid: 283fd63c4e179d7c6bdf185e2a05165c, type: 3}
-    - {fileID: 8300000, guid: f6a5c396df056656aaf72ef84fac9c04, type: 3}
-    - {fileID: 8300000, guid: 0af0dabc09f4b1c969e6a900b5a9a0e0, type: 3}
-    volume: 0.55
-    pitch: {x: 0.8, y: 0.95}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: hoist
-    clips:
-    - {fileID: 8300000, guid: a038163e3328121a493a80fcabc2d8da, type: 3}
-    volume: 0.5
-    pitch: {x: 0.95, y: 1.05}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: wrench
-    clips:
-    - {fileID: 8300000, guid: 77a05a8bde627e12dab14be47814aa45, type: 3}
-    volume: 0.55
-    pitch: {x: 0.95, y: 1.05}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: repair
-    clips:
-    - {fileID: 8300000, guid: ac073583edf90c9f491aed8e1cf25107, type: 3}
-    - {fileID: 8300000, guid: 924d363d4ff90ae25bf49633ef50bdae, type: 3}
-    - {fileID: 8300000, guid: 01644d7212221ad0786dac47599dc064, type: 3}
-    volume: 0.6
-    pitch: {x: 0.8, y: 0.95}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: strike
-    clips:
-    - {fileID: 8300000, guid: 2443ecdf6a54de9e3bb93e3de23c5759, type: 3}
-    volume: 0.35
-    pitch: {x: 0.9, y: 1.15}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: kindle
-    clips:
-    - {fileID: 8300000, guid: 2443ecdf6a54de9e3bb93e3de23c5759, type: 3}
-    volume: 0.5
-    pitch: {x: 0.95, y: 1.05}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: ignite
-    clips:
-    - {fileID: 8300000, guid: acbb606a4097fffef9f0c4a53ba058e6, type: 3}
-    volume: 0.8
-    pitch: {x: 0.98, y: 1.02}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: ring
-    clips:
-    - {fileID: 8300000, guid: 989bac876deb3b1b5bf833b2400c7382, type: 3}
-    volume: 0.8
-    pitch: {x: 1, y: 1}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: phone
-    clips:
-    - {fileID: 8300000, guid: 943800c77ff3b0baba8ac2765711fc96, type: 3}
-    - {fileID: 8300000, guid: ecdcda11b8cbba3e5ad34c1e1dcd190f, type: 3}
-    - {fileID: 8300000, guid: 0bcbd2f8a360cd131b83131f295083f8, type: 3}
-    volume: 0.6
-    pitch: {x: 0.75, y: 0.85}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: ding
-    clips:
-    - {fileID: 8300000, guid: 31ae65413fa28780985883eb58e2876e, type: 3}
-    - {fileID: 8300000, guid: b264dd541d3db3c829f1156fbdb0a71d, type: 3}
-    volume: 0.65
-    pitch: {x: 1.1, y: 1.2}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: shift
-    clips:
-    - {fileID: 8300000, guid: 31ae65413fa28780985883eb58e2876e, type: 3}
-    - {fileID: 8300000, guid: b264dd541d3db3c829f1156fbdb0a71d, type: 3}
-    volume: 0.55
-    pitch: {x: 0.9, y: 0.95}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: leaving
-    clips:
-    - {fileID: 8300000, guid: 31ae65413fa28780985883eb58e2876e, type: 3}
-    - {fileID: 8300000, guid: b264dd541d3db3c829f1156fbdb0a71d, type: 3}
-    volume: 0.5
-    pitch: {x: 1.15, y: 1.25}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: complete
-    clips:
-    - {fileID: 8300000, guid: 31ae65413fa28780985883eb58e2876e, type: 3}
-    - {fileID: 8300000, guid: b264dd541d3db3c829f1156fbdb0a71d, type: 3}
-    volume: 0.8
-    pitch: {x: 0.8, y: 0.85}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: frozen
-    clips:
-    - {fileID: 8300000, guid: a9e1d60ac2f29b4d5ac3af56557ef058, type: 3}
-    volume: 0.9
-    pitch: {x: 1, y: 1}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: page
-    clips:
-    - {fileID: 8300000, guid: 7c118876ef847f378ad71f11a9d9bef5, type: 3}
-    volume: 0.5
-    pitch: {x: 0.9, y: 1.1}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 0
-  - name: blip
-    clips:
-    - {fileID: 8300000, guid: 392ee628a4f487081baf499ce318ee61, type: 3}
-    volume: 0.22
-    pitch: {x: 1, y: 1}
-    amountScale: 0
-    sustain: 0
-    pitchFromAmount: 1
-  - name: crank
-    clips:
-    - {fileID: 8300000, guid: 2d39b1248b1b68fef9fbc156ab7a031a, type: 3}
-    volume: 0.4
-    pitch: {x: 1, y: 1}
-    amountScale: 0.15
-    sustain: 1
-    pitchFromAmount: 0
-  - name: scrape
-    clips:
-    - {fileID: 8300000, guid: 3aa361f28a52daa82b4d54f225ca525d, type: 3}
-    volume: 0.35
-    pitch: {x: 1, y: 1}
-    amountScale: 0
-    sustain: 1
-    pitchFromAmount: 0
-  - name: roll
-    clips:
-    - {fileID: 8300000, guid: 51db64cedec697e62adb6a09f6f9166f, type: 3}
-    volume: 0.3
-    pitch: {x: 1, y: 1}
-    amountScale: 0
-    sustain: 1
-    pitchFromAmount: 0
-  beds:
-  - name: wind
-    clip: {fileID: 8300000, guid: ac9cecc2e60985d59bdc151eb6f0f72e, type: 3}
-    volume: 0.55
-  - name: fire
-    clip: {fileID: 8300000, guid: 720e27ace35790f35a3df6fcdcaa34df, type: 3}
-    volume: 0.7
-  - name: lift
-    clip: {fileID: 8300000, guid: 6e99599170f26da9da701255412d67e6, type: 3}
-    volume: 0.45
-  - name: drone
-    clip: {fileID: 8300000, guid: e975257255aacd01d8f5c629bf6a92f7, type: 3}
-    volume: 0.5
-  - name: heartbeat
-    clip: {fileID: 8300000, guid: 0a0ae5d4866238059852a24e61345ee1, type: 3}
-    volume: 0.8
-  - name: shiver
-    clip: {fileID: 8300000, guid: 777587b45dbbb18a0ae0ef9a1f061415, type: 3}
-    volume: 0.55
-  master: 0.8
-  voices: 14
 --- !u!1 &626675228
 GameObject:
   m_ObjectHideFlags: 0
@@ -28854,7 +28481,7 @@ Transform:
   - {fileID: 907187680}
   - {fileID: 418211380}
   - {fileID: 987010245}
-  - {fileID: 602277737}
+  - {fileID: 1788150689}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!21 &936431643
@@ -47907,6 +47534,379 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!1 &1788150688
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1788150689}
+  - component: {fileID: 1788150690}
+  m_Layer: 0
+  m_Name: Audio
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1788150689
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1788150688}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 935655279}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1788150690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1788150688}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15825726851bbfd0093efab3f653c1a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Audio.AudioDirector
+  cues:
+  - name: step
+    clips:
+    - {fileID: 8300000, guid: a31ac1231678aa1feb7c7abe5a334280, type: 3}
+    - {fileID: 8300000, guid: ae656efd8f352da7ba5f99fa6e249068, type: 3}
+    - {fileID: 8300000, guid: bc505bb66d6d01382bf5443ee4f269f2, type: 3}
+    - {fileID: 8300000, guid: a2ceecce3013d69e39a5518204ce766b, type: 3}
+    - {fileID: 8300000, guid: a19e35d2a90263dada0337f2fecdff6a, type: 3}
+    volume: 0.5
+    pitch: {x: 0.88, y: 1.08}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: shovel
+    clips:
+    - {fileID: 8300000, guid: 534497da5c9f85be6a6d76833bb45e26, type: 3}
+    - {fileID: 8300000, guid: 633fad50994b06925b584bf236be4476, type: 3}
+    - {fileID: 8300000, guid: ef7e5d5b1a94d399e9ced221b8202725, type: 3}
+    - {fileID: 8300000, guid: c25f2884cddc18b3ea993b649eda7148, type: 3}
+    - {fileID: 8300000, guid: 2d3036bdf4ad9beef925f143019ce5d0, type: 3}
+    volume: 0.5
+    pitch: {x: 0.8, y: 1}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: coal
+    clips:
+    - {fileID: 8300000, guid: 534497da5c9f85be6a6d76833bb45e26, type: 3}
+    - {fileID: 8300000, guid: 633fad50994b06925b584bf236be4476, type: 3}
+    - {fileID: 8300000, guid: ef7e5d5b1a94d399e9ced221b8202725, type: 3}
+    - {fileID: 8300000, guid: c25f2884cddc18b3ea993b649eda7148, type: 3}
+    - {fileID: 8300000, guid: 2d3036bdf4ad9beef925f143019ce5d0, type: 3}
+    volume: 0.3
+    pitch: {x: 0.85, y: 1.25}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: pour
+    clips:
+    - {fileID: 8300000, guid: a723c15010975792db51c8e9881dd280, type: 3}
+    volume: 0.65
+    pitch: {x: 0.95, y: 1.05}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: spill
+    clips:
+    - {fileID: 8300000, guid: 1464b08d68b8bbdaf9b1964fb0ba57ea, type: 3}
+    volume: 0.55
+    pitch: {x: 0.9, y: 1.1}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: clank
+    clips:
+    - {fileID: 8300000, guid: ac073583edf90c9f491aed8e1cf25107, type: 3}
+    - {fileID: 8300000, guid: 924d363d4ff90ae25bf49633ef50bdae, type: 3}
+    - {fileID: 8300000, guid: 01644d7212221ad0786dac47599dc064, type: 3}
+    volume: 0.55
+    pitch: {x: 0.9, y: 1.1}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: clunk
+    clips:
+    - {fileID: 8300000, guid: 283fd63c4e179d7c6bdf185e2a05165c, type: 3}
+    - {fileID: 8300000, guid: f6a5c396df056656aaf72ef84fac9c04, type: 3}
+    - {fileID: 8300000, guid: 0af0dabc09f4b1c969e6a900b5a9a0e0, type: 3}
+    volume: 0.65
+    pitch: {x: 0.9, y: 1.05}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: notch
+    clips:
+    - {fileID: 8300000, guid: 943800c77ff3b0baba8ac2765711fc96, type: 3}
+    - {fileID: 8300000, guid: ecdcda11b8cbba3e5ad34c1e1dcd190f, type: 3}
+    - {fileID: 8300000, guid: 0bcbd2f8a360cd131b83131f295083f8, type: 3}
+    volume: 0.45
+    pitch: {x: 0.95, y: 1.1}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: hurt
+    clips:
+    - {fileID: 8300000, guid: e20b118ce36fc8d6aa46945e8872327f, type: 3}
+    - {fileID: 8300000, guid: 28966f2b4e441c8b2a901061d0370f8f, type: 3}
+    volume: 0.85
+    pitch: {x: 0.9, y: 1.05}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: crash
+    clips:
+    - {fileID: 8300000, guid: 1c3e93e7c821ecc28853d125348c8335, type: 3}
+    - {fileID: 8300000, guid: e0e0ea2e5aa38aebd8de6a50a2749409, type: 3}
+    - {fileID: 8300000, guid: 355f50204aa978dfc9ecb7fce40b1d51, type: 3}
+    volume: 0.85
+    pitch: {x: 0.9, y: 1.05}
+    amountScale: 0.1
+    sustain: 0
+    pitchFromAmount: 0
+  - name: jam
+    clips:
+    - {fileID: 8300000, guid: af620eecbc6fbaeebaacee02f61930bd, type: 3}
+    - {fileID: 8300000, guid: 30bab1415ea17b5aaa32e53f70c51143, type: 3}
+    - {fileID: 8300000, guid: 53aab9df157e6e0e499c5a2e3e04aec5, type: 3}
+    volume: 0.85
+    pitch: {x: 0.85, y: 1}
+    amountScale: 0.12
+    sustain: 0
+    pitchFromAmount: 0
+  - name: jolt
+    clips:
+    - {fileID: 8300000, guid: 9f0e21d67b6de2cb3b186a4c0281dfb8, type: 3}
+    - {fileID: 8300000, guid: e843211757fc34bb7ba681b4ce747482, type: 3}
+    volume: 0.6
+    pitch: {x: 0.9, y: 1.05}
+    amountScale: 0.25
+    sustain: 0
+    pitchFromAmount: 0
+  - name: ram
+    clips:
+    - {fileID: 8300000, guid: 8efab49f1423f1b499a694556a31a5e2, type: 3}
+    - {fileID: 8300000, guid: a6dcaca884b65f83da7d2f626b73bc8d, type: 3}
+    volume: 0.7
+    pitch: {x: 0.9, y: 1.05}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: lurch
+    clips:
+    - {fileID: 8300000, guid: 59c299bd6fe8c10f7b7e95daa7667657, type: 3}
+    volume: 0.5
+    pitch: {x: 0.95, y: 1.05}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: dash
+    clips:
+    - {fileID: 8300000, guid: d453b2f31684af5e685fc9568b385b14, type: 3}
+    volume: 0.45
+    pitch: {x: 0.95, y: 1.1}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: hook
+    clips:
+    - {fileID: 8300000, guid: 283fd63c4e179d7c6bdf185e2a05165c, type: 3}
+    - {fileID: 8300000, guid: f6a5c396df056656aaf72ef84fac9c04, type: 3}
+    - {fileID: 8300000, guid: 0af0dabc09f4b1c969e6a900b5a9a0e0, type: 3}
+    volume: 0.55
+    pitch: {x: 0.8, y: 0.95}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: hoist
+    clips:
+    - {fileID: 8300000, guid: a038163e3328121a493a80fcabc2d8da, type: 3}
+    volume: 0.5
+    pitch: {x: 0.95, y: 1.05}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: wrench
+    clips:
+    - {fileID: 8300000, guid: 77a05a8bde627e12dab14be47814aa45, type: 3}
+    volume: 0.55
+    pitch: {x: 0.95, y: 1.05}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: repair
+    clips:
+    - {fileID: 8300000, guid: ac073583edf90c9f491aed8e1cf25107, type: 3}
+    - {fileID: 8300000, guid: 924d363d4ff90ae25bf49633ef50bdae, type: 3}
+    - {fileID: 8300000, guid: 01644d7212221ad0786dac47599dc064, type: 3}
+    volume: 0.6
+    pitch: {x: 0.8, y: 0.95}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: strike
+    clips:
+    - {fileID: 8300000, guid: 2443ecdf6a54de9e3bb93e3de23c5759, type: 3}
+    volume: 0.35
+    pitch: {x: 0.9, y: 1.15}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: kindle
+    clips:
+    - {fileID: 8300000, guid: 2443ecdf6a54de9e3bb93e3de23c5759, type: 3}
+    volume: 0.5
+    pitch: {x: 0.95, y: 1.05}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: ignite
+    clips:
+    - {fileID: 8300000, guid: acbb606a4097fffef9f0c4a53ba058e6, type: 3}
+    volume: 0.8
+    pitch: {x: 0.98, y: 1.02}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: ring
+    clips:
+    - {fileID: 8300000, guid: 989bac876deb3b1b5bf833b2400c7382, type: 3}
+    volume: 0.8
+    pitch: {x: 1, y: 1}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: phone
+    clips:
+    - {fileID: 8300000, guid: 943800c77ff3b0baba8ac2765711fc96, type: 3}
+    - {fileID: 8300000, guid: ecdcda11b8cbba3e5ad34c1e1dcd190f, type: 3}
+    - {fileID: 8300000, guid: 0bcbd2f8a360cd131b83131f295083f8, type: 3}
+    volume: 0.6
+    pitch: {x: 0.75, y: 0.85}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: ding
+    clips:
+    - {fileID: 8300000, guid: 31ae65413fa28780985883eb58e2876e, type: 3}
+    - {fileID: 8300000, guid: b264dd541d3db3c829f1156fbdb0a71d, type: 3}
+    volume: 0.65
+    pitch: {x: 1.1, y: 1.2}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: shift
+    clips:
+    - {fileID: 8300000, guid: 31ae65413fa28780985883eb58e2876e, type: 3}
+    - {fileID: 8300000, guid: b264dd541d3db3c829f1156fbdb0a71d, type: 3}
+    volume: 0.55
+    pitch: {x: 0.9, y: 0.95}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: leaving
+    clips:
+    - {fileID: 8300000, guid: 31ae65413fa28780985883eb58e2876e, type: 3}
+    - {fileID: 8300000, guid: b264dd541d3db3c829f1156fbdb0a71d, type: 3}
+    volume: 0.5
+    pitch: {x: 1.15, y: 1.25}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: complete
+    clips:
+    - {fileID: 8300000, guid: 31ae65413fa28780985883eb58e2876e, type: 3}
+    - {fileID: 8300000, guid: b264dd541d3db3c829f1156fbdb0a71d, type: 3}
+    volume: 0.8
+    pitch: {x: 0.8, y: 0.85}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: frozen
+    clips:
+    - {fileID: 8300000, guid: a9e1d60ac2f29b4d5ac3af56557ef058, type: 3}
+    volume: 0.9
+    pitch: {x: 1, y: 1}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: page
+    clips:
+    - {fileID: 8300000, guid: 7c118876ef847f378ad71f11a9d9bef5, type: 3}
+    volume: 0.5
+    pitch: {x: 0.9, y: 1.1}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 0
+  - name: blip
+    clips:
+    - {fileID: 8300000, guid: 392ee628a4f487081baf499ce318ee61, type: 3}
+    volume: 0.15
+    pitch: {x: 1, y: 1}
+    amountScale: 0
+    sustain: 0
+    pitchFromAmount: 1
+  - name: crank
+    clips:
+    - {fileID: 8300000, guid: 2d39b1248b1b68fef9fbc156ab7a031a, type: 3}
+    volume: 0.4
+    pitch: {x: 1, y: 1}
+    amountScale: 0.15
+    sustain: 1
+    pitchFromAmount: 0
+  - name: scrape
+    clips:
+    - {fileID: 8300000, guid: 3aa361f28a52daa82b4d54f225ca525d, type: 3}
+    volume: 0.35
+    pitch: {x: 1, y: 1}
+    amountScale: 0
+    sustain: 1
+    pitchFromAmount: 0
+  - name: roll
+    clips:
+    - {fileID: 8300000, guid: 51db64cedec697e62adb6a09f6f9166f, type: 3}
+    volume: 0.3
+    pitch: {x: 1, y: 1}
+    amountScale: 0
+    sustain: 1
+    pitchFromAmount: 0
+  beds:
+  - name: wind
+    clip: {fileID: 8300000, guid: ac9cecc2e60985d59bdc151eb6f0f72e, type: 3}
+    volume: 0.55
+  - name: fire
+    clip: {fileID: 8300000, guid: 720e27ace35790f35a3df6fcdcaa34df, type: 3}
+    volume: 0.7
+  - name: lift
+    clip: {fileID: 8300000, guid: 6e99599170f26da9da701255412d67e6, type: 3}
+    volume: 0.2
+  - name: drone
+    clip: {fileID: 8300000, guid: e975257255aacd01d8f5c629bf6a92f7, type: 3}
+    volume: 0.5
+  - name: heartbeat
+    clip: {fileID: 8300000, guid: 0a0ae5d4866238059852a24e61345ee1, type: 3}
+    volume: 0.8
+  - name: shiver
+    clip: {fileID: 8300000, guid: 777587b45dbbb18a0ae0ef9a1f061415, type: 3}
+    volume: 0.55
+  master: 0.8
+  voices: 14
 --- !u!1 &1798826075
 GameObject:
   m_ObjectHideFlags: 0

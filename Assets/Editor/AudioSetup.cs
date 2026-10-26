@@ -54,7 +54,7 @@ namespace CoalRun.Editor
             ("complete", "impactBell_heavy", .8f, .8f, .85f, 0, false, false),
             ("frozen", "gong", .9f, 1f, 1f, 0, false, false),
             ("page", "paper", .5f, .9f, 1.1f, 0, false, false),
-            ("blip", "blip", .22f, 1f, 1f, 0, false, true),
+            ("blip", "blip", .15f, 1f, 1f, 0, false, true),
             ("crank", "crank_loop", .4f, 1f, 1f, .15f, true, false),
             ("scrape", "scrape_loop", .35f, 1f, 1f, 0, true, false),
             ("roll", "roll_loop", .3f, 1f, 1f, 0, true, false),
@@ -65,7 +65,7 @@ namespace CoalRun.Editor
         {
             ("wind", "wind_loop", .55f),
             ("fire", "fire_loop", .7f),
-            ("lift", "lift_hum_loop", .45f),
+            ("lift", "lift_hum_loop", .2f),
             ("drone", "drone_loop", .5f),
             ("heartbeat", "heartbeat_loop", .8f),
             ("shiver", "shiver_loop", .55f),
