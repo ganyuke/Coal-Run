@@ -27676,6 +27676,7 @@ MonoBehaviour:
   sortingOrder: 60
   voicePitch: 1
   font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
+  breathBelow: 0
 --- !u!1 &828493249
 GameObject:
   m_ObjectHideFlags: 0
@@ -30343,6 +30344,7 @@ MonoBehaviour:
   sortingOrder: 60
   voicePitch: 1
   font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
+  breathBelow: 0
 --- !u!1 &1052661936
 GameObject:
   m_ObjectHideFlags: 0
@@ -39253,6 +39255,7 @@ MonoBehaviour:
   sortingOrder: 60
   voicePitch: 1
   font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
+  breathBelow: 0
 --- !u!4 &1391554280
 Transform:
   m_ObjectHideFlags: 0
@@ -48706,6 +48709,7 @@ MonoBehaviour:
   sortingOrder: 60
   voicePitch: 1
   font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
+  breathBelow: 0
 --- !u!1 &1889384120
 GameObject:
   m_ObjectHideFlags: 0
@@ -48871,6 +48875,7 @@ MonoBehaviour:
   sortingOrder: 60
   voicePitch: 1
   font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
+  breathBelow: 10
 --- !u!1 &1901404867
 GameObject:
   m_ObjectHideFlags: 0

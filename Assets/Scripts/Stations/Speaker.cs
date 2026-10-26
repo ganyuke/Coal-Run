@@ -48,6 +48,9 @@ namespace CoalRun.Stations
         [SerializeField]
         private float voicePitch = 1;
         [SerializeField] private TMP_FontAsset font;
+        [Tooltip("Breath shows as a slow puff every couple of seconds once the building is colder than this (Celsius). 0 for none.")]
+        [SerializeField]
+        private float breathBelow;
 
         public bool Talking => Time.time < _talkUntil;
         // The line is up (being typed or held), not yet faded out.
@@ -62,6 +65,7 @@ namespace CoalRun.Stations
         private string _lastText = "";
         private float _lineStart, _lineEnd, _talkUntil, _lastEnd, _bob, _puffDebt;
         private int _typed;
+        private float _breathAt;
 
         private void Awake()
         {
@@ -148,6 +152,21 @@ namespace CoalRun.Stations
             _bob = Mathf.MoveTowards(_bob, Talking ? 1 : 0, Time.deltaTime * 8);
             if (head) head.localPosition = _headRest + Vector3.up * (Mathf.Abs(Mathf.Sin(Time.time * bobRate)) * bob * _bob);
 
+            if (puffs && breathBelow > 0 && ShiftManager.Instance.Temperature < breathBelow && Time.time >= _breathAt)
+            {
+                // Colder, closer together.
+                _breathAt = Time.time + Mathf.Lerp(1.4f, 3f, Mathf.InverseLerp(-10, breathBelow, ShiftManager.Instance.Temperature));
+                var mouth = (head ? head.position : transform.position) + Vector3.up * .2f;
+                puffs.Emit(new ParticleSystem.EmitParams
+                {
+                    position = mouth,
+                    velocity = new Vector2(Random.Range(-.25f, .25f), Random.Range(.35f, .6f)),
+                    startSize = Random.Range(.2f, .3f),
+                    startColor = new Color(.88f, .94f, 1, .8f),
+                    rotation = Random.Range(0f, 90f),
+                    startLifetime = Random.Range(1f, 1.4f)
+                }, 1);
+            }
             if (!puffs || !Talking) return;
             _puffDebt += puffRate * Time.deltaTime;
             var from = (head ? head.position : transform.position) + Vector3.up * .3f;
