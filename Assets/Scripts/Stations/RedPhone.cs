@@ -6,8 +6,8 @@ namespace CoalRun.Stations
     // The red phone by the staff lift: brass upstairs ringing down for heat. It starts once the building
     // drops below `ringBelow` and rings more often the colder it gets, until answered with E. Answering
     // only puts brass on the line; ignoring it is allowed. It's how the player hears that the building is
-    // cooling without a thermometer on screen.
-    public class RedPhone : MonoBehaviour
+    // cooling without a thermometer on screen. Clicking it answers too, like E.
+    public class RedPhone : Machine
     {
         [SerializeField] private float ringBelow = 13;
         [Tooltip("Quiet this long after it's answered.")]
@@ -51,6 +51,10 @@ namespace CoalRun.Stations
             var burst = Ringing && Time.time % .9f < .45f;
             transform.localRotation = _rest * Quaternion.Euler(0, 0, burst ? Mathf.Sin(Time.time * 60) * shake : 0);
         }
+
+        public override string OutOfReach => Ringing ? "Walk up to the phone." : "It isn't ringing.";
+        public override bool CanOperate(PlayerController player) => CanAnswer(player);
+        protected override void OnBegin(Vector2 mouse) => Answer();
 
         public bool CanAnswer(PlayerController player) =>
             Ringing && player.Lane == 0 && Mathf.Abs(player.Position.x - transform.position.x) < 1 && player.Position.y < 4.3f;

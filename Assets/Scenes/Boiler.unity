@@ -18549,6 +18549,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1302746864}
+  - component: {fileID: 1302746865}
   m_Layer: 0
   m_Name: Shovel
   m_TagString: Untagged
@@ -18574,6 +18575,20 @@ Transform:
   - {fileID: 437509861}
   m_Father: {fileID: 1419860673}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1302746865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1302746863}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14d208369ab6ce626b90b4f514a484a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Stations.ShovelPickup
+  handle: {fileID: 0}
+  grabRadius: 1
 --- !u!1 &1317393473
 GameObject:
   m_ObjectHideFlags: 0
@@ -21990,6 +22005,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5b50beaccd22c818902cee8ced2dfe1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Stations.RedPhone
+  handle: {fileID: 0}
+  grabRadius: 1
   ringBelow: 13
   cooldown: 10
   shake: 9
