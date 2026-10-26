@@ -15,7 +15,7 @@ namespace CoalRun.UI
         private bool _readout = true;
         private GUIStyle _box, _small;
         // The report card's solid backing; the default box skin shows the room through it.
-        private Texture2D _cardBack, _black, _vignette;
+        private Texture2D _vignette;
         private float _frost;
 
         private void Update()
@@ -35,10 +35,8 @@ namespace CoalRun.UI
             var width = Screen.width / scale;
 
             DrawFrost(game, width);
-            DrawFade(game, width);
-            if (game.Ended) { Report(game, width); return; }
-            if (game.Departing) return;
-            if (game.Phase == Phase.Briefing) { Briefing(game, width); return; }
+            // The briefing, report and fade are the notebook's (NotebookView).
+            if (game.Ended || game.Departing || game.Phase == Phase.Briefing) return;
             if (game.MessageFor > 0) GUI.Box(new Rect(width / 2 - 360, 600, 720, 80), game.Message, _box);
             // The objective and the key prompts are the notebook's (NotebookView).
             if (game.Phase == Phase.Replacement && game.Deaths > 0)
@@ -87,58 +85,6 @@ namespace CoalRun.UI
             GUI.color = new Color(1, 1, 1, _frost * .7f);
             GUI.DrawTexture(new Rect(0, 0, width, 720), _vignette);
             GUI.color = color;
-        }
-
-        // Black over everything while the operator rides out of the staff lift.
-        private void DrawFade(ShiftManager game, float width)
-        {
-            if (game.Fade <= 0) return;
-            _black ??= Texture2D.blackTexture;
-            var color = GUI.color;
-            GUI.color = new Color(1, 1, 1, game.Fade);
-            GUI.DrawTexture(new Rect(0, 0, width, 720), _black);
-            GUI.color = color;
-        }
-
-        // Between the training and the shift. The real one is the M5 notepad.
-        private void Briefing(ShiftManager game, float width)
-        {
-            var text =
-                $"DAY {game.Day.day:00} · BRIEFING\n\n<b>Keep the building warm until the blizzard passes.</b>\n" +
-                "Haul coal from the chute to the furnace. Feed it, light it, and set the burn lever: the colder it gets outside, the harder it has to burn." +
-                $"\n\nElectrical output target  {game.Day.target:0} kWh\nThe cart has {game.Cart.Wheels} wheel{(game.Cart.Wheels == 1 ? "" : "s")}.";
-            var card = Card(width, text, 380);
-            if (GUI.Button(new Rect(width / 2 - 140, card.yMax - 64, 280, 44), "[Enter]  Begin the shift", new GUIStyle(GUI.skin.button) { fontSize = 18 }))
-                game.BeginShift();
-        }
-
-        // The end-of-shift card, worded as in the JS. The real one comes with the M5 UI.
-        private void Report(ShiftManager game, float width)
-        {
-            var complete = game.Phase == Phase.Complete;
-            var text =
-                $"DAY 01 · SHIFT REPORT\n\n<b>{(complete ? "You kept them alive." : "No one is coming down.")}</b>\n" +
-                (complete ? "The shift is over. The furnace is still your problem tomorrow." : "The offices froze first. There is nobody left to send a replacement.") +
-                $"\n\nElectrical output  {game.Furnace.Output:0.0} / {game.Day.target:0} kWh\nCoal delivered  {game.Furnace.Delivered:0.0}\nOperators lost  {game.Deaths}";
-            var card = Card(width, text);
-            if (GUI.Button(new Rect(width / 2 - 140, card.yMax - 64, 280, 44), "[R]  Run the shift again", new GUIStyle(GUI.skin.button) { fontSize = 18 }))
-                game.Restart();
-        }
-
-        private Rect Card(float width, string text, float height = 330)
-        {
-            var card = new Rect(width / 2 - 300, 160, 600, height);
-            if (!_cardBack)
-            {
-                _cardBack = new Texture2D(1, 1);
-                _cardBack.SetPixel(0, 0, new Color(.08f, .08f, .09f, .96f));
-                _cardBack.Apply();
-            }
-
-            var style = new GUIStyle(_box) { richText = true, alignment = TextAnchor.UpperCenter, padding = new RectOffset(24, 24, 28, 16) };
-            style.normal.background = _cardBack;
-            GUI.Box(card, text, style);
-            return card;
         }
     }
 }

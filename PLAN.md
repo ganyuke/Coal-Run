@@ -38,7 +38,8 @@ Each milestone ends with something you can play. Don't start the next one until 
   - [ ] Day flow: Day 1 → memo → Day 2 (DayConfig per day)
   - [ ] Axle installer beat
   - [x] Notebook (uGUI): objective pages, key prompts as sticky notes (10/26)
-  - [ ] Menus, briefing/report/memo cards in uGUI (replace the rest of DebugHud)
+  - [x] Briefing and report as notebook pages (10/26)
+  - [ ] Morning memo page; the rest of DebugHud (story message lines, frost vignette, F3 readout) in uGUI
 - [ ] **M6 · Art and sound** (Thu 10/29)
 - [ ] **M7 · Build, playtest, submit** (Fri 10/30)
 
@@ -181,6 +182,7 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - **It has no fixed pages.** `Notebook` (Stations) looks at the room four times a second and writes a page when the game needs something, ticks it when the need goes away. Append-only: pages are never removed or un-ticked, and a need that comes back is a new page, so it reads as a log. The open page is the oldest unticked one, **unless the fire's out, which takes over** (red). The phone is just the next page.
 - **Rules** (in `Notebook.Needs`, by where the game is): the training's objective line (so the top bar is gone); fire out; cart overturned / wheel off / buried; where the cart is and whether it's loaded (fill → take it up on the lift → hook on and tip → take the empty cart back down); burn lever too low for the forecast 45 s ahead; phone ringing; shift over. Loaded is 5 coal.
 - **On screen** (`NotebookView`, uGUI, no EventSystem: it checks the mouse itself): the book rests at the bottom right with its top edge showing, a click slides it up open to the open page, a click on its top edge slides it down. It pops up a little by itself when a page is written while it's shut. Ticked pages above (last 3, struck through), the open page big, two empty boxes below. The key prompts are sticky notes stacked on its top edge (`PlayerController.Prompts()`). Clicks on the book don't reach the room (`NotebookView.PointerOver`, checked by `MachineInput` and `InputReader`).
+- **Briefing and report are notebook pages** (your call): between shifts the book opens bigger in the middle of the screen with the room dimmed behind it, a heading, a headline, the text and a stamped red button (clicking it is Enter / R). The fade out of the staff lift is a black layer behind the book (it used to be IMGUI, which draws over uGUI), so the report opens on black. `NotebookView.Sheet` has the wording.
 - Clicking the red phone answers it and clicking the shovel in the training picks it up (both are `Machine`s now).
 
 ### ShiftBot (10/26, balance testing)

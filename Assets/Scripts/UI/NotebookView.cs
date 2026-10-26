@@ -11,7 +11,8 @@ namespace CoalRun.UI
     // slides up, open to the page that matters; click its top edge and it slides down. Past pages are ticked
     // above it, the current page is big, and a few empty boxes wait below for whatever comes next. The key
     // prompts are sticky notes stacked on top of it, so they show even while it's shut. Not a screen of its
-    // own: the game runs on underneath.
+    // own: the game runs on underneath. Between shifts it's the briefing and the report too: it opens bigger in
+    // the middle of the screen, on a page with a stamped button.
     [DefaultExecutionOrder(-200)] // Before InputReader, so a click on the book isn't also a click in the room.
     public class NotebookView : MonoBehaviour
     {
@@ -26,6 +27,20 @@ namespace CoalRun.UI
         [Tooltip("Cloned for each key prompt, stacked above the book.")]
         [SerializeField]
         private RectTransform stickyTemplate;
+        [Header("Briefing and report")]
+        [Tooltip("The page's contents while it's a briefing or a report, in place of the checklist.")]
+        [SerializeField]
+        private RectTransform sheet;
+        [SerializeField] private TMP_Text sheetHeadline, sheetBody, buttonLabel;
+        [Tooltip("Clicked to begin the shift or run it again.")]
+        [SerializeField]
+        private RectTransform button;
+        [Tooltip("Black behind the book: it dims the room under a briefing or report, and is the fade out of the staff lift.")]
+        [SerializeField]
+        private UnityEngine.UI.Graphic dim;
+        [SerializeField] private Vector2 sheetSize = new(520, 560);
+        [SerializeField] private float sheetY = 80;
+        [SerializeField] private float briefingDim = .55f, reportDim = .8f;
         [Header("Where the book sits")]
         [Tooltip("Vertical position when shut, with just the top edge showing.")]
         [SerializeField]
@@ -52,7 +67,9 @@ namespace CoalRun.UI
         private readonly List<RectTransform> _stickies = new();
         private readonly List<TMP_Text> _stickyText = new();
         private bool _open, _dirty = true;
-        private float _nudgeUntil;
+        private float _nudgeUntil, _dimmed;
+        private Vector2 _bookSize, _bookRest;
+        private Phase _sheetFor = Phase.Shift;
 
         private void OnEnable()
         {
@@ -67,6 +84,12 @@ namespace CoalRun.UI
             PointerOver = false;
         }
 
+        private void Awake()
+        {
+            _bookSize = book.sizeDelta;
+            _bookRest = book.anchoredPosition;
+        }
+
         private void MarkDirty() => _dirty = true;
         private void Written(Notebook.Page page) => _nudgeUntil = Time.time + nudgeTime;
 
@@ -74,11 +97,23 @@ namespace CoalRun.UI
         {
             var game = ShiftManager.Instance;
             var mouse = Mouse.current;
-            // Nothing to write in until there's a shift to write about, and nothing once it's over.
-            var shown = game.Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving or Phase.Replacement && !game.Departing;
+            var sheetMode = game.Phase == Phase.Briefing || game.Ended;
+            // Nothing to write in until there's a shift to write about; the staff lift's door closes on it.
+            var shown = (sheetMode || game.Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving or Phase.Replacement) && !game.Departing;
+
+            // Dim the room behind a briefing or report; the fade out of the staff lift is black too.
+            var dimTarget = !sheetMode ? 0 : game.Phase == Phase.Briefing ? briefingDim : reportDim;
+            _dimmed = Mathf.MoveTowards(_dimmed, dimTarget, Time.unscaledDeltaTime * 1.5f);
+            dim.color = new Color(0, 0, 0, Mathf.Max(_dimmed, game.Fade));
+
             book.gameObject.SetActive(shown);
             PointerOver = false;
             if (!shown) return;
+            if (sheetMode && _sheetFor != game.Phase) Sheet(game);
+            // Back to the checklist: its heading is the plain day.
+            if (!sheetMode && _sheetFor != Phase.Shift) { _sheetFor = Phase.Shift; _dirty = true; }
+            sheet.gameObject.SetActive(sheetMode);
+            pageRoot.gameObject.SetActive(!sheetMode);
 
             if (mouse != null)
             {
@@ -86,19 +121,60 @@ namespace CoalRun.UI
                 PointerOver = RectTransformUtility.RectangleContainsScreenPoint(book, screen);
                 if (PointerOver && mouse.leftButton.wasPressedThisFrame)
                 {
-                    RectTransformUtility.ScreenPointToLocalPointInRectangle(book, screen, null, out var local);
-                    if (!_open) _open = true;
-                    else if (local.y > book.rect.yMax - headerHeight) _open = false;
+                    if (sheetMode)
+                    {
+                        if (RectTransformUtility.RectangleContainsScreenPoint(button, screen)) Press(game);
+                    }
+                    else
+                    {
+                        RectTransformUtility.ScreenPointToLocalPointInRectangle(book, screen, null, out var local);
+                        if (!_open) _open = true;
+                        else if (local.y > book.rect.yMax - headerHeight) _open = false;
+                    }
                 }
             }
 
-            var target = _open ? openY : Time.time < _nudgeUntil ? shutY + nudge : shutY;
-            var at = book.anchoredPosition;
-            at.y = Mathf.Lerp(at.y, target, 1 - Mathf.Exp(-slideSpeed * Time.unscaledDeltaTime));
-            book.anchoredPosition = at;
+            // Sliding up from the bottom, or growing into the middle of the screen.
+            var canvasWidth = ((RectTransform)book.parent).rect.width;
+            var size = sheetMode ? sheetSize : _bookSize;
+            var x = sheetMode ? -(canvasWidth - size.x) / 2 : _bookRest.x;
+            var y = sheetMode ? sheetY : _open ? openY : Time.time < _nudgeUntil ? shutY + nudge : shutY;
+            var k = 1 - Mathf.Exp(-slideSpeed * Time.unscaledDeltaTime);
+            book.sizeDelta = Vector2.Lerp(book.sizeDelta, size, k);
+            book.anchoredPosition = Vector2.Lerp(book.anchoredPosition, new Vector2(x, y), k);
 
+            if (sheetMode) { for (var i = 0; i < _stickies.Count; i++) _stickies[i].gameObject.SetActive(false); return; }
             if (_dirty) Rebuild();
             Stickies();
+        }
+
+        // Begin the shift, or run it again: what the stamped button does, like Enter and R.
+        private static void Press(ShiftManager game)
+        {
+            if (game.Phase == Phase.Briefing) game.BeginShift();
+            else if (game.Ended) game.Restart();
+        }
+
+        // What's written on the page between shifts.
+        private void Sheet(ShiftManager game)
+        {
+            _sheetFor = game.Phase;
+            heading.text = $"DAY {game.Day.day:00} · {(game.Phase == Phase.Briefing ? "BRIEFING" : "REPORT")}";
+            if (game.Phase == Phase.Briefing)
+            {
+                sheetHeadline.text = "Keep the building warm until the blizzard passes.";
+                sheetBody.text =
+                    "Haul coal from the chute to the furnace. Feed it, light it, and set the burn lever: the colder it gets outside, the harder it has to burn." +
+                    $"\n\nElectrical output target\n<b>{game.Day.target:0} kWh</b>\n\nThe cart has {game.Cart.Wheels} wheel{(game.Cart.Wheels == 1 ? "" : "s")}.";
+                buttonLabel.text = "Begin the shift   [Enter]";
+                return;
+            }
+            var complete = game.Phase == Phase.Complete;
+            sheetHeadline.text = complete ? "You kept them alive." : "No one is coming down.";
+            sheetBody.text =
+                (complete ? "The shift is over. The furnace is still your problem tomorrow." : "The offices froze first. There is nobody left to send a replacement.") +
+                $"\n\nElectrical output\n<b>{game.Furnace.Output:0.0} / {game.Day.target:0} kWh</b>\n\nCoal delivered  <b>{game.Furnace.Delivered:0.0}</b>\nOperators lost  <b>{game.Deaths}</b>";
+            buttonLabel.text = "Run the shift again   [R]";
         }
 
         // Ticked pages above, the open one big, then empty boxes for what's still to come.
