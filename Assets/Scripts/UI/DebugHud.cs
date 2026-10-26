@@ -1,47 +1,44 @@
 using CoalRun.Core;
 using CoalRun.Stations;
+using TMPro;
 using UnityEngine.InputSystem;
 using UnityEngine;
 
 namespace CoalRun.UI
 {
-    // Placeholder HUD drawn with IMGUI: dialogue, key prompts, and an F3 readout. Gets replaced by
-    // the real UI (notepad, objective, meters) later; delete this component when that exists.
+    // The F3 developer readout: a uGUI text box in the top-right corner with the F-key shortcuts and the numbers behind
+    // the game (positions, coal totals, heat). Not part of the game: F3 hides it, and a build starts with it hidden.
     public class DebugHud : MonoBehaviour
     {
         [SerializeField] private PlayerController player;
         [SerializeField] private MachineInput machines;
+        [SerializeField] private TMP_Text readout;
+        [Tooltip("Seconds between redraws of the text, so building it doesn't cost a string every frame.")]
+        [SerializeField]
+        private float refresh = .2f;
 
-        private bool _readout = true;
-        private GUIStyle _box, _small;
-        // The report card's solid backing; the default box skin shows the room through it.
+        private bool _visible;
+        private float _next;
+
+        private void Start()
+        {
+            _visible = Application.isEditor;
+            readout.gameObject.SetActive(_visible);
+        }
 
         private void Update()
         {
-            if (Keyboard.current != null && Keyboard.current.f3Key.wasPressedThisFrame) _readout = !_readout;
-        }
-
-        private void OnGUI()
-        {
+            if (Keyboard.current != null && Keyboard.current.f3Key.wasPressedThisFrame)
+            {
+                _visible = !_visible;
+                readout.gameObject.SetActive(_visible);
+            }
+            if (!_visible || Time.unscaledTime < _next) return;
+            _next = Time.unscaledTime + refresh;
             var game = ShiftManager.Instance;
             if (!game) return;
-            _box ??= new GUIStyle(GUI.skin.box) { fontSize = 20, wordWrap = true, alignment = TextAnchor.MiddleCenter, padding = new RectOffset(16, 16, 10, 10) };
-            _small ??= new GUIStyle(GUI.skin.label) { fontSize = 14 };
-            // Lay out in a 1280x720 space, scaled to the window.
-            var scale = Screen.height / 720f;
-            GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
-            var width = Screen.width / scale;
-
-            // The briefing, report and fade are the notebook's (NotebookView).
-            if (game.Ended || game.Departing || game.Phase == Phase.Briefing) return;
-            // The objective and the key prompts are the notebook's, what people say is above their heads (Speaker),
-            // and the frost is FrostVignette.
-            if (game.Phase == Phase.Replacement && game.Deaths > 0)
-                GUI.Box(new Rect(width / 2 - 380, 24, 760, 44), $"Replacement arriving in {Mathf.CeilToInt(game.ReplacementIn)} s", new GUIStyle(_box) { fontSize = 17 });
-
-            if (!_readout) return;
             var cart = game.Cart;
-            var text =
+            readout.text =
                 "F3 hides this · F2 knock a wheel off · F4 cart load 0/6/10/12 · F5 clean up coal · F6 cart to me · F7 replay the training · F8 skip to the shift · F9 bot plays\n" +
                 $"Phase {game.Phase}  training {game.Tutorial.Current}\n" +
                 $"Operator {player.Position.x:0.0}, {player.Position.y:0.0}  lane {player.Lane}  holding {player.Holding}\n" +
@@ -54,7 +51,6 @@ namespace CoalRun.UI
                 $"Coal error {game.TotalCoal - game.InitialCoal:0.0000}\n" +
                 $"Machine {(machines.Active ? machines.Active.name : "-")}  hover {(machines.Hover ? machines.Hover.name : "-")}\n" +
                 $"{1f / Mathf.Max(Time.smoothDeltaTime, 1e-4f):0} fps";
-            GUI.Label(new Rect(width - 620, 12, 610, 200), text, _small);
         }
     }
 }
