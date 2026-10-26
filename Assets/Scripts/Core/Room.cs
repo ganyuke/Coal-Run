@@ -13,7 +13,7 @@ namespace CoalRun.Core
         public const float LiftX = 2.25f, LiftWidth = 3.5f;
         public const float EntranceStart = 29.2f, EntranceRoof = 6.3f;
         // Inside the staff lift car, past its door.
-        public const float StaffLiftInside = 30.2f;
+        public const float StaffLiftInside = 30.2f, StaffLiftCenter = 30.45f;
         // The control room sits on a slab over the staff lift, up a flight of stairs from the work floor.
         public const float BoothStart = 27.4f, BoothFloor = 6.6f, StairsFoot = 23.5f;
     }

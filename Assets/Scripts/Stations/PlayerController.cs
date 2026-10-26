@@ -677,12 +677,27 @@ namespace CoalRun.Stations
             visual.gameObject.SetActive(false);
         }
 
-        // Locked in place for the ride out of the staff lift.
-        public void Stand()
+        // Locked in place for the ride out of the staff lift, brought to the middle of the car facing the room.
+        public void Stand(float x)
         {
+            StartCoroutine(Glide(x));
             ReleaseGrip();
             Body.linearVelocity = Vector2.zero;
             Body.constraints = RigidbodyConstraints2D.FreezeAll;
+            // Behind the door, which is about to close in front of them.
+            if (visual) visual.sortingOrder = liftOrder;
+        }
+
+        private IEnumerator Glide(float x)
+        {
+            Facing = -1;
+            var from = Body.position;
+            for (float k = 0; k < 1; k += Time.deltaTime / .35f)
+            {
+                Body.position = new Vector2(Mathf.Lerp(from.x, x, Mathf.SmoothStep(0, 1, k)), from.y);
+                yield return null;
+            }
+            Body.position = new Vector2(x, from.y);
         }
 
         // Riding down the staff lift: standing in the car behind the closed door, so they're already there

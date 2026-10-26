@@ -147,11 +147,12 @@ namespace CoalRun.Core
             }
         }
 
-        // The shift is over and the staff lift's door stands open. Standing inside it for a moment ends the shift.
+        // The shift is over and the staff lift's door stands open. Standing still inside it for a moment ends the shift.
         private void StepLeaving(float dt)
         {
             var p = player.Position;
-            var inside = player.Lane == 0 && p.y < Room.Lower + 2.3f && p.x > Room.StaffLiftInside;
+            // Standing in the car, not just running through it.
+            var inside = player.Lane == 0 && p.y < Room.Lower + 2.3f && p.x > Room.StaffLiftInside && Mathf.Abs(player.Body.linearVelocity.x) < .5f;
             _inLiftFor = inside ? _inLiftFor + dt : 0;
             if (_inLiftFor >= tuning.liftStandTime) StartCoroutine(Depart());
         }
@@ -160,7 +161,7 @@ namespace CoalRun.Core
         private IEnumerator Depart()
         {
             Departing = true;
-            player.Stand();
+            player.Stand(Room.StaffLiftCenter);
             if (staffLift) yield return staffLift.CloseDoor();
             for (var k = 0f; k < 1; k += Time.deltaTime / tuning.fadeTime)
             {
