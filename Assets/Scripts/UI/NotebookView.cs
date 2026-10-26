@@ -51,6 +51,15 @@ namespace CoalRun.UI
         private float nudge = 70;
         [SerializeField] private float nudgeTime = 2.5f;
         [SerializeField] private float slideSpeed = 9;
+        [Tooltip("The book keeps to whichever side of the screen the operator isn't on.")]
+        [SerializeField]
+        private bool autoSide = true;
+        [Tooltip("How close the operator can come to the book, in canvas units, before it moves across, and how long they must stay there.")]
+        [SerializeField]
+        private float sideMargin = 100, sideDelay = .35f;
+        [Tooltip("Mouse travel, in pixels, before pressing the top edge becomes pulling the book up or down.")]
+        [SerializeField]
+        private float dragStart = 6;
         [Tooltip("The top part of the book that closes it again when clicked, in canvas units.")]
         [SerializeField]
         private float headerHeight = 64;
@@ -66,8 +75,10 @@ namespace CoalRun.UI
         private readonly List<NotebookRow> _rows = new();
         private readonly List<RectTransform> _stickies = new();
         private readonly List<TMP_Text> _stickyText = new();
-        private bool _open, _dirty = true;
-        private float _nudgeUntil, _dimmed;
+        private bool _open, _dirty = true, _pressing, _dragging;
+        private float _nudgeUntil, _dimmed, _restY, _dragY, _pressY, _grab, _overlapFor;
+        // Which side of the screen it's on: 1 right, -1 left.
+        private int _side = 1;
         private Vector2 _bookSize, _bookRest;
         private Phase _sheetFor = Phase.Shift;
 
@@ -88,6 +99,7 @@ namespace CoalRun.UI
         {
             _bookSize = book.sizeDelta;
             _bookRest = book.anchoredPosition;
+            _restY = openY;
         }
 
         private void MarkDirty() => _dirty = true;
@@ -115,37 +127,92 @@ namespace CoalRun.UI
             sheet.gameObject.SetActive(sheetMode);
             pageRoot.gameObject.SetActive(!sheetMode);
 
+            var canvas = (RectTransform)book.parent;
+            var canvasWidth = canvas.rect.width;
             if (mouse != null)
             {
                 var screen = mouse.position.ReadValue();
-                PointerOver = RectTransformUtility.RectangleContainsScreenPoint(book, screen);
-                if (PointerOver && mouse.leftButton.wasPressedThisFrame)
+                PointerOver = _pressing || RectTransformUtility.RectangleContainsScreenPoint(book, screen);
+                if (sheetMode)
                 {
-                    if (sheetMode)
-                    {
-                        if (RectTransformUtility.RectangleContainsScreenPoint(button, screen)) Press(game);
-                    }
-                    else
+                    if (PointerOver && mouse.leftButton.wasPressedThisFrame && RectTransformUtility.RectangleContainsScreenPoint(button, screen)) Press(game);
+                }
+                else
+                {
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas, screen, null, out var at);
+                    var mouseY = at.y + canvas.rect.height / 2;
+                    // Pressing the top edge (any of it while it's shut) either clicks it open and shut, or, moved
+                    // far enough, pulls it up and down. Where it's let go is where it stays.
+                    if (PointerOver && mouse.leftButton.wasPressedThisFrame)
                     {
                         RectTransformUtility.ScreenPointToLocalPointInRectangle(book, screen, null, out var local);
-                        if (!_open) _open = true;
-                        else if (local.y > book.rect.yMax - headerHeight) _open = false;
+                        if (!_open || local.y > book.rect.yMax - headerHeight)
+                        {
+                            _pressing = true;
+                            _dragging = false;
+                            _pressY = screen.y;
+                            _grab = book.anchoredPosition.y - mouseY;
+                        }
+                    }
+                    if (_pressing)
+                    {
+                        if (mouse.leftButton.isPressed)
+                        {
+                            if (!_dragging && Mathf.Abs(screen.y - _pressY) > dragStart) _dragging = true;
+                            if (_dragging) _dragY = Mathf.Clamp(mouseY + _grab, shutY, canvas.rect.height - _bookSize.y - 10);
+                        }
+                        else
+                        {
+                            if (_dragging)
+                            {
+                                // Pushed most of the way down, it's shut; otherwise it stays at the height it was left.
+                                _open = _dragY > shutY + 60;
+                                if (_open) _restY = _dragY;
+                            }
+                            else _open = !_open;
+                            _pressing = _dragging = false;
+                        }
                     }
                 }
             }
+            if (!sheetMode && Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame) _open = !_open;
+
+            Side(game, sheetMode, canvas);
 
             // Sliding up from the bottom, or growing into the middle of the screen.
-            var canvasWidth = ((RectTransform)book.parent).rect.width;
             var size = sheetMode ? sheetSize : _bookSize;
-            var x = sheetMode ? -(canvasWidth - size.x) / 2 : _bookRest.x;
-            var y = sheetMode ? sheetY : _open ? openY : Time.time < _nudgeUntil ? shutY + nudge : shutY;
+            var margin = -_bookRest.x;
+            var x = sheetMode ? -(canvasWidth - size.x) / 2 : _side > 0 ? -margin : -(canvasWidth - margin - size.x);
+            var y = sheetMode ? sheetY : _open ? _restY : Time.time < _nudgeUntil ? shutY + nudge : shutY;
             var k = 1 - Mathf.Exp(-slideSpeed * Time.unscaledDeltaTime);
             book.sizeDelta = Vector2.Lerp(book.sizeDelta, size, k);
-            book.anchoredPosition = Vector2.Lerp(book.anchoredPosition, new Vector2(x, y), k);
+            var next = Vector2.Lerp(book.anchoredPosition, new Vector2(x, y), k);
+            // Under the mouse while it's being pulled.
+            if (_dragging) next.y = _dragY;
+            book.anchoredPosition = next;
 
             if (sheetMode) { for (var i = 0; i < _stickies.Count; i++) _stickies[i].gameObject.SetActive(false); return; }
             if (_dirty) Rebuild();
             Stickies();
+        }
+
+        // Out of the operator's way: when they walk up to the book (on screen), it slides across to the other side
+        // once they've stayed there a moment.
+        private void Side(ShiftManager game, bool sheetMode, RectTransform canvas)
+        {
+            var cam = Camera.main;
+            if (sheetMode || !autoSide || !cam || !player.Visible) { _overlapFor = 0; return; }
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas, cam.WorldToScreenPoint(player.Position), null, out var at);
+            var operatorX = at.x + canvas.rect.width / 2;
+            var operatorY = at.y + canvas.rect.height / 2;
+            var margin = -_bookRest.x;
+            var left = _side > 0 ? canvas.rect.width - margin - _bookSize.x : margin;
+            var top = book.anchoredPosition.y + _bookSize.y;
+            var near = operatorX > left - sideMargin && operatorX < left + _bookSize.x + sideMargin && operatorY < top + sideMargin;
+            _overlapFor = near ? _overlapFor + Time.unscaledDeltaTime : 0;
+            if (_overlapFor < sideDelay) return;
+            _side = -_side;
+            _overlapFor = 0;
         }
 
         // Begin the shift, or run it again: what the stamped button does, like Enter and R.
