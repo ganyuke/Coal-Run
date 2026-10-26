@@ -62,16 +62,14 @@ namespace CoalRun.UI
             new() { key = "A/D", color = new Color(.58f, .92f, .88f) }
         };
         [Header("Where the book sits")]
-        [Tooltip("Vertical position when shut, with just the top edge showing.")]
+        [Tooltip("Vertical position when shut: just the heading and the open page showing.")]
         [SerializeField]
-        private float shutY = -330;
-        [SerializeField] private float openY = 20;
-        [Tooltip("How long it pops up by itself, far enough to show the whole open page, when a new page is written while it's shut.")]
+        private float shutY = -244;
+        [SerializeField] private float openY = 16;
+        [Tooltip("When a page is written while it's shut, it hops up this far, once, to catch the eye. It never pops up and stays.")]
         [SerializeField]
-        private float nudgeTime = 3;
-        [Tooltip("From the top of the book to the first line of the page, and the space left under the open page when it peeks.")]
-        [SerializeField]
-        private float pageTop = 84, peekPadding = 16;
+        private float bounce = 14;
+        [SerializeField] private float bounceTime = .45f;
         [SerializeField] private float slideSpeed = 9;
         [Tooltip("The book keeps to whichever side of the screen the operator isn't on.")]
         [SerializeField]
@@ -88,7 +86,7 @@ namespace CoalRun.UI
         [Header("The page")]
         [SerializeField] private int tickedShown = 3;
         [SerializeField] private int emptyShown = 2;
-        [SerializeField] private float rowHeight = 38, currentHeight = 66;
+        [SerializeField] private float rowHeight = 38, currentHeight = 46;
         [SerializeField] private float tickedSize = 17, currentSize = 22;
         [SerializeField] private Color ink = new(.16f, .13f, .1f), fadedInk = new(.5f, .46f, .4f), urgentInk = new(.7f, .12f, .08f);
 
@@ -107,9 +105,7 @@ namespace CoalRun.UI
         private readonly List<TMP_Text> _stickyText = new();
         private readonly List<Image> _stickyImage = new();
         private bool _open, _dirty = true, _pressing, _dragging;
-        private float _nudgeUntil, _dimmed, _restY, _dragY, _pressY, _grab, _overlapFor, _peek;
-        // Whether the page was laid out for an open book: shut, it's just the open page.
-        private bool _laidOutOpen;
+        private float _bounceAt = -10, _dimmed, _dragY, _pressY, _grab, _overlapFor;
         // Which side of the screen it's on: 1 right, -1 left.
         private int _side = 1;
         private Vector2 _bookSize, _bookRest;
@@ -132,11 +128,10 @@ namespace CoalRun.UI
         {
             _bookSize = book.sizeDelta;
             _bookRest = book.anchoredPosition;
-            _restY = openY;
         }
 
         private void MarkDirty() => _dirty = true;
-        private void Written(Notebook.Page page) => _nudgeUntil = Time.time + nudgeTime;
+        private void Written(Notebook.Page page) => _bounceAt = Time.time;
 
         private void Update()
         {
@@ -192,17 +187,12 @@ namespace CoalRun.UI
                         if (mouse.leftButton.isPressed)
                         {
                             if (!_dragging && Mathf.Abs(screen.y - _pressY) > dragStart) _dragging = true;
-                            if (_dragging) _dragY = Mathf.Clamp(mouseY + _grab, shutY, canvas.rect.height - _bookSize.y - 10);
+                            if (_dragging) _dragY = Mathf.Clamp(mouseY + _grab, shutY, openY);
                         }
                         else
                         {
-                            if (_dragging)
-                            {
-                                // Pushed most of the way down, it's shut; otherwise it stays at the height it was left.
-                                _open = _dragY > shutY + 60;
-                                if (_open) _restY = _dragY;
-                            }
-                            else _open = !_open;
+                            // Pulled past halfway it opens, pushed down past halfway it shuts: never left in between.
+                            _open = _dragging ? _dragY > (shutY + openY) / 2 : !_open;
                             _pressing = _dragging = false;
                         }
                     }
@@ -216,7 +206,10 @@ namespace CoalRun.UI
             var size = sheetMode ? sheetSize : _bookSize;
             var margin = -_bookRest.x;
             var x = sheetMode ? -(canvasWidth - size.x) / 2 : _side > 0 ? -margin : -(canvasWidth - margin - size.x);
-            var y = sheetMode ? sheetY : _open ? _restY : Time.time < _nudgeUntil ? Mathf.Max(shutY, _peek - _bookSize.y) : shutY;
+            // A new page hops the shut book up a little, once.
+            var since = Time.time - _bounceAt;
+            var hop = !_open && since < bounceTime ? bounce * Mathf.Sin(Mathf.PI * since / bounceTime) : 0;
+            var y = sheetMode ? sheetY : _open ? openY : shutY + hop;
             var k = 1 - Mathf.Exp(-slideSpeed * Time.unscaledDeltaTime);
             book.sizeDelta = Vector2.Lerp(book.sizeDelta, size, k);
             var next = Vector2.Lerp(book.anchoredPosition, new Vector2(x, y), k);
@@ -225,7 +218,6 @@ namespace CoalRun.UI
             book.anchoredPosition = next;
 
             if (sheetMode) { for (var i = 0; i < _stickies.Count; i++) _stickies[i].gameObject.SetActive(false); return; }
-            if (_laidOutOpen != (_open || _dragging)) _dirty = true;
             if (_dirty) Rebuild();
             Stickies();
         }
@@ -289,22 +281,13 @@ namespace CoalRun.UI
             foreach (var p in pages) if (p.Done) ticked.Add(p);
             if (ticked.Count > tickedShown) ticked.RemoveRange(0, ticked.Count - tickedShown);
 
-            // Shut, the book shows only the open page; the history above it and the empty boxes below are for
-            // when it's open.
-            var history = _open || _dragging;
-            _laidOutOpen = history;
+            // The open page is always first, so it's where you saw it when the book was shut; the boxes for what's
+            // still to come follow, and the ticked pages (newest first) are the log under them.
             var used = 0;
             var y = 0f;
-            if (history) foreach (var p in ticked) y = Row(ref used, y, p.Text, true, rowHeight, tickedSize, fadedInk, false);
-            var peek = 100f;
-            if (current != null)
-            {
-                var before = y;
-                y = Row(ref used, y, current.Text, false, currentHeight, currentSize, current.Urgent ? urgentInk : ink, true);
-                peek = pageTop + (history ? 0 : y - before) + peekPadding;
-            }
-            if (history) for (var i = 0; i < emptyShown; i++) y = Row(ref used, y, "", false, rowHeight, tickedSize, fadedInk, false);
-            _peek = peek;
+            y = Row(ref used, y, current?.Text ?? "", false, currentHeight, currentSize, current is { Urgent: true } ? urgentInk : ink, true);
+            for (var i = 0; i < emptyShown; i++) y = Row(ref used, y, "", false, rowHeight, tickedSize, fadedInk, false);
+            for (var i = ticked.Count - 1; i >= 0; i--) y = Row(ref used, y, ticked[i].Text, true, rowHeight, tickedSize, fadedInk, false);
             for (var i = used; i < _rows.Count; i++) _rows[i].gameObject.SetActive(false);
         }
 
