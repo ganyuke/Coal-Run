@@ -26,10 +26,10 @@ namespace CoalRun.Stations
 
         [Tooltip("Sparks per shoe when the platform arrives at the top or the bottom, at a crawl, and at its top speed.")]
         [SerializeField]
-        private Vector2 endSparks = new(4, 10);
-        [Tooltip("The size of those sparks, about the same as the running ones.")]
+        private Vector2 endSparks = new(3, 16);
+        [Tooltip("The size of those sparks at a crawl and at the top speed (the running ones are .06 to .11).")]
         [SerializeField]
-        private Vector2 endSparkSize = new(.06f, .12f);
+        private Vector2 endSparkSize = new(.06f, .14f);
         [Tooltip("Slower than this over the trip and it arrives quietly, with no burst.")]
         [SerializeField]
         private float endSparkSpeed = .8f;
@@ -133,13 +133,17 @@ namespace CoalRun.Stations
         private void EndSparks(float y, float peak, bool top)
         {
             if (!sparks) return;
-            var count = Mathf.RoundToInt(Mathf.Lerp(endSparks.x, endSparks.y, Mathf.InverseLerp(endSparkSpeed, _game.Tune.liftMaxSpeed, peak)));
+            // Everything about it follows how fast the platform was going when it arrived: how many, how big, how hard.
+            var k = Mathf.InverseLerp(endSparkSpeed, _game.Tune.liftMaxSpeed, peak);
+            var count = Mathf.RoundToInt(Mathf.Lerp(endSparks.x, endSparks.y, k));
+            var force = Mathf.Lerp(.7f, 1.5f, k);
+            var size = Mathf.Lerp(endSparkSize.x, endSparkSize.y, k);
             foreach (var shoe in shoes)
             {
                 var at = new Vector2(Room.LiftX + shoe.x, y + shoe.y);
                 var inward = -Mathf.Sign(shoe.x);
                 for (var i = 0; i < count; i++)
-                    Emit(sparks, at, new Vector2(inward * Random.Range(.5f, 3.5f), top ? Random.Range(-3f, 1f) : Random.Range(.5f, 4f)), Random.Range(endSparkSize.x, endSparkSize.y), Random.Range(.25f, .5f));
+                    Emit(sparks, at, new Vector2(inward * Random.Range(.5f, 3.5f), top ? Random.Range(-3f, 1f) : Random.Range(.5f, 4f)) * force, size * Random.Range(.8f, 1.1f), Random.Range(.25f, .5f));
             }
         }
 
