@@ -25,8 +25,8 @@ namespace CoalRun.Editor
         private static readonly (string, string, float, float, float, float, bool, bool)[] Cues =
         {
             ("step", "footstep_concrete", .5f, .88f, 1.08f, 0, false, false),
-            ("shovel", "impactMining", .5f, .8f, 1.0f, 0, false, false),
-            ("coal", "impactMining", .3f, .85f, 1.25f, 0, false, false),
+            ("shovel", "shovel", .6f, .92f, 1.08f, 0, false, false),
+            ("coal", "coal_patter", .45f, .85f, 1.2f, 0, false, false),
             ("pour", "pour", .65f, .95f, 1.05f, 0, false, false),
             ("spill", "spill", .55f, .9f, 1.1f, 0, false, false),
             ("clank", "impactMetal_light", .55f, .9f, 1.1f, 0, false, false),
@@ -35,7 +35,7 @@ namespace CoalRun.Editor
             ("hurt", "impactPunch_heavy", .85f, .9f, 1.05f, 0, false, false),
             ("crash", "impactMetal_heavy", .85f, .9f, 1.05f, .1f, false, false),
             ("jam", "impactPlate_heavy", .85f, .85f, 1.0f, .12f, false, false),
-            ("jolt", "impactPlate_medium", .6f, .9f, 1.05f, .25f, false, false),
+            ("jolt", "bin_rattle", .6f, .9f, 1.05f, .25f, false, false),
             ("ram", "impactPunch_medium", .7f, .9f, 1.05f, 0, false, false),
             ("lurch", "lurch", .5f, .95f, 1.05f, 0, false, false),
             ("dash", "dash", .45f, .95f, 1.1f, 0, false, false),
@@ -55,9 +55,9 @@ namespace CoalRun.Editor
             ("frozen", "gong", .9f, 1f, 1f, 0, false, false),
             ("page", "paper", .5f, .9f, 1.1f, 0, false, false),
             ("blip", "blip", .15f, 1f, 1f, 0, false, true),
-            ("crank", "crank_loop", .4f, 1f, 1f, .15f, true, false),
-            ("scrape", "scrape_loop", .35f, 1f, 1f, 0, true, false),
-            ("roll", "roll_loop", .3f, 1f, 1f, 0, true, false),
+            ("crank", "crank_loop", .25f, 1f, 1f, .15f, true, false),
+            ("scrape", "scrape_loop", .35f, 1f, 1f, .4f, true, false),
+            ("roll", "cart_roll_loop", .4f, 1f, 1f, .5f, true, false),
         };
 
         // name, clip prefix, volume
@@ -65,7 +65,7 @@ namespace CoalRun.Editor
         {
             ("wind", "wind_loop", .55f),
             ("fire", "fire_loop", .7f),
-            ("lift", "lift_hum_loop", .2f),
+            ("lift", "lift_groan_loop", .5f),
             ("drone", "drone_loop", .5f),
             ("heartbeat", "heartbeat_loop", .8f),
             ("shiver", "shiver_loop", .55f),

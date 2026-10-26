@@ -73,7 +73,7 @@ def clicks(seconds, rate, tone, decay, jitter=0.0, strength=1.0):
         L = int(SR * decay)
         k = np.arange(L) / SR
         f = tone * rng.uniform(.8, 1.25)
-        burst = (np.sin(2 * np.pi * f * k) + .5 * noise(L / SR)[:L]) * np.exp(-k / (decay * .22)) * rng.uniform(.4, 1) * strength
+        burst = (np.sin(2 * np.pi * f * k) + .5 * rng.standard_normal(L)) * np.exp(-k / (decay * .22)) * rng.uniform(.4, 1) * strength
         out[at:at + L] += burst
     return out
 
@@ -228,8 +228,57 @@ def gong():
     save("gong", norm(y * env(len(k), .005, .6), .8))
 
 
+def groan():
+    """The freight lift: old steel under load, a low sawtooth sagging in pitch, stick-slip creaks and the odd squeal."""
+    d = 8
+    k = t(d)
+    f0 = 52 * (1 + .03 * np.sin(2 * np.pi * .21 * k) + .015 * np.sin(2 * np.pi * .57 * k))
+    ph = 2 * np.pi * np.cumsum(f0) / SR
+    body = sum(np.sin(h * ph) / h for h in range(1, 9))
+    creak = band(noise(d), 280, 900) * (.5 + .5 * np.sin(2 * np.pi * .37 * k + 1.7 * np.sin(2 * np.pi * .11 * k))) ** 4
+    squeal = np.sin(2 * np.pi * (410 + 60 * np.sin(2 * np.pi * .13 * k)) * k) * (.5 + .5 * np.sin(2 * np.pi * .19 * k)) ** 6
+    y = norm(body) * .55 + norm(creak) * .9 + squeal * .18
+    save("lift_groan_loop", norm(loopable(y, 1.0), .6))
+
+
+def cart_roll():
+    """Wheels on a concrete floor: a low rumble, a thunk at each slab joint and a faint squeak."""
+    k = t(2)
+    rumble = band(noise(2), 60, 300) * (.8 + .2 * np.sin(2 * np.pi * 3 * k))
+    clack = clicks(2, 5, 260, .09, jitter=.04)
+    squeak = np.sin(2 * np.pi * (1800 + 120 * np.sin(2 * np.pi * .7 * k)) * k) * (.5 + .5 * np.sin(2 * np.pi * 1.1 * k)) ** 8
+    y = norm(rumble) * .6 + norm(clack) * .55 + squeak * .08
+    save("cart_roll_loop", norm(y, .6))
+
+
+def shovel():
+    """A blade biting into coal: a gritty rush, small stones shifting, and a tink as it clears."""
+    k = t(.5)
+    grit = band(noise(.5), 900, 4500) * np.sin(np.pi * np.clip(k / .38, 0, 1)) ** 1.5 * (k < .38)
+    stones = clicks(.5, 38, 700, .03, jitter=.9) * np.exp(-k * 5)
+    tink = np.sin(2 * np.pi * 2400 * k) * np.exp(-np.clip(k - .3, 0, None) * 45) * (k > .3)
+    y = norm(grit) * .8 + norm(stones) * .6 + tink * .35
+    save("shovel", norm(y * env(len(k), .005, .08), .7))
+
+
+def coal_patter():
+    k = t(.35)
+    y = clicks(.35, 26, 800, .035, jitter=1.0) * np.exp(-k * 7) + .3 * band(noise(.35), 300, 1500) * np.exp(-k * 14)
+    save("coal_patter", norm(y, .6))
+
+
+def bin_rattle():
+    """The cart's steel bin taking a knock: a ring at a few resonances and loose coal rattling inside."""
+    k = t(.6)
+    ring = sum(a * np.sin(2 * np.pi * f * k) * np.exp(-k / d) for f, a, d in [(190, 1, .09), (310, .7, .07), (540, .5, .05), (880, .3, .03)])
+    burst = band(noise(.6), 150, 1500) * np.exp(-k * 28)
+    rattle = clicks(.6, 30, 1400, .02, jitter=1.0) * np.exp(-k * 6)
+    y = norm(ring) * .6 + norm(burst) * .6 + norm(rattle) * .5
+    save("bin_rattle", norm(y * env(len(k), .002, .1), .8))
+
+
 if __name__ == "__main__":
-    for f in (wind, fire, hum, crank, scrape, roll, phone, paper, pour, spill, kindle, ignite, wrench, chain, blip, drone, heartbeat, shiver, gong):
+    for f in (wind, fire, hum, groan, cart_roll, shovel, coal_patter, bin_rattle, crank, scrape, roll, phone, paper, pour, spill, kindle, ignite, wrench, chain, blip, drone, heartbeat, shiver, gong):
         f()
     whoosh("dash", .4, 300, 2400)
     whoosh("lurch", .3, 200, 1200, .5)

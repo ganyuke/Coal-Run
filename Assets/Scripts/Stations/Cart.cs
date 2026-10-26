@@ -132,6 +132,10 @@ namespace CoalRun.Stations
                 var emission = sparks.emission;
                 emission.rateOverTime = Scraping > .3f ? Scraping * sparksPerMetre : 0;
             }
+            // Heard through the AudioDirector: the skid dragging, and the wheels rolling along the floor.
+            if (Scraping > .3f) _game.Sound("scrape", .05f, Scraping);
+            var rolling = Wheels > 0 && !Busy && Mathf.Abs(Body.linearVelocity.y) < .6f ? Mathf.Abs(Vector2.Dot(Body.linearVelocity, Body.transform.right)) : 0;
+            if (rolling > .3f) _game.Sound("roll", .05f, rolling);
             if (!scrape) return;
             scrape.volume = Mathf.Clamp01(Scraping / 3);
             switch (Scraping)
