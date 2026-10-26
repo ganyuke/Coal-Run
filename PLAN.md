@@ -210,3 +210,7 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - Real UI: uGUI (Canvas) or UI Toolkit? uGUI is the safer bet for a jam.
 - Day 2 forecast and target are placeholders (Day 1's storm, 6° colder).
 - Design doc open items: lift momentum, power loss.
+
+## Audio (polish branch)
+- `AudioDirector` (Systems/Audio) plays cues for `ShiftManager.Sound` names and keeps beds (wind, fire, lift hum, drone, heartbeat, shiver). Cue/bed table lives in `Assets/Editor/AudioSetup.cs`; re-run `AudioSetup.Build()` after changing it.
+- Clips: synthesized by `Tools/AudioGen/make_audio.py` (Assets/Audio/Synth) plus Kenney Impact Sounds, CC0 (Assets/Audio/Kenney).

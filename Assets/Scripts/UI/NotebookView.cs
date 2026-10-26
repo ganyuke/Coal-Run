@@ -131,7 +131,11 @@ namespace CoalRun.UI
         }
 
         private void MarkDirty() => _dirty = true;
-        private void Written(Notebook.Page page) => _bounceAt = Time.time;
+        private void Written(Notebook.Page page)
+        {
+            _bounceAt = Time.time;
+            ShiftManager.Instance.Sound("page", .3f);
+        }
 
         private void Update()
         {

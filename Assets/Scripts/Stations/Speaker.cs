@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CoalRun.Core;
 using TMPro;
 using UnityEngine;
 
@@ -43,6 +44,9 @@ namespace CoalRun.Stations
         private float stackGap = .12f;
         [SerializeField] private float fadeTime = .5f;
         [SerializeField] private int sortingOrder = 60;
+        [Tooltip("The pitch of the little blip that goes with each couple of letters: higher for a lighter voice.")]
+        [SerializeField]
+        private float voicePitch = 1;
 
         public bool Talking => Time.time < _talkUntil;
         // The line is up (being typed or held), not yet faded out.
@@ -56,6 +60,7 @@ namespace CoalRun.Stations
         private Vector3 _headRest, _wanted;
         private string _lastText = "";
         private float _lineStart, _lineEnd, _talkUntil, _lastEnd, _bob, _puffDebt;
+        private int _typed;
 
         private void Awake()
         {
@@ -105,6 +110,7 @@ namespace CoalRun.Stations
             _text.gameObject.SetActive(true);
             _lineStart = Time.time;
             _talkUntil = _lineStart + say;
+            _typed = 0;
             _lineEnd = _lineStart + Mathf.Max(seconds, say + holdAfter);
             _lastText = text;
             _lastEnd = _lineEnd;
@@ -125,7 +131,14 @@ namespace CoalRun.Stations
             }
             else
             {
-                _text.maxVisibleCharacters = Mathf.FloorToInt((Time.time - _lineStart) * charsPerSecond) + 1;
+                var shown = Mathf.FloorToInt((Time.time - _lineStart) * charsPerSecond) + 1;
+                _text.maxVisibleCharacters = shown;
+                // A blip every couple of letters while it's being typed out.
+                if (shown >= _typed + 2 && shown <= _text.textInfo.characterCount + 1)
+                {
+                    _typed = shown;
+                    ShiftManager.Instance.Sound("blip", 0, voicePitch * UnityEngine.Random.Range(.9f, 1.12f));
+                }
                 _text.color = new Color(ink.r, ink.g, ink.b, Mathf.Clamp01(left / fadeTime));
                 _wanted = Wanted();
             }
