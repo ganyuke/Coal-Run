@@ -18,6 +18,9 @@ namespace CoalRun.Stations
         [SerializeField]
         private SortingGroup visual;
         [SerializeField] private int frontOrder = 20, backOrder = 4;
+        [Tooltip("What the operator says, as little text above their head.")]
+        [SerializeField]
+        private Speaker voice;
         [Tooltip("Sorting order while riding down the staff lift: behind its door (-16), in front of the car (-18).")]
         [SerializeField]
         private int liftOrder = -17;
@@ -44,6 +47,9 @@ namespace CoalRun.Stations
         private LineRenderer scoopOutline;
 
         public Rigidbody2D Body { get; private set; }
+        public Speaker Voice => voice;
+        // Out in the room, not dead or waiting out of the world.
+        public bool Visible => visual && visual.gameObject.activeInHierarchy;
         public Vector2 Position => Body.position;
         public int Facing { get; private set; } = -1;
         public int Lane { get; private set; }

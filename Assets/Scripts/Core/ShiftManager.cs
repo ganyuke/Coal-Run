@@ -35,6 +35,9 @@ namespace CoalRun.Core
         private LiftShaft liftShaft;
         [SerializeField] private Tutorial tutorial;
         [SerializeField] private Notebook notebook;
+        [Tooltip("Says what no one in particular does, when the operator isn't about.")]
+        [SerializeField]
+        private Speaker staffLiftVoice;
         [Tooltip("Seconds from Play until the first operator steps out of the staff lift.")]
         [SerializeField]
         private float firstArrival = 1.2f;
@@ -265,10 +268,14 @@ namespace CoalRun.Core
             }
         }
 
-        public void Say(string message, float duration = 5)
+        // Said by `speaker`, as little text above them. By default it's the operator's, or the staff lift's when
+        // they're not about (dead, and the replacement still on the way).
+        public void Say(string message, float duration = 5, Speaker speaker = null)
         {
             Message = message;
             MessageFor = duration;
+            speaker ??= player.Visible ? player.Voice : staffLiftVoice;
+            if (speaker) speaker.Speak(message, duration);
         }
 
         // Repeats of the same sound inside the cooldown are dropped, so stations can call this every step.

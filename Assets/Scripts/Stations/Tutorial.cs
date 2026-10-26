@@ -17,6 +17,9 @@ namespace CoalRun.Stations
         [SerializeField]
         private GameObject helper;
         [SerializeField] private float helperWalk = 2.2f;
+        [Tooltip("The helper's voice: his lines come out above his head.")]
+        [SerializeField]
+        private Speaker helperVoice;
         [Tooltip("His sorting order once the coal comes down: behind the coal piles (16).")]
         [SerializeField]
         private int buriedOrder = 15;
@@ -100,7 +103,7 @@ namespace CoalRun.Stations
             if (_talk <= 0 && _lines.Count > 0)
             {
                 var (text, duration) = _lines.Dequeue();
-                _game.Say(text, duration);
+                _game.Say(text, duration, helperVoice);
                 _talk = Mathf.Min(duration, .6f + text.Length / 20f);
             }
 

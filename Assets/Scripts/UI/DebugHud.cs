@@ -34,8 +34,8 @@ namespace CoalRun.UI
 
             // The briefing, report and fade are the notebook's (NotebookView).
             if (game.Ended || game.Departing || game.Phase == Phase.Briefing) return;
-            if (game.MessageFor > 0) GUI.Box(new Rect(width / 2 - 360, 600, 720, 80), game.Message, _box);
-            // The objective and the key prompts are the notebook's (NotebookView), and the frost is FrostVignette.
+            // The objective and the key prompts are the notebook's, what people say is above their heads (Speaker),
+            // and the frost is FrostVignette.
             if (game.Phase == Phase.Replacement && game.Deaths > 0)
                 GUI.Box(new Rect(width / 2 - 380, 24, 760, 44), $"Replacement arriving in {Mathf.CeilToInt(game.ReplacementIn)} s", new GUIStyle(_box) { fontSize = 17 });
 

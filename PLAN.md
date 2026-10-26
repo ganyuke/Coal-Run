@@ -39,7 +39,8 @@ Each milestone ends with something you can play. Don't start the next one until 
   - [ ] Axle installer beat
   - [x] Notebook (uGUI): objective pages, key prompts as sticky notes (10/26)
   - [x] Briefing and report as notebook pages (10/26)
-  - [ ] Morning memo page; the rest of DebugHud (story message lines, frost vignette, F3 readout) in uGUI
+  - [x] Frost vignette in uGUI; what people say is little text above their heads (10/26)
+  - [ ] Morning memo page; the F3 readout and replacement countdown out of IMGUI
 - [ ] **M6 · Art and sound** (Thu 10/29)
 - [ ] **M7 · Build, playtest, submit** (Fri 10/30)
 
@@ -183,6 +184,7 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - **Rules** (in `Notebook.Needs`, by where the game is): the training's objective line (so the top bar is gone); fire out; cart overturned / wheel off / buried; where the cart is and whether it's loaded (fill → take it up on the lift → hook on and tip → take the empty cart back down); burn lever too low for the forecast 45 s ahead; phone ringing; shift over. Loaded is 5 coal.
 - **On screen** (`NotebookView`, uGUI, no EventSystem: it checks the mouse itself): the book rests at the bottom right with its top edge showing, a click slides it up open to the open page, a click on its top edge slides it down. It pops up a little by itself when a page is written while it's shut. Ticked pages above (last 3, struck through), the open page big, two empty boxes below. The key prompts are sticky notes stacked on its top edge (`PlayerController.Prompts()`). Clicks on the book don't reach the room (`NotebookView.PointerOver`, checked by `MachineInput` and `InputReader`).
 - **Briefing and report are notebook pages** (your call): between shifts the book opens bigger in the middle of the screen with the room dimmed behind it, a heading, a headline, the text and a stamped red button (clicking it is Enter / R). The fade out of the staff lift is a black layer behind the book (it used to be IMGUI, which draws over uGUI), so the report opens on black. `NotebookView.Sheet` has the wording.
+- **Speech** (your call): `Speaker` (Stations) is on the operator, the helper, the phone and the staff lift. `ShiftManager.Say(text, seconds, speaker)` puts the line as small text above that speaker, its head bobbing (the phone itself bobs) and a few specks puffing up while it's said (about 16 characters a second, then it just shows). No speaker means the operator, or the staff lift when they're dead. The helper's lines are his, brass's are the phone's. The text is a root object that follows its anchor and is kept inside the screen. The IMGUI message box is gone. Frost is `FrostVignette`, an Image in the notebook's canvas.
 - Clicking the red phone answers it and clicking the shovel in the training picks it up (both are `Machine`s now).
 
 ### ShiftBot (10/26, balance testing)

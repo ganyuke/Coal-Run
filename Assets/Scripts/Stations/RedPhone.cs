@@ -10,6 +10,9 @@ namespace CoalRun.Stations
     public class RedPhone : Machine
     {
         [SerializeField] private float ringBelow = 13;
+        [Tooltip("Brass's voice on the line, above the phone.")]
+        [SerializeField]
+        private Speaker voice;
         [Tooltip("Quiet this long after it's answered.")]
         [SerializeField]
         private float cooldown = 10;
@@ -63,7 +66,7 @@ namespace CoalRun.Stations
         {
             Ringing = false;
             _quiet = cooldown;
-            _game.Say(_game.Temperature < 7 ? "“We can’t feel our hands. Forget the target. Just keep us alive.”" : "“It’s getting cold upstairs. Could you turn the furnace up?”", 6);
+            _game.Say(_game.Temperature < 7 ? "“We can’t feel our hands. Forget the target. Just keep us alive.”" : "“It’s getting cold upstairs. Could you turn the furnace up?”", 6, voice);
             _game.Sound("phone");
         }
     }
