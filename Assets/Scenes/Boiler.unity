@@ -25615,8 +25615,9 @@ MonoBehaviour:
   reportDim: 0.8
   shutY: -330
   openY: 20
-  nudge: 70
   nudgeTime: 2.5
+  pageTop: 84
+  peekPadding: 16
   slideSpeed: 9
   autoSide: 1
   sideMargin: 100

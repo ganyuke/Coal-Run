@@ -46,10 +46,12 @@ namespace CoalRun.UI
         [SerializeField]
         private float shutY = -330;
         [SerializeField] private float openY = 20;
-        [Tooltip("How far it pops up by itself when a new page is written while it's shut.")]
+        [Tooltip("How long it pops up by itself, far enough to show the whole open page, when a new page is written while it's shut.")]
         [SerializeField]
-        private float nudge = 70;
-        [SerializeField] private float nudgeTime = 2.5f;
+        private float nudgeTime = 3;
+        [Tooltip("From the top of the book to the first line of the page, and the space left under the open page when it peeks.")]
+        [SerializeField]
+        private float pageTop = 84, peekPadding = 16;
         [SerializeField] private float slideSpeed = 9;
         [Tooltip("The book keeps to whichever side of the screen the operator isn't on.")]
         [SerializeField]
@@ -76,7 +78,9 @@ namespace CoalRun.UI
         private readonly List<RectTransform> _stickies = new();
         private readonly List<TMP_Text> _stickyText = new();
         private bool _open, _dirty = true, _pressing, _dragging;
-        private float _nudgeUntil, _dimmed, _restY, _dragY, _pressY, _grab, _overlapFor;
+        private float _nudgeUntil, _dimmed, _restY, _dragY, _pressY, _grab, _overlapFor, _peek;
+        // Whether the page was laid out for an open book: shut, it's just the open page.
+        private bool _laidOutOpen;
         // Which side of the screen it's on: 1 right, -1 left.
         private int _side = 1;
         private Vector2 _bookSize, _bookRest;
@@ -183,7 +187,7 @@ namespace CoalRun.UI
             var size = sheetMode ? sheetSize : _bookSize;
             var margin = -_bookRest.x;
             var x = sheetMode ? -(canvasWidth - size.x) / 2 : _side > 0 ? -margin : -(canvasWidth - margin - size.x);
-            var y = sheetMode ? sheetY : _open ? _restY : Time.time < _nudgeUntil ? shutY + nudge : shutY;
+            var y = sheetMode ? sheetY : _open ? _restY : Time.time < _nudgeUntil ? Mathf.Max(shutY, _peek - _bookSize.y) : shutY;
             var k = 1 - Mathf.Exp(-slideSpeed * Time.unscaledDeltaTime);
             book.sizeDelta = Vector2.Lerp(book.sizeDelta, size, k);
             var next = Vector2.Lerp(book.anchoredPosition, new Vector2(x, y), k);
@@ -192,6 +196,7 @@ namespace CoalRun.UI
             book.anchoredPosition = next;
 
             if (sheetMode) { for (var i = 0; i < _stickies.Count; i++) _stickies[i].gameObject.SetActive(false); return; }
+            if (_laidOutOpen != (_open || _dragging)) _dirty = true;
             if (_dirty) Rebuild();
             Stickies();
         }
@@ -255,15 +260,26 @@ namespace CoalRun.UI
             foreach (var p in pages) if (p.Done) ticked.Add(p);
             if (ticked.Count > tickedShown) ticked.RemoveRange(0, ticked.Count - tickedShown);
 
+            // Shut, the book shows only the open page; the history above it and the empty boxes below are for
+            // when it's open.
+            var history = _open || _dragging;
+            _laidOutOpen = history;
             var used = 0;
             var y = 0f;
-            foreach (var p in ticked) y = Row(ref used, y, p.Text, true, rowHeight, 20, fadedInk);
-            if (current != null) y = Row(ref used, y, current.Text, false, currentHeight, 26, current.Urgent ? urgentInk : ink);
-            for (var i = 0; i < emptyShown; i++) y = Row(ref used, y, "", false, rowHeight, 20, fadedInk);
+            if (history) foreach (var p in ticked) y = Row(ref used, y, p.Text, true, rowHeight, 20, fadedInk, false);
+            var peek = 100f;
+            if (current != null)
+            {
+                var before = y;
+                y = Row(ref used, y, current.Text, false, currentHeight, 26, current.Urgent ? urgentInk : ink, true);
+                peek = pageTop + (history ? 0 : y - before) + peekPadding;
+            }
+            if (history) for (var i = 0; i < emptyShown; i++) y = Row(ref used, y, "", false, rowHeight, 20, fadedInk, false);
+            _peek = peek;
             for (var i = used; i < _rows.Count; i++) _rows[i].gameObject.SetActive(false);
         }
 
-        private float Row(ref int used, float y, string text, bool done, float height, float size, Color color)
+        private float Row(ref int used, float y, string text, bool done, float height, float size, Color color, bool fit)
         {
             if (used == _rows.Count)
             {
@@ -273,6 +289,8 @@ namespace CoalRun.UI
             var r = _rows[used++];
             r.gameObject.SetActive(true);
             r.Set(text, done, size, color);
+            // The open page is as tall as what it says, however many lines that takes.
+            if (fit) height = Mathf.Max(height, r.TextHeight + 16);
             r.Rect.anchoredPosition = new Vector2(0, -y);
             r.Rect.sizeDelta = new Vector2(r.Rect.sizeDelta.x, height);
             return y + height;

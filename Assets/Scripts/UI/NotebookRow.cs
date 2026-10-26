@@ -15,6 +15,8 @@ namespace CoalRun.UI
         [SerializeField] private Image box;
 
         public RectTransform Rect => rect;
+        // How tall what it says wants to be at the width it has.
+        public float TextHeight => label.GetPreferredValues(label.text, label.rectTransform.rect.width, 0).y;
 
         public void Set(string text, bool done, float size, Color ink)
         {
