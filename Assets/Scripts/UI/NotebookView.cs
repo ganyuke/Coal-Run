@@ -334,9 +334,16 @@ namespace CoalRun.UI
             while (_stickies.Count < prompts.Count)
             {
                 var note = Instantiate(stickyTemplate, stickyTemplate.parent);
-                note.localRotation = Quaternion.Euler(0, 0, (_stickies.Count % 2 == 0 ? 1.5f : -1.5f) * (1 + _stickies.Count % 3));
+                note.localRotation = Quaternion.Euler(0, 0, (_stickies.Count % 2 == 0 ? 1.2f : -1.2f) * (1 + _stickies.Count % 2));
                 _stickies.Add(note);
-                _stickyText.Add(note.GetComponentInChildren<TMP_Text>());
+                // A long label shrinks to fit its note rather than wrapping out of it.
+                var label = note.GetComponentInChildren<TMP_Text>();
+                label.enableAutoSizing = true;
+                label.fontSizeMax = label.fontSize;
+                label.fontSizeMin = label.fontSize * .6f;
+                label.textWrappingMode = TextWrappingModes.NoWrap;
+                label.overflowMode = TextOverflowModes.Ellipsis;
+                _stickyText.Add(label);
                 _stickyImage.Add(note.GetComponent<Image>());
             }
             for (var i = 0; i < _stickies.Count; i++)
@@ -347,7 +354,7 @@ namespace CoalRun.UI
                 _stickyText[i].text = $"<b>[{prompts[i].key}]</b>  {prompts[i].label}";
                 _stickyImage[i].color = KeyColorFor(prompts[i].key);
                 var size = _stickies[i].sizeDelta;
-                _stickies[i].anchoredPosition = new Vector2(stickyTemplate.anchoredPosition.x - i * stickyShift, stickyTemplate.anchoredPosition.y + i * (size.y + stickyGap));
+                _stickies[i].anchoredPosition = new Vector2(stickyTemplate.anchoredPosition.x - i * stickyShift, stickyTemplate.anchoredPosition.y + i * (size.y + stickyGap + 5));
             }
         }
     }

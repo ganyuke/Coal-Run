@@ -344,6 +344,7 @@ MonoBehaviour:
   visual: {fileID: 3075206280862486481}
   frontOrder: 20
   backOrder: 4
+  voice: {fileID: 0}
   liftOrder: -17
   heldWheel: {fileID: 7653605422072215475}
   striker: {fileID: 7511244748276544231}

@@ -175,6 +175,49 @@ def chute_pipe():
     return save(c, "chute_pipe")
 
 
+def hopper_chute():
+    """The funnel under the hopper and the pipe that carries coal down into the furnace: 2.0 x 0.9 units."""
+    W, H = int(2.0 * PPU), int(.9 * PPU)
+    c = Canvas(W, H)
+    # Funnel: wide at the hopper's floor, narrowing to the pipe.
+    neck0, neck1 = W / 2 - 30, W / 2 + 30
+    funnel = H * .45
+    c.poly([(0, 0), (W, 0), (neck1, funnel), (neck0, funnel)], mul(STEEL, .8))
+    c.poly([(0, 0), (W / 2, 0), (W / 2, funnel), (neck0, funnel)], mul(STEEL, .95))
+    c.poly([(W / 2, 0), (W, 0), (neck1, funnel), (W / 2, funnel)], mul(STEEL, .62))
+    # The pipe: faceted steel with a dark channel the coal falls through.
+    facets(c, neck0, funnel, neck1, H, mul(STEEL, .9), cell=16, amp=.1, seed=21, light=(.5, 0))
+    c.rect(neck0 + 12, funnel, neck1 - 12, H, hexc("#0f1217"))
+    # Flanges where the pipe meets the funnel and the furnace.
+    for y in (funnel - 2, H - 9):
+        facets(c, neck0 - 8, y, neck1 + 8, y + 9, mul(STEEL, 1.15), cell=10, amp=.1, seed=int(y), light=(0, -1))
+        c.rect(neck0 - 8, y + 9, neck1 + 8, y + 12, (0, 0, 0, 100))
+        for x in (neck0 - 3, neck1 + 3):
+            rivet(c, x, y + 4.5, 1.6, STEEL)
+    c.rect(0, 0, W, 3, (0, 0, 0, 90))
+    return save(c, "hopper_chute")
+
+
+def hopper_grate():
+    """The grate the cart tips onto, over the hopper's mouth: 2.0 x 0.32 units, a hazard-striped frame round dark gaps."""
+    W, H = int(2.0 * PPU), 20
+    c = Canvas(W, H)
+    c.rect(0, 0, W, H, hexc("#0b0d11"))
+    # Bars across, each a lit top face and a shaded front.
+    for x in range(14, W - 14, 11):
+        c.rect(x, 2, x + 6, H - 3, hexc("#7e8aa0"))
+        c.rect(x, 2, x + 6, 5, (255, 255, 255, 110))
+        c.rect(x + 4, 5, x + 6, H - 3, (0, 0, 0, 70))
+    # Hazard stripes on the end caps and a bright lip on top.
+    for x0, x1 in ((0, 14), (W - 14, W)):
+        c.rect(x0, 0, x1, H, YELLOW)
+        for y in range(-4, H, 8):
+            c.poly([(x0, y + 4), (x1, y), (x1, y + 4), (x0, y + 8)], hexc("#1a1c20"))
+    c.rect(0, 0, W, 3, mul(STEEL, 1.35))
+    c.rect(0, H - 3, W, H, (0, 0, 0, 120))
+    return save(c, "hopper_grate")
+
+
 def bunker():
     W, H = int(3.0 * PPU), int(4.0 * PPU)
     c = Canvas(W, H)
@@ -446,10 +489,10 @@ def props():
 
 
 if __name__ == "__main__":
-    furnace(); furnace_mouth(); coal_bed(); hopper_back(); coal_fill(); grate(); chute_pipe(); bunker(); weigh_plate()
+    furnace(); furnace_mouth(); coal_bed(); hopper_back(); coal_fill(); grate(); hopper_chute(); hopper_grate(); chute_pipe(); bunker(); weigh_plate()
     stair_parts(); control_room(); glass(); slab("slab_concrete", 4.3, .4, 5); staff_lift(); phone_and_lamp()
     counterweight_parts(); meter_parts(); tile(); props()
-    names = ["furnace_body", "furnace_mouth", "coal_bed", "hopper_back", "coal_fill", "grate", "chute_pipe", "bunker", "weigh_plate",
+    names = ["furnace_body", "furnace_mouth", "coal_bed", "hopper_back", "coal_fill", "grate", "hopper_chute", "hopper_grate", "chute_pipe", "bunker", "weigh_plate",
              "tread", "beam_dark", "rail_light", "control_back", "glass", "slab_concrete", "staff_lift_car", "staff_lift_door",
              "phone_red@128", "lamp_lens@128", "counterweight", "pulley", "rope", "meter_housing@128", "meter_disc@128", "tile",
              "barrel@128", "crate", "pipe_h", "pipe_v", "flange", "valve@128", "gauge@128", "sign_warning@128", "poster_fire", "lamp_cage@128"]

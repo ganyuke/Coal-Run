@@ -59,7 +59,7 @@ def panel():
     for t in (-40, -20, 0, 20):
         _, y = px(0, y_of(t), W, H)
         lx, _ = px(-1.6, 0, W, H)
-        label(c, f"{t}°", lx, y, 14 if t != 0 else 17, hexc("#9fd3ff") if t == 0 else hexc("#aab6c8"))
+        label(c, f"{t}°", lx, y, 12 if t != 0 else 15, hexc("#9fd3ff") if t == 0 else hexc("#aab6c8"))
     # The tube's housing on the left: a groove the tube sits in.
     tx, _ = px(-2.28, 0, W, H)
     _, ty0 = px(0, 1.36, W, H)
@@ -67,7 +67,7 @@ def panel():
     c.rect(tx - 12, ty0, tx + 12, ty1, hexc("#14181f"))
     # Captions along the bottom.
     cy = H - 13
-    for x, col, text in [(-1.5, hexc("#ffb050"), "INSIDE"), (-0.2, hexc("#9fd3ff"), "OUTSIDE"), (1.3, hexc("#ff8a3a"), "FIRE HOLDS")]:
+    for x, col, text in [(-1.5, hexc("#ffb050"), "INSIDE"), (-0.5, hexc("#9fd3ff"), "OUTSIDE"), (.72, hexc("#ff8a3a"), "FIRE HOLDS")]:
         sx, _ = px(x, 0, W, H)
         c.rect(sx - 14, cy - 3, sx - 6, cy + 3, col)
         label(c, text, sx - 2, cy, 11, hexc("#9aa6b8"), "lm")

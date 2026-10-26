@@ -223,3 +223,11 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 - `InstrumentPanel` (thermometer + chart) replaced the TV. Fonts: Special Elite (notebook), Barlow Condensed (speech). Cold breath on the operator (`Speaker.breathBelow`).
 - Bot note: the freight lift stops dead at the shaft ends, so a loaded cart rammed into them spills; `ShiftBot` eases off in the last 2 units.
 - Effects check (10/26, bot-driven Day 1, 8 full-room frames over 2 minutes): mean luminance 65-70/255 and only ~1% of pixels near white (window, lamps, fire), steady across the run, so bloom and lights are not blowing out the picture.
+
+## Playtest feedback (10/26, from your run) and fixes
+- Dashing into the parked cart in the training moved it: a parked cart is now a wall (`PlayerController.Ram`).
+- Heads sat above the torso: lowered .12 on every character.
+- Grate under the tip cradle: a barred, hazard-capped sprite (`hopper_grate`).
+- Panel numbers bleeding out of their boxes: legend, clock and readouts resized to fit.
+- Sticky notes overlapped (3+): wider stack pitch, smaller tilt, and long labels shrink to fit one line.
+- Hopper now joins the furnace by a funnel and pipe (`hopper_chute`), with coal falling through it and onto the bed while the hopper has coal (`HopperFeed`).

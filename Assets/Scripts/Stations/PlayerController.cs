@@ -305,6 +305,17 @@ namespace CoalRun.Stations
             if (!closing || ahead > reach || ahead < reach - .45f || Mathf.Abs(cart.position.y - p.y) > 1.4f) return;
             float vp = Body.linearVelocity.x, vc = cart.linearVelocity.x;
             if ((vp - vc) * _dashDir <= 0) return;
+            // A parked cart (the training) is a wall: the operator bounces off it, it doesn't budge.
+            if (_game.Cart.Parked)
+            {
+                Body.position = new Vector2(cart.position.x - _dashDir * reach, p.y);
+                Body.linearVelocity = new Vector2(-_dashDir * 1.5f, Body.linearVelocity.y);
+                _dashFor = 0;
+                _ramming = false;
+                Stagger = .3f;
+                _game.Sound("clank", .2f);
+                return;
+            }
             var shared = (Body.mass * vp + cart.mass * vc) / (Body.mass + cart.mass);
             cart.linearVelocity = new Vector2(shared, cart.linearVelocity.y);
             if (over)
