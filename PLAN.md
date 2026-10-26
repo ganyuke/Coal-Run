@@ -209,7 +209,7 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 ## Open questions
 
 - Real UI: uGUI (Canvas) or UI Toolkit? uGUI is the safer bet for a jam.
-- Day 2 forecast and target are placeholders (Day 1's storm, 6° colder).
+- Day 2 forecast is Day 1's storm 6° colder. Targets lowered (smaller call, overrule freely) to 175 kWh (Day 1) and 190 kWh (Day 2), just under what the bot manages without a death (181 and 199), so a decent human run can meet them.
 - Design doc open items: lift momentum, power loss.
 
 ## Audio (polish branch)

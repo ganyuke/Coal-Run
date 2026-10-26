@@ -19,7 +19,7 @@ MonoBehaviour:
   installer: 1
   startingWheels: 2
   startingHopper: 15
-  target: 240
+  target: 190
   forecast:
   - time: 0
     temperature: -10

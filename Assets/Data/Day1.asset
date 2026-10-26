@@ -16,7 +16,7 @@ MonoBehaviour:
   training: 1
   startingWheels: 1
   startingHopper: 10
-  target: 210
+  target: 175
   forecast:
   - time: 0
     temperature: -4
