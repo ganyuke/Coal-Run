@@ -22,14 +22,14 @@ Each milestone ends with something you can play. Don't start the next one until 
   - [x] Shovel (F), throwing into the cart, step-up onto piles, operator burial
   - [x] Chute lever in the control room (lane 1, up the stairs over the staff lift), analog pull
   - [ ] **Playtest:** fill the cart from the lever without burying it; dig a buried cart out; haul through a spill
-- [ ] **M3 · Furnace and the shift** (Mon 10/26)
+- [x] **M3 · Furnace and the shift** (Mon 10/26)
   - [x] Tip cradle + tip handle, pour into the hopper, spill the wrong way
   - [x] Furnace: burn lever notches, heat model, output meter
     - [x] Step 1: notched burn lever, burning from the hopper, clock + outside + building temperature (F3 HUD)
     - [x] Step 2: fire glow in the firebox mouth (grows and brightens with the notch, Perlin flicker) and a spinning meter disc for output
     - [x] Step 3: blue → red colour bands with 1–5 snowflakes under the lever's notches (instead of number labels; the notepad graph uses the same bands in M5)
   - [x] Shift clock, forecast, complete / frozen; clock out at the staff lift
-- [ ] **M4 · Things going wrong** (Tue 10/27)
+- [x] **M4 · Things going wrong** (Tue 10/27)
   - [x] Crashes knock wheels off; pick up, carry, throw and refit (hold E)
   - [x] Right the cart: E or ram it (done early, 10/24)
   - [x] Death and the replacement worker; red phone
@@ -40,7 +40,8 @@ Each milestone ends with something you can play. Don't start the next one until 
   - [x] Notebook (uGUI): objective pages, key prompts as sticky notes (10/26)
   - [x] Briefing and report as notebook pages (10/26)
   - [x] Frost vignette in uGUI; what people say is little text above their heads (10/26)
-  - [ ] Morning memo page; the F3 readout and replacement countdown out of IMGUI
+  - [x] Morning memo (on the Day 2 briefing page)
+  - [ ] The F3 readout and replacement countdown out of IMGUI (left as the debug HUD; F3 hides it)
 - [x] **M6 · Art and sound** (Thu 10/29): done early on `polish`; the audio mix is untuned by ear, needs a listen.
 - [ ] **M7 · Build, playtest, submit** (Fri 10/30)
   - [x] Linux standalone build (112 MB) made from the editor and smoke-run headless for 25 s without errors; the editor runs ~350 fps with 12 lights + post. Still to do: a human playtest, the Windows/Mac builds if wanted, submission.
