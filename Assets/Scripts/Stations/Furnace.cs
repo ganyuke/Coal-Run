@@ -1,5 +1,6 @@
 using CoalRun.Core;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace CoalRun.Stations
 {
@@ -32,6 +33,13 @@ namespace CoalRun.Stations
         [SerializeField]
         private float glowRate = 7;
         [SerializeField] private Color glowColor = new(1, .3f, .08f);
+        [Tooltip("The warm light the fire throws on the room: it breathes with the flames and swells with the burn.")]
+        [SerializeField]
+        private Light2D fireLight;
+        [SerializeField] private Color embers = new(1, .32f, .1f), flames = new(1, .66f, .3f);
+        [Tooltip("Its intensity with only embers, and at the top notch.")]
+        [SerializeField]
+        private Vector2 lightRange = new(.25f, 1.7f);
         [Tooltip("The inside of the firebox mouth, lit up by the fire.")]
         [SerializeField]
         private SpriteRenderer glow;
@@ -145,6 +153,15 @@ namespace CoalRun.Stations
                 emission.rateOverTimeMultiplier = strength > .02f ? glowRate * strength : 0;
                 var main = emberGlow.main;
                 main.startColor = new Color(glowColor.r, glowColor.g, glowColor.b, .8f * strength);
+            }
+
+            if (fireLight)
+            {
+                // Embers cast a dim red light, flames a bright orange one; it wavers with the same noise as the glow.
+                var strength = Mathf.Lerp(lightRange.x * ember, lightRange.y, _heat) * (.85f + .3f * flicker);
+                fireLight.intensity = strength;
+                fireLight.color = Color.Lerp(embers, flames, _heat);
+                fireLight.pointLightOuterRadius = Mathf.Lerp(4.5f, 9f, _heat);
             }
 
             if (meterDisc) meterDisc.Rotate(0, 0, -BurnRate * meterSpin * Time.deltaTime);

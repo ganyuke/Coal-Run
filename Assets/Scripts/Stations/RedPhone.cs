@@ -1,6 +1,7 @@
 using System.Collections;
 using CoalRun.Core;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace CoalRun.Stations
 {
@@ -11,6 +12,10 @@ namespace CoalRun.Stations
     public class RedPhone : Machine
     {
         [SerializeField] private float ringBelow = 13;
+        [Tooltip("A red light that flashes in time with the ringing.")]
+        [SerializeField]
+        private Light2D ringLight;
+        [SerializeField] private float ringLightIntensity = 1.6f;
         [Tooltip("Brass's voice on the line, above the phone.")]
         [SerializeField]
         private Speaker voice;
@@ -56,6 +61,7 @@ namespace CoalRun.Stations
         {
             var burst = (Ringing || _calling) && Time.time % .9f < .45f;
             transform.localRotation = _rest * Quaternion.Euler(0, 0, burst ? Mathf.Sin(Time.time * 60) * shake : 0);
+            if (ringLight) ringLight.intensity = burst ? ringLightIntensity * (.6f + .4f * Mathf.Sin(Time.time * 40)) : 0;
         }
 
         public override string OutOfReach => Ringing ? "Gotta get to the phone." : "It's not even ringing.";

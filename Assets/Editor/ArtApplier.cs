@@ -118,6 +118,41 @@ namespace CoalRun.Editor
             return n;
         }
 
+        // A lit sprite material on every sprite in the scene except the ones that glow by themselves.
+        public static int ApplyLit(params string[] unlitTails)
+        {
+            var path = "Assets/Art/SpriteLit.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (!mat)
+            {
+                mat = new Material(Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default")) { name = "SpriteLit" };
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            var n = 0;
+            foreach (var r in Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                var p = PathOf(r.transform);
+                if (p.Contains("Notebook UI") || p.Contains("Speech")) continue;
+                var skip = false;
+                foreach (var t in unlitTails) if (p.Contains(t)) skip = true;
+                r.sharedMaterial = skip ? AssetDatabase.GetBuiltinExtraResource<Material>("Sprites-Default.mat") : mat;
+                if (skip) r.sharedMaterial = Unlit();
+                EditorUtility.SetDirty(r);
+                n++;
+            }
+            return n;
+        }
+
+        private static Material Unlit()
+        {
+            var path = "Assets/Art/SpriteUnlit.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat) return mat;
+            mat = new Material(Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default")) { name = "SpriteUnlit" };
+            AssetDatabase.CreateAsset(mat, path);
+            return mat;
+        }
+
         public static void Save()
         {
             var scene = SceneManager.GetActiveScene();
