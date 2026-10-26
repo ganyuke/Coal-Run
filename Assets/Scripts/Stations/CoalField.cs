@@ -37,6 +37,9 @@ namespace CoalRun.Stations
 
         [SerializeField] private Transform liftPlatform;
         [SerializeField] private Sprite lumpSprite, columnSprite;
+        [Tooltip("A few lump shapes, one picked for each lump. Empty: they all use the lump sprite.")]
+        [SerializeField]
+        private Sprite[] lumpVariants;
         [SerializeField] private Material spriteMaterial;
         [SerializeField] private Color coalColor = new(.07f, .07f, .08f);
         [SerializeField] private int maxLumps = 240;
@@ -360,7 +363,7 @@ namespace CoalRun.Stations
             art.transform.SetParent(go.transform, false);
             art.transform.localScale = Vector3.one * .26f;
             var sr = art.AddComponent<SpriteRenderer>();
-            sr.sprite = lumpSprite;
+            sr.sprite = lumpVariants is { Length: > 0 } ? lumpVariants[Random.Range(0, lumpVariants.Length)] : lumpSprite;
             sr.color = coalColor;
             sr.sortingOrder = 17;
             if (spriteMaterial) sr.sharedMaterial = spriteMaterial;
