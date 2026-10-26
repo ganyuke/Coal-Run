@@ -34,6 +34,7 @@ namespace CoalRun.Core
         [SerializeField]
         private LiftShaft liftShaft;
         [SerializeField] private Tutorial tutorial;
+        [SerializeField] private Notebook notebook;
         [Tooltip("Seconds from Play until the first operator steps out of the staff lift.")]
         [SerializeField]
         private float firstArrival = 1.2f;
@@ -49,6 +50,7 @@ namespace CoalRun.Core
         public TipCradle Cradle => cradle;
         public RedPhone Phone => phone;
         public Tutorial Tutorial => tutorial;
+        public Notebook Notebook => notebook;
 
         public Phase Phase { get; private set; } = Phase.Shift;
         // Training counts as going on while a replacement is on the way in the middle of it.

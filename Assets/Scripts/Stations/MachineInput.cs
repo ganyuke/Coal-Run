@@ -21,7 +21,7 @@ namespace CoalRun.Stations
             if (mouse == null) return;
             Vector2 p = cam.ScreenToWorldPoint(mouse.position.ReadValue());
             // Hands full of wheel: a click throws it instead (see PlayerController).
-            Hover = game.CanAct && !player.CarryingWheel ? Pick(p, game.Tutorial) : null;
+            Hover = game.CanAct && !player.CarryingWheel && !UI.NotebookView.PointerOver ? Pick(p, game.Tutorial) : null;
             if (Active && (!mouse.leftButton.isPressed || !game.CanAct || !Active.CanOperate(player))) Release();
             if (!Active && mouse.leftButton.wasPressedThisFrame && Hover)
             {

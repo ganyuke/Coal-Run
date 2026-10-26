@@ -40,15 +40,9 @@ namespace CoalRun.UI
             if (game.Departing) return;
             if (game.Phase == Phase.Briefing) { Briefing(game, width); return; }
             if (game.MessageFor > 0) GUI.Box(new Rect(width / 2 - 360, 600, 720, 80), game.Message, _box);
-            var objective = game.Phase == Phase.Replacement && game.Deaths > 0 ? $"Replacement arriving in {Mathf.CeilToInt(game.ReplacementIn)} s" : game.Tutorial.Objective;
-            if (objective != "") GUI.Box(new Rect(width / 2 - 380, 24, 760, 44), objective, new GUIStyle(_box) { fontSize = 17 });
-
-            float y = 16;
-            foreach (var (key, label) in player.Prompts())
-            {
-                GUI.Box(new Rect(16, y, 240, 34), $"[{key}]  {label}", new GUIStyle(_box) { fontSize = 16, alignment = TextAnchor.MiddleLeft });
-                y += 40;
-            }
+            // The objective and the key prompts are the notebook's (NotebookView).
+            if (game.Phase == Phase.Replacement && game.Deaths > 0)
+                GUI.Box(new Rect(width / 2 - 380, 24, 760, 44), $"Replacement arriving in {Mathf.CeilToInt(game.ReplacementIn)} s", new GUIStyle(_box) { fontSize = 17 });
 
             if (!_readout) return;
             var cart = game.Cart;

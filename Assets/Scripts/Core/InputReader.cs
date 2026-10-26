@@ -55,7 +55,7 @@ namespace CoalRun.Core
             if (k.eKey.wasPressedThisFrame) _interactPressed = true;
             if (k.rKey.wasPressedThisFrame) _restartPressed = true;
             if (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame) _beginPressed = true;
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) _clickPressed = true;
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && !UI.NotebookView.PointerOver) _clickPressed = true;
             if (k.f2Key.wasPressedThisFrame) _debugPressed = 2;
             if (k.f4Key.wasPressedThisFrame) _debugPressed = 4;
             if (k.f5Key.wasPressedThisFrame) _debugPressed = 5;

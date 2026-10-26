@@ -37,7 +37,8 @@ Each milestone ends with something you can play. Don't start the next one until 
 - [ ] **M5 · Day 2 and the real UI** (Wed 10/28)
   - [ ] Day flow: Day 1 → memo → Day 2 (DayConfig per day)
   - [ ] Axle installer beat
-  - [ ] Notepad with the forecast graph, objective line, menus (replace DebugHud)
+  - [x] Notebook (uGUI): objective pages, key prompts as sticky notes (10/26)
+  - [ ] Menus, briefing/report/memo cards in uGUI (replace the rest of DebugHud)
 - [ ] **M6 · Art and sound** (Thu 10/29)
 - [ ] **M7 · Build, playtest, submit** (Fri 10/30)
 
@@ -174,6 +175,13 @@ Still waiting on your call: the heave fast-tap exploit (a wind-up on regrip, or 
 - **Ember glow:** `Furnace/Fire/Ember glow`, a soft additive particle system over the coal bed, red, strongest while the fire is dying or being kindled and drowned out by a roaring fire (`Furnace.emberGlow`, `glowRate`, `glowColor`).
 - **TV:** the holds line is dotted (`ForecastTv.dots`) while the fire is out, solid when it's lit, so it reads as "what it would hold".
 - **Frost:** a light blue vignette (IMGUI, `DebugHud.DrawFrost`, to be replaced with the real UI) eases in while freezing, harder as the grace runs out.
+
+### Notebook (10/26, your design)
+
+- **It has no fixed pages.** `Notebook` (Stations) looks at the room four times a second and writes a page when the game needs something, ticks it when the need goes away. Append-only: pages are never removed or un-ticked, and a need that comes back is a new page, so it reads as a log. The open page is the oldest unticked one, **unless the fire's out, which takes over** (red). The phone is just the next page.
+- **Rules** (in `Notebook.Needs`, by where the game is): the training's objective line (so the top bar is gone); fire out; cart overturned / wheel off / buried; where the cart is and whether it's loaded (fill → take it up on the lift → hook on and tip → take the empty cart back down); burn lever too low for the forecast 45 s ahead; phone ringing; shift over. Loaded is 5 coal.
+- **On screen** (`NotebookView`, uGUI, no EventSystem: it checks the mouse itself): the book rests at the bottom right with its top edge showing, a click slides it up open to the open page, a click on its top edge slides it down. It pops up a little by itself when a page is written while it's shut. Ticked pages above (last 3, struck through), the open page big, two empty boxes below. The key prompts are sticky notes stacked on its top edge (`PlayerController.Prompts()`). Clicks on the book don't reach the room (`NotebookView.PointerOver`, checked by `MachineInput` and `InputReader`).
+- Clicking the red phone answers it and clicking the shovel in the training picks it up (both are `Machine`s now).
 
 ### ShiftBot (10/26, balance testing)
 
