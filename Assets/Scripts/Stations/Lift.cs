@@ -82,7 +82,11 @@ namespace CoalRun.Stations
             var brake = t.liftAcceleration * dt / 2;
             var limit = Mathf.Min(t.liftMaxSpeed, Mathf.Max(0, Mathf.Sqrt(2 * t.liftAcceleration * Mathf.Max(0, distance) + brake * brake) - brake));
             var target = Mathf.Clamp(requested, -limit, limit);
-            Speed += Mathf.Clamp(target - Speed, -t.liftAcceleration * dt, t.liftAcceleration * dt);
+            // Spun by hand there's no easing at all: the platform goes exactly as fast as the wheel is turned, with no
+            // gentle start and no braking for the ends of the shaft, so it can be rammed into them at full speed.
+            // The keys stay eased, the safe way to move it.
+            if (spun) Speed = Mathf.Clamp(requested, -t.liftMaxSpeed, t.liftMaxSpeed);
+            else Speed += Mathf.Clamp(target - Speed, -t.liftAcceleration * dt, t.liftAcceleration * dt);
             // Coming down into coal in the shaft, it bogs down at once, then slower as the coal packs flat.
             if (Speed < 0 && Y + Speed * dt < Room.Lower + _game.Coal.ShaftPeak())
                 Speed = Mathf.Max(Speed, -t.liftSquashSpeed * Mathf.Clamp01((Y - floor) / .5f) - .05f);
