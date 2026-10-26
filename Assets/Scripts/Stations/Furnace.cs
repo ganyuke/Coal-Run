@@ -25,6 +25,13 @@ namespace CoalRun.Stations
         [Tooltip("The coal bed along the bottom of the firebox: embers when the fire is starved, bright when it roars.")]
         [SerializeField]
         private SpriteRenderer bed;
+        [Tooltip("Soft additive blobs breathing over the coal bed: the red glow of embers, strongest while the fire is dying or being kindled, when the flames don't hide it.")]
+        [SerializeField]
+        private ParticleSystem emberGlow;
+        [Tooltip("Particles a second at full glow.")]
+        [SerializeField]
+        private float glowRate = 7;
+        [SerializeField] private Color glowColor = new(1, .3f, .08f);
         [Tooltip("The inside of the firebox mouth, lit up by the fire.")]
         [SerializeField]
         private SpriteRenderer glow;
@@ -129,6 +136,16 @@ namespace CoalRun.Stations
             var bedColor = Color.Lerp(coldBed, emberColor, ember * (.8f + .2f * flicker));
             if (bed) bed.color = Color.Lerp(bedColor, hotBedColor, _heat * (.75f + .25f * flicker));
             if (glow) glow.color = Color.Lerp(darkMouth, litMouth, _heat * (.7f + .3f * flicker));
+
+            if (emberGlow)
+            {
+                // Embers glow reddest when the flames have died down; a roaring fire drowns them out.
+                var strength = ember * (1 - .6f * _heat) * (.75f + .25f * flicker);
+                var emission = emberGlow.emission;
+                emission.rateOverTimeMultiplier = strength > .02f ? glowRate * strength : 0;
+                var main = emberGlow.main;
+                main.startColor = new Color(glowColor.r, glowColor.g, glowColor.b, .8f * strength);
+            }
 
             if (meterDisc) meterDisc.Rotate(0, 0, -BurnRate * meterSpin * Time.deltaTime);
         }
