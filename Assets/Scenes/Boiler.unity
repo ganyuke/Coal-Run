@@ -9960,6 +9960,101 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!1 &781997997
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 781997998}
+  - component: {fileID: 781998001}
+  - component: {fileID: 781998000}
+  - component: {fileID: 781997999}
+  m_Layer: 0
+  m_Name: Frost
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &781997998
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 781997997}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 907187680}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &781997999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 781997997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b0731ab19905ceb63adcbf22c9b26dab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoalRun.UI.FrostVignette
+  image: {fileID: 781998000}
+  least: 0.55
+  most: 1
+  opacity: 0.7
+  ease: 0.5
+  fromTo: {x: 0.55, y: 1.25}
+  frost: {r: 0.65, g: 0.88, b: 1, a: 1}
+--- !u!114 &781998000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 781997997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &781998001
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 781997997}
+  m_CullTransparentMesh: 1
 --- !u!1 &788254006
 GameObject:
   m_ObjectHideFlags: 0
@@ -10851,6 +10946,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 835871938}
+  - {fileID: 781997998}
   - {fileID: 173804751}
   m_Father: {fileID: 935655279}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -21151,6 +21247,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Stations.Tutorial
   helper: {fileID: 1021818591}
   helperWalk: 2.2
+  helperVoice: {fileID: 0}
   buriedOrder: 15
   liftOrder: -17
   machines: {fileID: 1727399066}
@@ -23041,6 +23138,7 @@ MonoBehaviour:
   liftShaft: {fileID: 1271085895}
   tutorial: {fileID: 1419860674}
   notebook: {fileID: 2106511976}
+  staffLiftVoice: {fileID: 0}
   firstArrival: 1.2
 --- !u!4 &1727399069
 Transform:
@@ -24039,6 +24137,7 @@ MonoBehaviour:
   handle: {fileID: 0}
   grabRadius: 1
   ringBelow: 13
+  voice: {fileID: 0}
   cooldown: 10
   shake: 9
 --- !u!1 &1889384120
@@ -30344,6 +30443,10 @@ PrefabInstance:
       propertyPath: input
       value: 
       objectReference: {fileID: 1727399067}
+    - target: {fileID: 3582614244851195645, guid: 2f469f64d780c77ae82eeb265976209a, type: 3}
+      propertyPath: voice
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 3582614244851195645, guid: 2f469f64d780c77ae82eeb265976209a, type: 3}
       propertyPath: machines
       value: 
