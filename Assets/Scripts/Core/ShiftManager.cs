@@ -67,6 +67,8 @@ namespace CoalRun.Core
         public bool ShiftRunning => Phase == Phase.Shift || Phase == Phase.Replacement && _resume == Phase.Shift;
         // Operators lost this shift, and the seconds until the next one steps out of the staff lift.
         public int Deaths { get; private set; }
+        // How the last one died, for the report.
+        public string LastDeath { get; private set; } = "";
         public float ReplacementIn { get; private set; }
         // Dead operators, left where they fell for the rest of the shift.
         public List<Rigidbody2D> Bodies { get; } = new();
@@ -292,9 +294,16 @@ namespace CoalRun.Core
         {
             if (!CanAct) return;
             Deaths++;
+            LastDeath = reason;
             Bodies.Add(player.Kill());
             SendOperator(tuning.replacementDelay);
-            Say($"{reason}. Another worker is on the way.", 7);
+            // Brass rings down to say another man is on his way, rather than anyone saying why this one died.
+            phone.Announce(Deaths switch
+            {
+                1 => "“We heard. We’re sending another guy down.”",
+                2 => "“Again? Fine. We’re sending another guy down.”",
+                _ => "“We’re sending another guy down. Please. Keep this one alive.”"
+            });
             Sound("hurt");
         }
 
@@ -321,7 +330,6 @@ namespace CoalRun.Core
             if (ReplacementIn > 0) return;
             Arrive();
             SetPhase(_resume);
-            if (Deaths > 0) Say("Management sent another operator.", 4);
         }
 
         // Out of the staff lift.

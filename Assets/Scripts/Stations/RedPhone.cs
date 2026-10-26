@@ -1,3 +1,4 @@
+using System.Collections;
 using CoalRun.Core;
 using UnityEngine;
 
@@ -26,6 +27,8 @@ namespace CoalRun.Stations
         // Seconds to the next ring and to the end of the quiet after an answer.
         private float _timer, _quiet;
         private Quaternion _rest;
+        // Ringing by itself to announce something, not a call to answer.
+        private bool _calling;
 
         private void Start()
         {
@@ -51,13 +54,33 @@ namespace CoalRun.Stations
         // Rings in bursts: a quick rattle, then a pause.
         private void Update()
         {
-            var burst = Ringing && Time.time % .9f < .45f;
+            var burst = (Ringing || _calling) && Time.time % .9f < .45f;
             transform.localRotation = _rest * Quaternion.Euler(0, 0, burst ? Mathf.Sin(Time.time * 60) * shake : 0);
         }
 
         public override string OutOfReach => Ringing ? "Gotta get to the phone." : "It's not even ringing.";
         public override bool CanOperate(PlayerController player) => CanAnswer(player);
         protected override void OnBegin(Vector2 mouse) => Answer();
+
+        // Rings of its own accord (someone upstairs has heard about a death) and then says its piece, with no one
+        // there to answer. It rattles and bobs like any other call but isn't a call to answer.
+        public void Announce(string line)
+        {
+            StopAllCoroutines();
+            StartCoroutine(Call(line));
+        }
+
+        private IEnumerator Call(string line)
+        {
+            _calling = true;
+            _game.Sound("ring", 1);
+            yield return new WaitForSeconds(1.3f);
+            _game.Sound("ring", 1);
+            yield return new WaitForSeconds(1.3f);
+            _calling = false;
+            _game.Sound("phone");
+            _game.Say(line, 6, voice);
+        }
 
         public bool CanAnswer(PlayerController player) =>
             Ringing && player.Lane == 0 && Mathf.Abs(player.Position.x - transform.position.x) < 1 && player.Position.y < 4.3f;
