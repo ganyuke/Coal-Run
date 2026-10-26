@@ -55,7 +55,7 @@ namespace CoalRun.Stations
             transform.localRotation = _rest * Quaternion.Euler(0, 0, burst ? Mathf.Sin(Time.time * 60) * shake : 0);
         }
 
-        public override string OutOfReach => Ringing ? "Walk up to the phone." : "It isn't ringing.";
+        public override string OutOfReach => Ringing ? "Gotta get to the phone." : "It's not even ringing.";
         public override bool CanOperate(PlayerController player) => CanAnswer(player);
         protected override void OnBegin(Vector2 mouse) => Answer();
 

@@ -25772,7 +25772,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: farMessage
-      value: Walk up to the burn lever.
+      value: Gotta get closer to the burn lever.
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: springReturn
@@ -25780,7 +25780,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: wrongLaneMessage
-      value: Come out of the control room first.
+      value: Gotta come out of the control room first.
       objectReference: {fileID: 0}
     - target: {fileID: 8561629909725014136, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: m_Name
@@ -39684,11 +39684,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: farMessage
-      value: Walk up to the tip lever.
+      value: Gotta get closer to the tip lever.
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: wrongLaneMessage
-      value: Come out of the control room first.
+      value: Gotta come out of the control room first.
       objectReference: {fileID: 0}
     - target: {fileID: 8561629909725014136, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: m_Name
@@ -45716,8 +45716,12 @@ PrefabInstance:
       value: Chute lever
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
+      propertyPath: farMessage
+      value: Gotta get closer to the lever.
+      objectReference: {fileID: 0}
+    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: wrongLaneMessage
-      value: The lever is up in the control room.
+      value: That lever's up in the control room.
       objectReference: {fileID: 0}
     - target: {fileID: 8561629909725014136, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: m_Name

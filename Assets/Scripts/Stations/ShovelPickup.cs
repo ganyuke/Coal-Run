@@ -7,7 +7,7 @@ namespace CoalRun.Stations
     // machine while it's lying there (inactive once taken), so MachineInput never sees it otherwise.
     public class ShovelPickup : Machine
     {
-        public override string OutOfReach => "Walk up to the shovel.";
+        public override string OutOfReach => "Gotta get closer to the shovel.";
         public override bool CanOperate(PlayerController player) => ShiftManager.Instance.Tutorial.ShovelInReach(player);
         protected override void OnBegin(Vector2 mouse) => ShiftManager.Instance.Tutorial.TakeShovel();
     }

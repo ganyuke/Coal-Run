@@ -90,7 +90,7 @@ namespace CoalRun.Stations
             if (_starved >= t.emberTime)
             {
                 Lit = false;
-                _game.Say("The fire has gone out. Light it again at the firebox.", 4);
+                _game.Say("Damn, the fire's out. Gotta light it again.", 4);
             }
 
             Hopper -= used;
@@ -159,7 +159,7 @@ namespace CoalRun.Stations
         public bool Kindle(bool held, float dt)
         {
             if (!held) { _kindle = 0; return false; }
-            if (Hopper <= 0) { _game.Say("There's no coal in the hopper to light.", 2); return false; }
+            if (Hopper <= 0) { _game.Say("Nothing in the hopper to light. Need coal first.", 2); return false; }
             _kindle += dt;
             _game.Sound("kindle", .4f);
             if (_kindle < _game.Tune.lightTime) return true;

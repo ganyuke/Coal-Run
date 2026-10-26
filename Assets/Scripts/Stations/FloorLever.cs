@@ -28,8 +28,8 @@ namespace CoalRun.Stations
         [Tooltip("What the key prompt calls it.")]
         [SerializeField]
         private string prompt = "Lever";
-        [SerializeField] private string farMessage = "Walk up to the lever.";
-        [SerializeField] private string wrongLaneMessage = "The lever is up in the control room.";
+        [SerializeField] private string farMessage = "Gotta get closer to the lever.";
+        [SerializeField] private string wrongLaneMessage = "That lever's up in the control room.";
 
         [Header("Audio (all optional)")]
         [SerializeField]

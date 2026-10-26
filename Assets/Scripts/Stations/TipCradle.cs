@@ -91,7 +91,7 @@ namespace CoalRun.Stations
                     _game.Sound("hook");
                     return true;
                 case State.Up when lever.InUse || Mathf.Abs(cart.Body.rotation) > 3:
-                    _game.Say("Let the cart come level first.", 2);
+                    _game.Say("Hold on, let the cart come level first.", 2);
                     return true;
                 case State.Up:
                     _state = State.Lowering;
@@ -106,7 +106,7 @@ namespace CoalRun.Stations
 
         private void FixedUpdate()
         {
-            lever.InterlockMessage = Parked ? "Hook the cart on first (E)." : "Stop the cart at the tip cradle.";
+            lever.InterlockMessage = Parked ? "Gotta hook the cart on first." : "The cart needs to be at the tip cradle.";
             if (_state == State.Free) return;
             var t = _game.Tune;
             var cart = _game.Cart;

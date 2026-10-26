@@ -143,7 +143,7 @@ namespace CoalRun.Core
             Clock += dt;
             Outside = day.OutsideAt(Clock);
             Temperature += (furnace.BurnRate - tuning.heatLoss * (Temperature - Outside)) / tuning.heatCapacity * dt;
-            if (Freezing && Chill == 0) Say("It's freezing in here. Get the fire up.", 4);
+            if (Freezing && Chill == 0) Say("God, it's freezing in here. Gotta get the fire up.", 4);
             Chill = Mathf.Clamp01(Chill + (Freezing ? dt : -dt) / tuning.freezeGrace);
             if (Chill >= 1) SetPhase(Phase.Frozen);
             else if (Clock >= tuning.shiftLength)
@@ -151,7 +151,7 @@ namespace CoalRun.Core
                 // A replacement still on the way arrives to a finished shift.
                 if (Phase == Phase.Replacement) _resume = Phase.Leaving;
                 else SetPhase(Phase.Leaving);
-                Say("The shift is over. Step into the staff lift.", 6);
+                Say("Shift's over. Into the staff lift.", 6);
             }
         }
 

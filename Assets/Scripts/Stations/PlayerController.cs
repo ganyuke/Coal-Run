@@ -220,7 +220,7 @@ namespace CoalRun.Stations
             {
                 var hurt = (-_lastFall - t.safeFall) * t.fallHurt;
                 Hurt(hurt, "Fell from the upper floor");
-                _game.Say("You hit the floor hard.", 3);
+                _game.Say("Ow! That hurt.", 3);
             }
             _lastFall = v.y;
 
@@ -350,8 +350,8 @@ namespace CoalRun.Stations
             var cp = cart.Body.position;
             var floor = _game.Coal.SurfaceAt(cp.x, cp.y).Floor();
             // A cart at rest has landed, even when it came to rest hung up on something.
-            if (cart.Body.linearVelocity.magnitude > (cp.y - floor > 1.8f ? .3f : 1)) { _game.Say("The cart has to land first.", 2); return; }
-            if (cart.Burial > .8f) { _game.Say("The cart is buried. Dig it out first.", 3); return; }
+            if (cart.Body.linearVelocity.magnitude > (cp.y - floor > 1.8f ? .3f : 1)) { _game.Say("Hold on, the cart's still landing.", 2); return; }
+            if (cart.Burial > .8f) { _game.Say("The cart's buried. Gotta dig it out first.", 3); return; }
             ReleaseGrip();
             cart.Right();
         }
@@ -696,7 +696,7 @@ namespace CoalRun.Stations
                 _gripBlocked = true;
                 ReleaseGrip();
                 _box.excludeLayers = GameLayers.Mask(GameLayers.Cart);
-                _game.Say("Too much coal underfoot to hold the cart. Shovel a path.", 3);
+                _game.Say("Too much coal here to hold the cart. Dig a path.", 3);
             }
             Burial = depth > 1.5f ? Burial + dt : Mathf.Max(0, Burial - dt * 2);
             if (Injury > 2.5f) Stagger = .8f;
@@ -815,7 +815,7 @@ namespace CoalRun.Stations
         private void ChangeLane(int lane)
         {
             if (!AtDoor || Lane == lane) return;
-            if (CarryingWheel) { _game.Say("Put the wheel down first.", 2); return; }
+            if (CarryingWheel) { _game.Say("My hands are full. Put the wheel down first.", 2); return; }
             ThrowHands();
             ReleaseGrip();
             machines.Release();

@@ -58,11 +58,11 @@ namespace CoalRun.Stations
         public List<Rigidbody2D> LooseWheels { get; } = new();
         // Why a wheel can't be bolted on right now, or null if it can.
         public string WheelBlocker =>
-            Wheels >= 2 ? "The cart has both its wheels." :
+            Wheels >= 2 ? "It's already got both wheels." :
             Parked ? "Not now." :
-            InCradle ? "Lower the cart off the cradle first." :
-            Mathf.Cos(Angle) < .87f ? "Right the cart first." :
-            !Lifted && Body.linearVelocity.magnitude > 1 ? "The cart has to stop first." : null;
+            InCradle ? "Gotta lower the cart off the cradle first." :
+            Mathf.Cos(Angle) < .87f ? "Gotta stand the cart up first." :
+            !Lifted && Body.linearVelocity.magnitude > 1 ? "The cart needs to stop moving first." : null;
 
         private ShiftManager _game;
         private readonly List<Collider2D> _colliders = new();
@@ -381,7 +381,7 @@ namespace CoalRun.Stations
             Wheels--;
             Rebuild(false);
             DropWheel(slot, Body.linearVelocity * .3f + new Vector2(away * 2, 4));
-            _game.Say("A wheel came off the cart.", 4);
+            _game.Say("Shit, a wheel came off!", 4);
         }
 
         public void DropWheel(Vector2 at, Vector2 velocity)

@@ -15,7 +15,7 @@ namespace CoalRun.Stations
         // Smoothed spin in rad/s, positive clockwise.
         public float Rate { get; private set; }
 
-        public override string OutOfReach => "Walk up to the wheel.";
+        public override string OutOfReach => "Gotta get to the wheel.";
 
         private float _pending;
         private Vector2 _last;

@@ -58,10 +58,10 @@ namespace CoalRun.Stations
             switch (requested)
             {
                 case < 0 when floor > Room.Lower + .01f && Y - floor < .05f:
-                    _game.Say(under == "operator" ? "Stand clear of the shaft." : $"The {under} is under the lift.", 2);
+                    _game.Say(under == "operator" ? "Better get clear of the shaft." : $"The {under}'s under the lift. Can't lower it.", 2);
                     break;
                 case > 0 when ceiling < Room.Upper - .01f && ceiling - Y < .05f:
-                    _game.Say(hangingOff == "operator" ? "Stand fully on the lift or clear of it." : $"The {hangingOff} is hanging off the side of the lift.", 2);
+                    _game.Say(hangingOff == "operator" ? "Gotta stand fully on the lift." : $"The {hangingOff}'s hanging off the side. Can't raise it.", 2);
                     break;
             }
 
