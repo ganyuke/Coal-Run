@@ -20,6 +20,8 @@ namespace CoalRun.Core
         [Tooltip("The morning memo on the briefing page, above the target. Empty on a day with nothing to say.")]
         [TextArea]
         public string memo;
+        [Tooltip("The engineering installer stands in front of the cart at the start of the shift (Day 2).")]
+        public bool installer;
         public int startingWheels = 1;
         public float startingHopper = 10;
         [Tooltip("Brass's electrical output target, kWh.")]

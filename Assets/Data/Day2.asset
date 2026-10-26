@@ -16,6 +16,7 @@ MonoBehaviour:
   training: 0
   memo: Engineering sent the other axle down overnight, so the cart has both wheels
     again. It is colder tomorrow. Brass wants more.
+  installer: 1
   startingWheels: 2
   startingHopper: 15
   target: 240

@@ -36,7 +36,7 @@ Each milestone ends with something you can play. Don't start the next one until 
   - [x] Tutorial: helper, stuck lever, avalanche, dig out
 - [ ] **M5 · Day 2 and the real UI** (Wed 10/28)
   - [x] Day flow: Day 1 → memo → Day 2 (DayConfig per day). `ShiftManager.days` + static `_dayIndex`; the report button reads "Next day"; the memo is `DayConfig.memo`, on the briefing page. Bot clears both days (Day 1 181/210 kWh, Day 2 199/240, no deaths).
-  - [ ] Axle installer beat (smaller call for now: the Day 2 memo says engineering sent the axle and the cart starts with 2 wheels; the installer NPC who gets killed is not built)
+  - [x] Axle installer beat: `AxleInstaller` (Day 2, `DayConfig.installer`). He stands left of the parked cart and hands over the axle; push the cart into him and he dies ("Huh. It rolls."), haul round him and he leaves by the staff lift.
   - [x] Notebook (uGUI): objective pages, key prompts as sticky notes (10/26)
   - [x] Briefing and report as notebook pages (10/26)
   - [x] Frost vignette in uGUI; what people say is little text above their heads (10/26)
