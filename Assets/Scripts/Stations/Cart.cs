@@ -11,6 +11,9 @@ namespace CoalRun.Stations
     public class Cart : MonoBehaviour
     {
         [SerializeField] private GameObject frontWheel, backWheel, skid;
+        [Tooltip("The wheels' radius in metres: a wheel turns once for every 2 pi radius the cart travels.")]
+        [SerializeField]
+        private float wheelRadius = .29f;
         [Tooltip("Columns across the inside of the bin, left to right, drawn as a heap of the load (see Update). Only a picture: the load is still the one number, Coal.")]
         [SerializeField]
         private Transform[] heap;
@@ -138,6 +141,19 @@ namespace CoalRun.Stations
             }
         }
 
+        // The wheels turn with the cart's travel along its length, as if rolling on the floor. The skid doesn't.
+        private float _roll;
+
+        private void Roll()
+        {
+            if (Righting || Lifted || Parked) return;
+            var along = Vector2.Dot(Body.linearVelocity, Body.transform.right);
+            _roll -= along / wheelRadius * Mathf.Rad2Deg * Time.deltaTime;
+            var turn = Quaternion.Euler(0, 0, _roll);
+            if (frontWheel) frontWheel.transform.localRotation = turn;
+            if (backWheel) backWheel.transform.localRotation = turn;
+        }
+
         // The heap's column heights, eased toward their shape so the coal sloshes rather than jumps.
         private float[] _heap;
 
@@ -146,6 +162,7 @@ namespace CoalRun.Stations
         // the low end, the way it's about to pour out.
         private void Update()
         {
+            Roll();
             if (heap == null || heap.Length == 0) return;
             const float bottom = -.06f, depth = .7f, halfWidth = .85f;
             _heap ??= new float[heap.Length];

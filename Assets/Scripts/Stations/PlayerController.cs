@@ -87,6 +87,9 @@ namespace CoalRun.Stations
         // A double-tap dash (not holding the cart) or lurch (holding it): time left, direction, and how
         // far ahead the cart was last step, to tell running into it from walking out of it.
         private float _dashFor, _lurchFor, _dashCooldown, _lastAhead, _dashStart;
+        [Tooltip("Dust kicked up off the floor behind a dash or a lurch.")]
+        [SerializeField]
+        private ParticleSystem dashDust;
         private bool _ramming;
         private int _dashDir;
         private ShiftManager _game;
@@ -159,6 +162,7 @@ namespace CoalRun.Stations
             if (_dashFor > 0)
             {
                 var ramp = Mathf.Lerp(_dashStart, t.dashSpeed, 1 - _dashFor / t.dashTime);
+                if (Random.value < .6f) DashDust(1, .7f);
                 Body.linearVelocity = new Vector2(_dashDir * Mathf.Max(ramp, Body.linearVelocity.x * _dashDir), Body.linearVelocity.y);
                 target = Body.linearVelocity.x;
             }
@@ -270,6 +274,7 @@ namespace CoalRun.Stations
                 Body.linearVelocity += kick;
                 _game.Cart.Hop();
                 _lurchFor = .3f;
+                DashDust(8, .6f);
                 _game.Sound("lurch", .2f);
                 return;
             }
@@ -278,7 +283,23 @@ namespace CoalRun.Stations
             _ramming = true;
             _lastAhead = float.MaxValue;
             Body.linearVelocity = new Vector2(direction * _dashStart, Body.linearVelocity.y);
+            DashDust(16, 1);
             _game.Sound("dash", .2f);
+        }
+
+        // Puffs of dust off the floor behind the feet, thrown back against the way we're going, `strength` times as hard.
+        private void DashDust(int count, float strength)
+        {
+            if (!dashDust || Lane != 0) return;
+            var feet = Body.position + new Vector2(-_dashDir * .1f, -.62f);
+            for (var i = 0; i < count; i++)
+                dashDust.Emit(new ParticleSystem.EmitParams
+                {
+                    position = feet + new Vector2(Random.Range(-.12f, .12f), Random.Range(0f, .08f)),
+                    velocity = new Vector2(-_dashDir * Random.Range(1f, 3.4f) * strength, Random.Range(.3f, 1.3f) * strength),
+                    startSize = Random.Range(.16f, .32f) * (.6f + .4f * strength),
+                    startLifetime = Random.Range(.45f, .85f)
+                }, 1);
         }
 
         // Short dash: tapping the other way mid-dash stops it dead, so how soon you tap sets the distance.

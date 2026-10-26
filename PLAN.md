@@ -231,3 +231,4 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 - Panel numbers bleeding out of their boxes: legend, clock and readouts resized to fit.
 - Sticky notes overlapped (3+): wider stack pitch, smaller tilt, and long labels shrink to fit one line.
 - Hopper now joins the furnace by a funnel and pipe (`hopper_chute`), with coal falling through it and onto the bed while the hopper has coal (`HopperFeed`).
+- Dash and lurch kick up dust (`PlayerController.dashDust`); the cart's wheels now turn as it travels (`Cart.Roll`).
