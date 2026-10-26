@@ -5,7 +5,7 @@ using UnityEngine;
 namespace CoalRun.Stations
 {
     // The staff lift at the right end of the lower floor, the only way in or out. Replacement operators
-    // step out of it, and the operator clocks out into it. Its door slides aside into the frame.
+    // step out of it, and the operator steps into it to leave. Its door slides aside into the frame.
     public class StaffLift : MonoBehaviour
     {
         [Tooltip("Scaled down toward its right edge to open.")]
@@ -33,6 +33,23 @@ namespace CoalRun.Stations
             if (!door) return;
             StopAllCoroutines();
             StartCoroutine(Run());
+        }
+
+        // Opens and stays open, until CloseDoor.
+        public void Open()
+        {
+            if (!door) return;
+            StopAllCoroutines();
+            _game.Sound("ding");
+            StartCoroutine(Slide(1));
+        }
+
+        // Slides shut; wait on it to know when the door is closed.
+        public IEnumerator CloseDoor()
+        {
+            if (!door) yield break;
+            StopAllCoroutines();
+            yield return Slide(0);
         }
 
         private IEnumerator Run()

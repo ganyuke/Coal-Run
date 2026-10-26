@@ -487,9 +487,8 @@ namespace CoalRun.Dev
                 yield return null;
                 while (_game.Player.Climbing) yield return null;
             }
+            // Just standing in the staff lift's car does it.
             yield return Walk(30.6f);
-            _c.Interact = true;
-            yield return null;
             yield return Wait(.5f);
         }
 

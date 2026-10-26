@@ -292,7 +292,6 @@ namespace CoalRun.Stations
             }
             if (WheelInReach() is { } wheel) { PickUp(wheel); return; }
             if (CartNear() && _game.Cradle.Interact()) return;
-            if (CanClockOut) _game.ClockOut();
         }
 
         private void RightCart()
@@ -678,6 +677,14 @@ namespace CoalRun.Stations
             visual.gameObject.SetActive(false);
         }
 
+        // Locked in place for the ride out of the staff lift.
+        public void Stand()
+        {
+            ReleaseGrip();
+            Body.linearVelocity = Vector2.zero;
+            Body.constraints = RigidbodyConstraints2D.FreezeAll;
+        }
+
         // Riding down the staff lift: standing in the car behind the closed door, so they're already there
         // when it opens, but out of the world until Respawn.
         public void WaitInLift(Vector2 at)
@@ -792,9 +799,6 @@ namespace CoalRun.Stations
             Climbing = false;
         }
 
-        // In front of the staff lift, past the control room glass, with the shift over.
-        private bool CanClockOut => _game.Phase == Phase.Leaving && Lane == 0 && Body.position is { y: < 4.3f, x: > Room.EntranceStart + .2f };
-
         // At the foot of the stairs on the work floor, or at the control room door up top.
         private bool AtDoor => Lane == 0
             ? Body.position is { y: < 4.3f } p && Mathf.Abs(p.x - Room.StairsFoot) < .8f
@@ -837,7 +841,6 @@ namespace CoalRun.Stations
                 return list;
             }
             if (WheelInReach()) list.Add(("E", "Pick up wheel"));
-            if (CanClockOut) list.Add(("E", "Clock out"));
             if (AtDoor) list.Add(("W", "Up to the control room"));
             if (_game.Furnace.CanLight(this)) list.Add(("Hold E", "Light the fire"));
             if (CartNear() && _game.Cradle.Prompt != null) list.Add(("E", _game.Cradle.Prompt));

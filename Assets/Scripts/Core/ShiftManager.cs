@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System;
 using CoalRun.Stations;
@@ -50,7 +51,10 @@ namespace CoalRun.Core
         // Training counts as going on while a replacement is on the way in the middle of it.
         public bool InTraining => Phase == Phase.Tutorial || Phase == Phase.Replacement && _resume == Phase.Tutorial;
         public bool Ended => Phase is Phase.Complete or Phase.Frozen;
-        public bool CanAct => Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving;
+        public bool CanAct => !Departing && Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving;
+        // In the staff lift with the door closing: the operator is locked in place, and the screen fades out.
+        public bool Departing { get; private set; }
+        public float Fade { get; private set; }
         // The shift's clock and the building's heat run on while a replacement is on the way.
         public bool ShiftRunning => Phase == Phase.Shift || Phase == Phase.Replacement && _resume == Phase.Shift;
         // Operators lost this shift, and the seconds until the next one steps out of the staff lift.
@@ -81,6 +85,7 @@ namespace CoalRun.Core
         // The phase to go back to once the replacement arrives.
         private Phase _resume;
         private bool _doorOpened;
+        private float _inLiftFor;
         // The training plays once a session: a restart goes straight to the briefing. Static, so it
         // survives the scene reload; cleared on entering Play mode, since domain reload may be off.
         private static bool _trained;
@@ -115,6 +120,7 @@ namespace CoalRun.Core
             if (input.Current.DebugKey != 0) DebugCommand(input.Current.DebugKey);
             if (ShiftRunning) StepHeat(dt);
             if (Phase == Phase.Replacement) StepReplacement(dt);
+            if (Phase == Phase.Leaving && !Departing) StepLeaving(dt);
             if (Ended && input.Current.Restart) Restart();
             if (Phase == Phase.Briefing && input.Current.Begin) BeginShift();
             RecoverLost();
@@ -137,15 +143,31 @@ namespace CoalRun.Core
                 // A replacement still on the way arrives to a finished shift.
                 if (Phase == Phase.Replacement) _resume = Phase.Leaving;
                 else SetPhase(Phase.Leaving);
-                Say("The shift is over. Take the staff lift up.", 6);
+                Say("The shift is over. Step into the staff lift.", 6);
             }
         }
 
-        // At the staff lift once the shift is over.
-        public void ClockOut()
+        // The shift is over and the staff lift's door stands open. Standing inside it for a moment ends the shift.
+        private void StepLeaving(float dt)
         {
-            if (Phase != Phase.Leaving) return;
-            if (staffLift) staffLift.Cycle();
+            var p = player.Position;
+            var inside = player.Lane == 0 && p.y < Room.Lower + 2.3f && p.x > Room.StaffLiftInside;
+            _inLiftFor = inside ? _inLiftFor + dt : 0;
+            if (_inLiftFor >= tuning.liftStandTime) StartCoroutine(Depart());
+        }
+
+        // Locked in place, the door closes, and the screen goes black.
+        private IEnumerator Depart()
+        {
+            Departing = true;
+            player.Stand();
+            if (staffLift) yield return staffLift.CloseDoor();
+            for (var k = 0f; k < 1; k += Time.deltaTime / tuning.fadeTime)
+            {
+                Fade = k;
+                yield return null;
+            }
+            Fade = 1;
             SetPhase(Phase.Complete);
         }
 
@@ -172,6 +194,8 @@ namespace CoalRun.Core
         private void SetPhase(Phase phase)
         {
             Phase = phase;
+            // The door stands open for the operator to leave by.
+            if (phase == Phase.Leaving && staffLift) staffLift.Open();
             OnPhase?.Invoke(phase);
             Sound(phase.ToString().ToLowerInvariant());
         }

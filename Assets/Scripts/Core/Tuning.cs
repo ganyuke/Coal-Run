@@ -140,6 +140,10 @@ namespace CoalRun.Core
         public float freeze = 0;
         [Tooltip("Seconds the building can sit at or below freezing before the operator freezes. Never shown; it drains back at the same rate once it's above.")]
         public float freezeGrace = 30;
+        [Tooltip("Seconds the operator must stand inside the staff lift, once the shift is over, before the door closes.")]
+        public float liftStandTime = .6f;
+        [Tooltip("Seconds the screen takes to fade to black once the staff lift's door has closed.")]
+        public float fadeTime = 1.5f;
         [Tooltip("How much faster the operator walks and hauls as the freeze grace runs out, at its end: .25 is 25% faster. A rush, not a slowdown, so nearly freezing isn't punished twice.")]
         public float freezeRush = .25f;
         [Tooltip("Seconds of holding E at the firebox to light it.")]

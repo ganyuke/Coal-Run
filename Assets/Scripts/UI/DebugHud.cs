@@ -15,7 +15,7 @@ namespace CoalRun.UI
         private bool _readout = true;
         private GUIStyle _box, _small;
         // The report card's solid backing; the default box skin shows the room through it.
-        private Texture2D _cardBack;
+        private Texture2D _cardBack, _black;
 
         private void Update()
         {
@@ -33,7 +33,9 @@ namespace CoalRun.UI
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1));
             var width = Screen.width / scale;
 
+            DrawFade(game, width);
             if (game.Ended) { Report(game, width); return; }
+            if (game.Departing) return;
             if (game.Phase == Phase.Briefing) { Briefing(game, width); return; }
             if (game.MessageFor > 0) GUI.Box(new Rect(width / 2 - 360, 600, 720, 80), game.Message, _box);
             var objective = game.Phase == Phase.Replacement && game.Deaths > 0 ? $"Replacement arriving in {Mathf.CeilToInt(game.ReplacementIn)} s" : game.Tutorial.Objective;
@@ -62,6 +64,17 @@ namespace CoalRun.UI
                 $"Machine {(machines.Active ? machines.Active.name : "-")}  hover {(machines.Hover ? machines.Hover.name : "-")}\n" +
                 $"{1f / Mathf.Max(Time.smoothDeltaTime, 1e-4f):0} fps";
             GUI.Label(new Rect(width - 620, 12, 610, 200), text, _small);
+        }
+
+        // Black over everything while the operator rides out of the staff lift.
+        private void DrawFade(ShiftManager game, float width)
+        {
+            if (game.Fade <= 0) return;
+            _black ??= Texture2D.blackTexture;
+            var color = GUI.color;
+            GUI.color = new Color(1, 1, 1, game.Fade);
+            GUI.DrawTexture(new Rect(0, 0, width, 720), _black);
+            GUI.color = color;
         }
 
         // Between the training and the shift. The real one is the M5 notepad.
