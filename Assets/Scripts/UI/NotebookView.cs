@@ -104,7 +104,7 @@ namespace CoalRun.UI
         private readonly List<RectTransform> _stickies = new();
         private readonly List<TMP_Text> _stickyText = new();
         private readonly List<Image> _stickyImage = new();
-        private bool _open, _dirty = true, _pressing, _dragging;
+        private bool _open, _dirty = true, _pressing, _dragging, _shownLast;
         private float _bounceAt = -10, _dimmed, _dragY, _pressY, _grab, _overlapFor;
         // Which side of the screen it's on: 1 right, -1 left.
         private int _side = 1;
@@ -137,7 +137,8 @@ namespace CoalRun.UI
         {
             var game = ShiftManager.Instance;
             var mouse = Mouse.current;
-            var sheetMode = game.Phase == Phase.Briefing || game.Ended;
+            // Between shifts, and once everything leading up to the report (the lift's door, a freezing) has played.
+            var sheetMode = game.Phase == Phase.Briefing || game.Ended && game.ReportReady;
             // Nothing to write in until there's a shift to write about; the staff lift's door closes on it.
             var shown = (sheetMode || game.Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving or Phase.Replacement) && !game.Departing;
 
@@ -146,6 +147,14 @@ namespace CoalRun.UI
             _dimmed = Mathf.MoveTowards(_dimmed, dimTarget, Time.unscaledDeltaTime * 1.5f);
             dim.color = new Color(0, 0, 0, Mathf.Max(_dimmed, game.Fade));
 
+            // The report and the briefing rise up from below the screen, whichever way they come.
+            if (shown && !_shownLast && sheetMode)
+            {
+                var width = ((RectTransform)book.parent).rect.width;
+                book.sizeDelta = sheetSize;
+                book.anchoredPosition = new Vector2(-(width - sheetSize.x) / 2, -sheetSize.y - 20);
+            }
+            _shownLast = shown;
             book.gameObject.SetActive(shown);
             PointerOver = false;
             if (!shown) return;

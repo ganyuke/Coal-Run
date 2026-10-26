@@ -35,6 +35,7 @@ namespace CoalRun.Core
         private LiftShaft liftShaft;
         [SerializeField] private Tutorial tutorial;
         [SerializeField] private Notebook notebook;
+        [SerializeField] private CameraRig cameraRig;
         [Tooltip("Says what no one in particular does, when the operator isn't about.")]
         [SerializeField]
         private Speaker staffLiftVoice;
@@ -63,6 +64,9 @@ namespace CoalRun.Core
         // In the staff lift with the door closing: the operator is locked in place, and the screen fades out.
         public bool Departing { get; private set; }
         public float Fade { get; private set; }
+        // The shift is over and whatever leads up to the report (the fade out of the staff lift, or the operator
+        // freezing to death) has played: the report can come up.
+        public bool ReportReady { get; private set; }
         // The shift's clock and the building's heat run on while a replacement is on the way.
         public bool ShiftRunning => Phase == Phase.Shift || Phase == Phase.Replacement && _resume == Phase.Shift;
         // Operators lost this shift, and the seconds until the next one steps out of the staff lift.
@@ -147,7 +151,11 @@ namespace CoalRun.Core
             Temperature += (furnace.BurnRate - tuning.heatLoss * (Temperature - Outside)) / tuning.heatCapacity * dt;
             if (Freezing && Chill == 0) Say("God, it's freezing in here. Gotta get the fire up.", 4);
             Chill = Mathf.Clamp01(Chill + (Freezing ? dt : -dt) / tuning.freezeGrace);
-            if (Chill >= 1) SetPhase(Phase.Frozen);
+            if (Chill >= 1)
+            {
+                SetPhase(Phase.Frozen);
+                StartCoroutine(FreezeEnd());
+            }
             else if (Clock >= tuning.shiftLength)
             {
                 // A replacement still on the way arrives to a finished shift.
@@ -173,6 +181,27 @@ namespace CoalRun.Core
             if (_inLiftFor >= tuning.liftStandTime) StartCoroutine(Depart());
         }
 
+        // The cold gets them: the camera comes in on the operator, they keel over, it pulls back out, the screen goes
+        // black, and then the report comes up.
+        private IEnumerator FreezeEnd()
+        {
+            var at = player.Position + Vector2.up * .5f;
+            if (cameraRig) yield return cameraRig.FocusOn(at, tuning.freezeZoom, tuning.freezeZoomIn);
+            yield return new WaitForSeconds(tuning.freezeHold);
+            // Nobody to keel over if they were already dead and the next one hadn't come down yet.
+            if (player.Visible) Bodies.Add(player.Kill());
+            Sound("hurt");
+            yield return new WaitForSeconds(tuning.freezeKeel);
+            if (cameraRig) yield return cameraRig.Home(tuning.freezeZoomOut);
+            for (var k = 0f; k < 1; k += Time.deltaTime / tuning.fadeTime)
+            {
+                Fade = k;
+                yield return null;
+            }
+            Fade = 1;
+            ReportReady = true;
+        }
+
         // Locked in place, the door closes, and the screen goes black.
         private IEnumerator Depart()
         {
@@ -186,6 +215,7 @@ namespace CoalRun.Core
             }
             Fade = 1;
             SetPhase(Phase.Complete);
+            ReportReady = true;
         }
 
         public void FinishTraining()

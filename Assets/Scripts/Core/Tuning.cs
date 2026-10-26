@@ -146,6 +146,12 @@ namespace CoalRun.Core
         public float safeFall = 7;
         [Tooltip("Injury per m/s of landing speed over safeFall. 7 kills: the drop from the upper floor to the lower is about 16 m/s.")]
         public float fallHurt = .9f;
+        [Header("Freezing to death")]
+        [Tooltip("How close the camera comes in on the operator as they freeze (world units from the middle to the top edge).")]
+        public float freezeZoom = 3.2f;
+        [Tooltip("Seconds to zoom in, to hold on the operator before they go, to watch them keel over, and to zoom back out.")]
+        public float freezeZoomIn = 1.4f, freezeHold = .7f, freezeKeel = 1.8f, freezeZoomOut = 1.2f;
+        [Header("Leaving")]
         [Tooltip("Seconds the operator must stand inside the staff lift, once the shift is over, before the door closes.")]
         public float liftStandTime = .6f;
         [Tooltip("Seconds the screen takes to fade to black once the staff lift's door has closed.")]

@@ -745,6 +745,7 @@ GameObject:
   m_Component:
   - component: {fileID: 119337449}
   - component: {fileID: 119337448}
+  - component: {fileID: 119337450}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -818,6 +819,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 935655279}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &119337450
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 119337447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9e1132d71ff977c18657082aec2653a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Core.CameraRig
+  cam: {fileID: 119337448}
 --- !u!1 &120023728
 GameObject:
   m_ObjectHideFlags: 0
@@ -24582,12 +24596,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CoalRun.UI.FrostVignette
   image: {fileID: 781998000}
-  least: 0.55
+  least: 0.2
   most: 1
-  opacity: 0.7
+  opacity: 0.85
   ease: 0.5
   fromTo: {x: 0.55, y: 1.25}
+  deepFromTo: {x: 0.2, y: 0.85}
+  deepOpacity: 0.9
   frost: {r: 0.65, g: 0.88, b: 1, a: 1}
+  deepFrost: {r: 0.82, g: 0.94, b: 1, a: 1}
 --- !u!114 &781998000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25579,8 +25596,8 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 835871938}
   - {fileID: 781997998}
+  - {fileID: 835871938}
   - {fileID: 173804751}
   m_Father: {fileID: 935655279}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -37834,6 +37851,7 @@ MonoBehaviour:
   liftShaft: {fileID: 1271085895}
   tutorial: {fileID: 1419860674}
   notebook: {fileID: 2106511976}
+  cameraRig: {fileID: 119337450}
   staffLiftVoice: {fileID: 825623892}
   firstArrival: 1.2
 --- !u!4 &1727399069
