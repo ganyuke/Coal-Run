@@ -36,6 +36,15 @@ namespace CoalRun.UI
             if (Paused) Carry();
         }
 
+#if !UNITY_EDITOR
+        // Clicking away from the game (another tab, another window) pauses it, so the building doesn't freeze while nobody
+        // is looking. Left out in the editor, where the window is often unfocused on purpose (driven from the CLI).
+        private void OnApplicationFocus(bool focused)
+        {
+            if (!focused && !Paused && input) Toggle();
+        }
+#endif
+
         private void Toggle()
         {
             if (Paused) { Carry(); return; }
