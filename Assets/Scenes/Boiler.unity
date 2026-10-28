@@ -44664,7 +44664,7 @@ MonoBehaviour:
   width: 6
   outline: 0.3
   ink: {r: 1, g: 0.96, b: 0.85, a: 1}
-  charsPerSecond: 16
+  charsPerSecond: 32
   holdAfter: 1.8
   gap: 0.6
   maxQueued: 2
