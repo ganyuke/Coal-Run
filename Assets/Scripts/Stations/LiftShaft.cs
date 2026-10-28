@@ -201,6 +201,8 @@ namespace CoalRun.Stations
             for (var i = 0; i < landingLamps.Length; i++)
             {
                 var at = Mathf.Abs(y - (i == 1 ? Room.Upper : Room.Lower)) < .1f;
+                // A relay clicks over as the lamp comes on.
+                if (at && landingLamps[i].color != here && Time.timeSinceLevelLoad > .5f) _game.Sound("relay", .3f);
                 landingLamps[i].color = at ? here : unlit;
                 if (i < landingLights.Length && landingLights[i]) landingLights[i].intensity = at ? landingIntensity : 0;
             }

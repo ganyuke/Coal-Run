@@ -2,12 +2,13 @@ using UnityEngine;
 
 namespace CoalRun.Stations
 {
-    // Coal falling from the hopper down its chute and into the back of the firebox, for as long as there is coal in the
-    // hopper: a trickle while the fire is out or only just fed, a steady stream at a hard burn. Only a picture (see Furnace).
+    // Coal falling from the hopper down its chute and into the back of the firebox while the fire is burning it: a
+    // trickle at the lowest notch, a steady stream at a hard burn, nothing while the fire is out. Only a picture (see
+    // Furnace).
     public class HopperFeed : MonoBehaviour
     {
         [SerializeField] private Furnace furnace;
-        [Tooltip("Lumps dropping through the funnel and pipe.")]
+        [Tooltip("Lumps dropping through the funnel and pipe. Clipped by a mask to the dark opening under the funnel.")]
         [SerializeField]
         private ParticleSystem chute;
         [Tooltip("Lumps dropping off the back wall of the firebox onto the bed. Clipped to the mouth by a mask.")]
@@ -19,11 +20,11 @@ namespace CoalRun.Stations
 
         private void Update()
         {
-            var has = furnace.Hopper > .05f;
+            var has = furnace.Lit && furnace.Hopper > .05f;
             var burn = Mathf.Clamp01(furnace.BurnRate / Mathf.Max(.01f, ShiftManager().Tune.burnRates[^1]));
             var perSecond = has ? Mathf.Lerp(rate.x, rate.y, burn) : 0;
             Set(chute, perSecond);
-            Set(pour, furnace.Lit ? perSecond : 0);
+            Set(pour, perSecond);
         }
 
         private static Core.ShiftManager ShiftManager() => Core.ShiftManager.Instance;

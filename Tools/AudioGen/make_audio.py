@@ -337,6 +337,15 @@ def storm_rattle():
         save(f"storm_rattle_{v}", norm((norm(ticks) + ring) * shape * env(len(k), .01, .08), .7))
 
 
+def relay():
+    """A relay snapping shut: a hard little click, a dull thunk of the armature under it, and a short metal tick."""
+    k = t(.12)
+    snap = band(noise(.12), 2000, 7000) * np.exp(-k * 160)
+    thunk = np.sin(2 * np.pi * 170 * k) * np.exp(-k * 45)
+    tick = np.sin(2 * np.pi * 1850 * k) * np.exp(-k * 70) * .25
+    save("relay", norm((snap + .6 * thunk + tick) * env(len(k), .0005, .03), .55))
+
+
 if __name__ == "__main__":
     for f in (wind, fire, hum, groan, cart_roll, shovel, coal_patter, bin_rattle, crank, scrape, roll, phone, paper, pour, spill, kindle, ignite, wrench, chain, blip, drone, heartbeat, shiver, gong):
         f()
@@ -346,4 +355,5 @@ if __name__ == "__main__":
     howl()
     storm_knock()
     storm_rattle()
+    relay()
     print("audio written to", os.path.abspath(OUT), sorted(os.listdir(OUT)))
