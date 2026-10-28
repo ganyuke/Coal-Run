@@ -128,7 +128,6 @@ def hopper_back():
     for x in (5, W - 5):
         for y in range(18, H, 32):
             rivet(c, x, y, 1.8, STEEL)
-    text(c, "HOPPER", W / 2, 24, 13, hexc("#8d99ad"))
     bevel(c, 0, 0, W, H, w=3, hi=.15, lo=.3)
     return save(c, "hopper_back")
 
@@ -226,13 +225,11 @@ def bunker():
         c.rect(x - 1, 0, x + 2, H, (0, 0, 0, 90))
         for y in range(16, H, 40):
             rivet(c, x + 8, y, 1.8, STEEL)
-    # A hazard band and the stencil.
+    # A hazard band.
     top = int(H * .55)
     c.rect(0, top, W, top + 30, hexc("#1d222c"))
     for x in range(-30, W, 34):
         c.poly([(x, top + 30), (x + 16, top + 30), (x + 30, top), (x + 14, top)], YELLOW)
-    text(c, "COAL", W / 2, top + 80, 40, hexc("#c9d2e0"))
-    text(c, "KEEP CLEAR", W / 2, top + 112, 13, hexc("#7f8ba0"))
     bevel(c, 0, 0, W, H, w=4, hi=.18, lo=.35)
     return save(c, "bunker")
 
