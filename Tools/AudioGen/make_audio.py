@@ -347,11 +347,13 @@ def relay():
 
 
 def alarm():
-    """The freeze alarm's "drrrt": a harsh buzzer, two stacked square tones a fifth apart, chopped fast by a ragged gate."""
-    k = t(.55)
-    buzz = np.sign(np.sin(2 * np.pi * 740 * k)) + .8 * np.sign(np.sin(2 * np.pi * 1110 * k))
-    gate = (np.sin(2 * np.pi * 38 * k) > -.3).astype(float)
-    save("alarm", norm(buzz * gate * env(len(k), .004, .05), .8))
+    """The freeze alarm's "drrrt", kept soft: two low tones a fifth apart, each a sine with a little third harmonic (a rounded
+    buzz, not a square wave), pulsed by a smooth gate with a slow attack so it never clicks or stabs."""
+    k = t(.5)
+    tone = lambda f: np.sin(2 * np.pi * f * k) + .25 * np.sin(2 * np.pi * 3 * f * k)
+    buzz = tone(440) + .7 * tone(660)
+    gate = .5 + .5 * np.sin(2 * np.pi * 22 * k - np.pi / 2)
+    save("alarm", norm(buzz * gate * env(len(k), .03, .12), .6))
 
 
 if __name__ == "__main__":

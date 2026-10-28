@@ -61,10 +61,17 @@ namespace CoalRun.Core
         [Serializable]
         public class Phone
         {
+            [Tooltip("Below 13° inside, said once a shift.")]
             [TextArea] public string cold = "“It’s getting cold upstairs. Could you turn the furnace up?”";
-            [Tooltip("Below 7° inside.")]
+            [Tooltip("Below 7° inside, said once a shift.")]
             [TextArea]
             public string freezing = "“We can’t feel our hands. Forget the target. Just keep us alive.”";
+            [Tooltip("At 0° inside, where the chill starts: said once a shift.")]
+            [TextArea]
+            public string frozen = "“It’s below zero up here. We can see our breath. Please, whatever it takes.”";
+            [Tooltip("Back up to the cold line's temperature after it called, said once.")]
+            [TextArea]
+            public string warmed = "“Thanks for doing your job. It’s nice and cozy up here. We’ll be sure to pitch in to buy a blanket for you.”";
             [Tooltip("The first time a body goes in the furnace in a shift.")]
             [TextArea]
             public string burned = "“Our power just spiked. We don’t want to know why. Do it again.”";
