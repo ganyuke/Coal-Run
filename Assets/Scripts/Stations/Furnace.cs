@@ -63,11 +63,16 @@ namespace CoalRun.Stations
         [SerializeField]
         private float meterSpin = 1000;
 
+        // A body going up in flames lights the room up for a moment; dies away to 0.
+        private float _flare;
+
         public float Hopper { get; private set; }
         // Everything poured into the hopper this shift.
         public float Delivered { get; private set; }
         // Everything burned, which leaves the coal total; and the electricity it made, in kWh.
         public float Burned { get; private set; }
+        // Bodies thrown into the fire this shift.
+        public int BodiesBurned { get; private set; }
         public float Output { get; private set; }
         // Coal actually burning per second: the notch's rate, or less once the hopper runs dry.
         public float BurnRate { get; private set; }
@@ -92,6 +97,8 @@ namespace CoalRun.Stations
             Hopper = _game.Day.startingHopper;
         }
 
+        public Bounds Mouth => mouth;
+
         public bool InMouth(Vector2 p) => mouth.Contains(new Vector3(p.x, p.y, 0));
 
         // Something thrown into the lit furnace (a cold one burns nothing, see CorpseBody): a shower of sparks and a flare of glow, and nothing left of it.
@@ -100,6 +107,21 @@ namespace CoalRun.Stations
             if (sparks) sparks.Emit(50);
             if (emberGlow) emberGlow.Emit(6);
             _game.Sound("ignite", .5f);
+            // Only the shift pays (the training's helper, say, is just a body).
+            if (_game.Phase is not (Phase.Shift or Phase.Leaving or Phase.Replacement)) return;
+            Output += _game.Tune.bodyOutput;
+            _game.Warm(_game.Tune.bodyHeat);
+            if (++BodiesBurned == 1) _game.Phone.Announce(_game.Lines.phone.burned);
+        }
+
+        // Called every frame while a body burns, `k` from 0 (just in) to 1 (nearly gone): sparks and glow thrown up from `at`,
+        // and the firelight swelling.
+        public void Cook(Vector2 at, float k)
+        {
+            if (sparks) sparks.Emit(Random.Range(1, 4));
+            if (emberGlow && Random.value < .5f) emberGlow.Emit(1);
+            _flare = Mathf.Max(_flare, 1 - k * .5f);
+            _game.Sound("kindle", .35f);
         }
 
         private void FixedUpdate()
@@ -171,11 +193,12 @@ namespace CoalRun.Stations
                 main.startColor = new Color(glowColor.r, glowColor.g, glowColor.b, .8f * strength);
             }
 
+            _flare = Mathf.MoveTowards(_flare, 0, Time.deltaTime * .8f);
             if (fireLight)
             {
                 // Embers cast a dim red light, flames a bright orange one; it wavers with the same noise as the glow.
                 var strength = Mathf.Lerp(lightRange.x * ember, lightRange.y, _heat) * (.85f + .3f * flicker);
-                fireLight.intensity = strength;
+                fireLight.intensity = strength + _flare * 1.6f;
                 fireLight.color = Color.Lerp(embers, flames, _heat);
                 fireLight.pointLightOuterRadius = Mathf.Lerp(5.5f, 11f, _heat);
             }

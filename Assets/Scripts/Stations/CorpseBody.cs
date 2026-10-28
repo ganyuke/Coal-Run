@@ -1,3 +1,4 @@
+using System.Collections;
 using CoalRun.Core;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -25,6 +26,13 @@ namespace CoalRun.Stations
         private SortingGroup _group;
         private bool _hit;
 
+        [Tooltip("Seconds a body takes to burn up in the furnace: it settles on the hearth, chars, glows and crumbles away.")]
+        [SerializeField]
+        private float burnTime = 2.2f;
+        [Tooltip("The body's sorting order while it burns.")]
+        [SerializeField]
+        private int burnOrder = 3;
+
         private void Awake()
         {
             _body = GetComponent<Rigidbody2D>();
@@ -37,6 +45,44 @@ namespace CoalRun.Stations
         public void Lift(bool lifted)
         {
             if (_group) _group.sortingOrder = lifted ? 20 : 3;
+        }
+
+        // Settles on the hearth, reddens, chars to black and fades out in a rain of sparks, then it's gone.
+        private IEnumerator Burn()
+        {
+            Carried = true; // From here on it's the fire's: no throwing, no knocks.
+            var furnace = _game.Furnace;
+            _body.bodyType = RigidbodyType2D.Kinematic;
+            _body.linearVelocity = Vector2.zero;
+            _body.angularVelocity = 0;
+            foreach (var c in GetComponents<Collider2D>()) c.enabled = false;
+            var renderers = GetComponentsInChildren<SpriteRenderer>();
+            var from = new Color[renderers.Length];
+            for (var i = 0; i < from.Length; i++) from[i] = renderers[i].color;
+            var start = _body.position;
+            var hearth = new Vector2(Mathf.Clamp(start.x, furnace.Mouth.min.x + .6f, furnace.Mouth.max.x - .6f), furnace.Mouth.min.y + .45f);
+            // Over the coal bed's glow, but behind the firebox's front.
+            if (_group) _group.sortingOrder = burnOrder;
+            var char_ = new Color(.07f, .05f, .04f);
+            var hot = new Color(1, .45f, .15f);
+            for (var t = 0f; t < burnTime; t += Time.deltaTime)
+            {
+                var k = t / burnTime;
+                transform.position = Vector2.Lerp(start, hearth, Mathf.SmoothStep(0, 1, Mathf.Min(1, k * 2.5f)));
+                transform.rotation = Quaternion.Euler(0, 0, Mathf.LerpAngle(transform.eulerAngles.z, 80 * Mathf.Sign(Mathf.Sin(start.x * 7)), Time.deltaTime * 2));
+                // Lit up red-hot first, then burnt black, then thinning to nothing.
+                var heat = Mathf.Clamp01(1 - Mathf.Abs(k - .25f) * 4);
+                var fade = Mathf.Clamp01((k - .6f) / .4f);
+                for (var i = 0; i < renderers.Length; i++)
+                {
+                    var tint = Color.Lerp(Color.Lerp(from[i], char_, Mathf.Clamp01(k * 2)), hot, heat * .8f);
+                    tint.a = from[i].a * (1 - fade);
+                    renderers[i].color = tint;
+                }
+                furnace.Cook(transform.position, k);
+                yield return null;
+            }
+            gameObject.SetActive(false);
         }
 
         public void Throw(float seconds)
@@ -52,7 +98,7 @@ namespace CoalRun.Stations
             {
                 _game.Furnace.Burn(_body.position);
                 _game.Bodies.Remove(_body);
-                gameObject.SetActive(false);
+                StartCoroutine(Burn());
                 return;
             }
             if (Thrown <= 0) return;

@@ -238,8 +238,10 @@ namespace CoalRun.UI
             sheetHeadline.text = complete ? t.survived : t.lost;
             var verdict = complete ? (game.Furnace.Output >= game.Day.target ? t.pleased : t.notPleased) + " " + (game.HasNextDay ? t.memoWaiting : t.lastShift) : t.frozeOver;
             var written = complete ? t.survivedBody : t.lostBody;
+            if (game.Furnace.BodiesBurned > 0) verdict += $"\n\n{t.bodiesNote}";
             sheetBody.text = string.IsNullOrEmpty(written) ? verdict : $"{written}\n\n{verdict}";
-            sheetStats.text = $"{t.outputLabel}\n<b>{game.Furnace.Output:0.0} / {game.Day.target:0} kWh</b>\n{t.deliveredLabel}  <b>{game.Furnace.Delivered:0.0}</b>\n{t.lostLabel}  <b>{game.Deaths}</b>";
+            sheetStats.text = $"{t.outputLabel}\n<b>{game.Furnace.Output:0.0} / {game.Day.target:0} kWh</b>\n{t.deliveredLabel}  <b>{game.Furnace.Delivered:0.0}</b>\n{t.lostLabel}  <b>{game.Deaths}</b>" +
+                (game.Furnace.BodiesBurned > 0 ? $"\n{t.bodiesLabel}  <b>{game.Furnace.BodiesBurned}</b>" : "");
             buttonLabel.text = !complete ? t.again : game.HasNextDay ? t.nextDay : t.fromDay1;
         }
 

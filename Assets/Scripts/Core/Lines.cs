@@ -65,6 +65,9 @@ namespace CoalRun.Core
             [Tooltip("Below 7° inside.")]
             [TextArea]
             public string freezing = "“We can’t feel our hands. Forget the target. Just keep us alive.”";
+            [Tooltip("The first time a body goes in the furnace in a shift.")]
+            [TextArea]
+            public string burned = "“Our power just spiked. We don’t want to know why. Do it again.”";
             [Tooltip("After the first death, the second, and every one after.")]
             [TextArea]
             public string[] deaths =
@@ -210,6 +213,9 @@ namespace CoalRun.Core
             public string outputLabel = "Electrical output";
             public string deliveredLabel = "Coal delivered";
             public string lostLabel = "Operators lost";
+            public string bodiesLabel = "Bodies burned";
+            [Tooltip("Added to the body of the report when anyone went in the furnace.")]
+            [TextArea] public string bodiesNote = "Brass noticed the extra output and has chosen not to ask.";
             public string again = "Run the shift again   [R]";
             public string nextDay = "Next day   [R]";
             public string fromDay1 = "Play again from Day 1   [R]";

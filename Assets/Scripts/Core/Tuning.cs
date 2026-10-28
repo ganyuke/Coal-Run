@@ -139,6 +139,10 @@ namespace CoalRun.Core
         public float heatLoss = .006f;
         public float heatCapacity = .28f;
         public float comfortable = 20;
+        [Tooltip("kWh added to the output for every body thrown into the lit furnace (during the shift).")]
+        public float bodyOutput = 7.5f;
+        [Tooltip("Degrees the building warms at once for every body burned.")]
+        public float bodyHeat = 3;
         public float freeze = 0;
         [Tooltip("Seconds the building can sit at or below freezing before the operator freezes. Never shown; it drains back at the same rate once it's above.")]
         public float freezeGrace = 30;

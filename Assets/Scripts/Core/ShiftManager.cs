@@ -157,6 +157,9 @@ namespace CoalRun.Core
         // difference, so it changes slowly: run under demand and it cools gradually. Burning a notch's rate
         // holds it at `comfortable` against that notch's held temperature. The furnace runs after the hub,
         // so this is the last step's burn.
+        // A flare of heat from something thrown into the fire.
+        public void Warm(float degrees) => Temperature += degrees;
+
         private void StepHeat(float dt)
         {
             Clock += dt;
