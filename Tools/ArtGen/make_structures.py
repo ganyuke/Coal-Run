@@ -484,12 +484,12 @@ def props():
     save(fl, "flange")
     v = Canvas(int(.6 * P), int(.6 * P))
     s = v.w / 2
-    ring(v, s, s, s - 1, s - 7, hexc("#c8332b"), sides=14, seed=3)
+    ring(v, s, s, s - 1, s - 7, hexc("#5a6472"), sides=14, seed=3)
     for k in range(4):
         a = k * math.pi / 2
         v.poly([(s + math.cos(a) * 4 - math.sin(a) * 2, s + math.sin(a) * 4 + math.cos(a) * 2), (s + math.cos(a) * (s - 7) - math.sin(a) * 2, s + math.sin(a) * (s - 7) + math.cos(a) * 2),
-                (s + math.cos(a) * (s - 7) + math.sin(a) * 2, s + math.sin(a) * (s - 7) - math.cos(a) * 2), (s + math.cos(a) * 4 + math.sin(a) * 2, s + math.sin(a) * 4 - math.cos(a) * 2)], hexc("#a52620"))
-    sphere_facets(v, s, s, 6, hexc("#c6a24a"), sides=8)
+                (s + math.cos(a) * (s - 7) + math.sin(a) * 2, s + math.sin(a) * (s - 7) - math.cos(a) * 2), (s + math.cos(a) * 4 + math.sin(a) * 2, s + math.sin(a) * 4 - math.cos(a) * 2)], hexc("#4a535f"))
+    sphere_facets(v, s, s, 6, hexc("#6e7684"), sides=8)
     save(v, "valve@128")
     g = Canvas(int(.5 * P), int(.5 * P))
     s = g.w / 2
