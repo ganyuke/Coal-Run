@@ -10,7 +10,7 @@ namespace CoalRun.UI
 {
     // The notebook on screen: a slip hanging from the top right of the screen with the day and the one task that
     // matters now. When it's done it's ticked and held a moment so you see it, then the next task takes its place.
-    // The key prompts are sticky notes hanging under it. Not a screen of its own: the game runs on underneath. Between shifts it's the briefing and the report: it opens bigger in
+    // The key prompts are sticky notes in the bottom-left corner. Not a screen of its own: the game runs on underneath. Between shifts it's the briefing and the report: it opens bigger in
     // the middle of the screen, on a page with a stamped button.
     [DefaultExecutionOrder(-200)] // Before InputReader, so a click on the briefing isn't also a click in the room.
     public class NotebookView : MonoBehaviour
@@ -54,7 +54,7 @@ namespace CoalRun.UI
         private float bottomPadding = 8;
         [SerializeField] private Color ink = new(.16f, .13f, .1f), urgentInk = new(.7f, .12f, .08f);
         [Header("Sticky notes")]
-        [Tooltip("The notes hanging under the slip, top first, laid out in the scene. One a key prompt; there are never more than three.")]
+        [Tooltip("The key prompt notes in the bottom-left corner, first prompt first, laid out in the scene. There are never more than three prompts.")]
         [SerializeField]
         private Image[] stickies;
         [Tooltip("The colour of a note by the key it's for, so the keys you can press are told apart at a glance. Anything else is the first colour.")]
@@ -89,6 +89,7 @@ namespace CoalRun.UI
         // pulled up to suit the smaller heading.
         private float _headingHeight, _ruleY, _rootY;
         private Phase _sheetFor = Phase.Shift;
+        private static readonly System.Collections.Generic.List<(string key, string label)> NoPrompts = new();
 
         private void OnDisable() => PointerOver = false;
 
@@ -130,6 +131,8 @@ namespace CoalRun.UI
             }
             _shownLast = shown;
             book.gameObject.SetActive(shown);
+            // The key prompts go with play, not with the slip: there can be keys to press with no task written.
+            Stickies(playing && !sheetMode && !game.Departing);
             PointerOver = false;
             if (!shown) return;
             if (sheetMode && _sheetFor != game.Phase) Sheet(game);
@@ -153,8 +156,6 @@ namespace CoalRun.UI
             book.sizeDelta = Vector2.Lerp(book.sizeDelta, size, k);
             book.anchoredPosition = Vector2.Lerp(book.anchoredPosition, at, k);
 
-            if (sheetMode) { foreach (var note in stickies) note.gameObject.SetActive(false); return; }
-            Stickies();
         }
 
         // The heading big for the briefing and report, or small over the task with everything under it pulled up.
@@ -243,10 +244,10 @@ namespace CoalRun.UI
             return keyColors.Length > 0 ? keyColors[0].color : Color.white;
         }
 
-        // The key prompts on the notes, in order; the notes left over are hidden.
-        private void Stickies()
+        // The key prompts on the notes, in order; the notes left over are hidden, and all of them while `show` is off.
+        private void Stickies(bool show)
         {
-            var prompts = player.Prompts();
+            var prompts = show ? player.Prompts() : NoPrompts;
             for (var i = 0; i < stickies.Length; i++)
             {
                 var on = i < prompts.Count;
