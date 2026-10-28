@@ -40,12 +40,12 @@ namespace CoalRun.Stations
         public virtual void Walk(float dx) { }
         protected virtual void OnBegin(Vector2 mouse) { }
 
-        // Eases the light over its handle towards its scene intensity times `boost` (0 for off).
-        public void Glow(float boost, float dt)
+        // Eases the light over its handle towards its scene intensity times `scale` (0 for off).
+        public void Glow(float scale, float dt)
         {
             if (!glow) return;
             if (_glowRest < 0) _glowRest = glow.intensity;
-            glow.intensity = Mathf.MoveTowards(glow.intensity, _glowRest * boost, _glowRest * dt * 3);
+            glow.intensity = Mathf.MoveTowards(glow.intensity, _glowRest * scale, _glowRest * dt * 3);
         }
         protected virtual void OnEnd() { }
     }

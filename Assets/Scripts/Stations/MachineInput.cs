@@ -10,9 +10,9 @@ namespace CoalRun.Stations
     {
         [SerializeField] private PlayerController player;
         [SerializeField] private Camera cam;
-        [Tooltip("How many times brighter a handle's light gets with the operator in reach.")]
+        [Tooltip("A handle's light times this with the operator in reach: below 1 dims it there, where the hat lamp already lights it.")]
         [SerializeField]
-        private float glowInReach = 2.5f;
+        private float glowInReach = .4f;
 
         public Machine Active { get; private set; }
         public Machine Hover { get; private set; }
