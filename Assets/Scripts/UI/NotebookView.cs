@@ -1,24 +1,28 @@
+using System;
+using System.Collections.Generic;
 using CoalRun.Core;
 using CoalRun.Stations;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 namespace CoalRun.UI
 {
-    // The notebook on screen: a slip hanging from the top right of the screen with the one task that matters now.
-    // When it's done it's ticked and held a moment so you see it, then the next task takes its place. Not a screen
-    // of its own: the game runs on underneath. Between shifts it's the briefing and the report: it opens bigger in
+    // The notebook on screen: a slip hanging from the top right of the screen with the day and the one task that
+    // matters now. When it's done it's ticked and held a moment so you see it, then the next task takes its place.
+    // The key prompts are sticky notes hanging under it. Not a screen of its own: the game runs on underneath. Between shifts it's the briefing and the report: it opens bigger in
     // the middle of the screen, on a page with a stamped button.
     [DefaultExecutionOrder(-200)] // Before InputReader, so a click on the briefing isn't also a click in the room.
     public class NotebookView : MonoBehaviour
     {
         [SerializeField] private Notebook notebook;
+        [SerializeField] private PlayerController player;
         [SerializeField] private RectTransform book;
-        [Tooltip("The heading and the rule under it, only on the briefing and the report.")]
+        [Tooltip("The day, or on the briefing and the report what it is. Smaller over a task.")]
         [SerializeField]
         private TMP_Text heading;
-        [SerializeField] private GameObject rule;
+        [SerializeField] private RectTransform rule;
         [Tooltip("The task's line.")]
         [SerializeField]
         private NotebookRow row;
@@ -42,20 +46,67 @@ namespace CoalRun.UI
         [SerializeField]
         private float tickHold = 1.2f;
         [SerializeField] private float slideSpeed = 9;
-        [SerializeField] private float rowHeight = 46, textSize = 22;
+        [SerializeField] private float rowHeight = 36, textSize = 22;
+        [Tooltip("The day's heading over a task, in place of the big one on the briefing and report.")]
+        [SerializeField]
+        private float headingSize = 14;
+        [Tooltip("Paper left under the task.")]
+        [SerializeField]
+        private float bottomPadding = 8;
         [SerializeField] private Color ink = new(.16f, .13f, .1f), urgentInk = new(.7f, .12f, .08f);
+        [Header("Sticky notes")]
+        [Tooltip("Cloned for each key prompt, hanging under the slip.")]
+        [SerializeField]
+        private RectTransform stickyTemplate;
+        [Tooltip("Space between hanging notes, and how far each is shifted left of the one above it.")]
+        [SerializeField]
+        private float stickyGap = 2, stickyShift = 3;
+        [Tooltip("The colour of a note by the key it's for, so the keys you can press are told apart at a glance. Anything else is the first colour.")]
+        [SerializeField]
+        private KeyColor[] keyColors =
+        {
+            new() { key = "E", color = new Color(1f, .91f, .45f) },
+            new() { key = "Hold E", color = new Color(1f, .78f, .35f) },
+            new() { key = "W", color = new Color(.62f, .85f, 1f) },
+            new() { key = "S", color = new Color(.62f, .85f, 1f) },
+            new() { key = "F", color = new Color(1f, .68f, .48f) },
+            new() { key = "Space", color = new Color(.66f, .9f, .62f) },
+            new() { key = "Shift", color = new Color(.8f, .71f, 1f) },
+            new() { key = "Click", color = new Color(1f, .7f, .8f) },
+            new() { key = "A/D", color = new Color(.58f, .92f, .88f) }
+        };
+
+        [Serializable]
+        public struct KeyColor
+        {
+            public string key;
+            public Color color;
+        }
 
         // The cursor is on the briefing or report, so clicks belong to it and not the room.
         public static bool PointerOver { get; private set; }
 
+        private readonly List<RectTransform> _stickies = new();
+        private readonly List<TMP_Text> _stickyText = new();
+        private readonly List<Image> _stickyImage = new();
         private Notebook.Page _showing;
-        private bool _shownLast, _drawnDone;
-        private float _dimmed, _tickedAt = -1, _width;
+        private bool _shownLast, _drawnDone, _bigNow = true;
+        private float _dimmed, _tickedAt = -1, _width, _bigHeading;
+        // Where the heading, rule and task sit from the top of the page on the big sheet; over a task they're
+        // pulled up to suit the smaller heading.
+        private float _headingHeight, _ruleY, _rootY;
         private Phase _sheetFor = Phase.Shift;
 
         private void OnDisable() => PointerOver = false;
 
-        private void Awake() => _width = book.sizeDelta.x;
+        private void Awake()
+        {
+            _width = book.sizeDelta.x;
+            _bigHeading = heading.fontSize;
+            _headingHeight = heading.rectTransform.sizeDelta.y;
+            _ruleY = rule.anchoredPosition.y;
+            _rootY = pageRoot.anchoredPosition.y;
+        }
 
         private void Update()
         {
@@ -75,7 +126,7 @@ namespace CoalRun.UI
             var canvas = ((RectTransform)book.parent).rect;
             // Hanging from the top right, as tall as the task; or grown into the middle of the screen.
             var inset = (book.rect.height - ((RectTransform)pageRoot.parent).rect.height) / 2;
-            var size = sheetMode ? sheetSize : new Vector2(_width, inset - pageRoot.anchoredPosition.y + row.Rect.sizeDelta.y + inset);
+            var size = sheetMode ? sheetSize : new Vector2(_width, inset - pageRoot.anchoredPosition.y + row.Rect.sizeDelta.y + bottomPadding + inset);
             var at = sheetMode ? new Vector2(-(canvas.width - size.x) / 2, -(canvas.height - sheetY - size.y)) : new Vector2(-30, 0);
             // Coming into view, it starts off screen at its full size: the report and the briefing rise up from below,
             // the task drops down from above.
@@ -89,10 +140,12 @@ namespace CoalRun.UI
             PointerOver = false;
             if (!shown) return;
             if (sheetMode && _sheetFor != game.Phase) Sheet(game);
-            if (!sheetMode) _sheetFor = Phase.Shift;
+            if (!sheetMode)
+            {
+                _sheetFor = Phase.Shift;
+                if (_bigNow) Heading(false);
+            }
             sheet.gameObject.SetActive(sheetMode);
-            heading.gameObject.SetActive(sheetMode);
-            rule.SetActive(sheetMode);
             pageRoot.gameObject.SetActive(!sheetMode);
 
             var mouse = Mouse.current;
@@ -106,6 +159,23 @@ namespace CoalRun.UI
             var k = 1 - Mathf.Exp(-slideSpeed * Time.unscaledDeltaTime);
             book.sizeDelta = Vector2.Lerp(book.sizeDelta, size, k);
             book.anchoredPosition = Vector2.Lerp(book.anchoredPosition, at, k);
+
+            if (sheetMode) { foreach (var note in _stickies) note.gameObject.SetActive(false); return; }
+            Stickies();
+        }
+
+        // The heading big for the briefing and report, or small over the task with everything under it pulled up.
+        private void Heading(bool big)
+        {
+            _bigNow = big;
+            var k = big ? 1 : headingSize / _bigHeading;
+            heading.fontSize = big ? _bigHeading : headingSize;
+            if (!big) heading.text = $"DAY {ShiftManager.Instance.Day.day:00}";
+            var h = heading.rectTransform;
+            h.sizeDelta = new Vector2(h.sizeDelta.x, _headingHeight * k);
+            var top = -h.anchoredPosition.y;
+            rule.anchoredPosition = new Vector2(rule.anchoredPosition.x, -(top + (-_ruleY - top) * k));
+            pageRoot.anchoredPosition = new Vector2(pageRoot.anchoredPosition.x, -(top + (-_rootY - top) * k));
         }
 
         // Which task is up: the notebook's current one, except that one just finished stays a moment, ticked.
@@ -141,7 +211,7 @@ namespace CoalRun.UI
             row.gameObject.SetActive(true);
             row.Set(_showing.Text, _showing.Done, textSize, _showing.Urgent ? urgentInk : ink);
             row.Rect.anchoredPosition = Vector2.zero;
-            row.Rect.sizeDelta = new Vector2(row.Rect.sizeDelta.x, Mathf.Max(rowHeight, row.TextHeight + 16));
+            row.Rect.sizeDelta = new Vector2(row.Rect.sizeDelta.x, Mathf.Max(rowHeight, row.TextHeight + 4));
         }
 
         // Begin the shift, or run it again: what the stamped button does, like Enter and R.
@@ -155,6 +225,7 @@ namespace CoalRun.UI
         private void Sheet(ShiftManager game)
         {
             _sheetFor = game.Phase;
+            Heading(true);
             heading.text = $"DAY {game.Day.day:00} · {(game.Phase == Phase.Briefing ? "BRIEFING" : "REPORT")}";
             if (game.Phase == Phase.Briefing)
             {
@@ -171,6 +242,43 @@ namespace CoalRun.UI
                 (complete ? (game.Furnace.Output >= game.Day.target ? "Brass is pleased with the output." : "Brass is not pleased with the output.") + (game.HasNextDay ? " A memo is waiting for you in the morning." : " That is all the shifts there are, for now.") : "The offices froze first. There is nobody left to send a replacement.") +
                 $"\n\nElectrical output\n<b>{game.Furnace.Output:0.0} / {game.Day.target:0} kWh</b>\n\nCoal delivered  <b>{game.Furnace.Delivered:0.0}</b>\nOperators lost  <b>{game.Deaths}</b>";
             buttonLabel.text = !complete ? "Run the shift again   [R]" : game.HasNextDay ? "Next day   [R]" : "Play again from Day 1   [R]";
+        }
+
+        private Color KeyColorFor(string key)
+        {
+            foreach (var k in keyColors) if (k.key == key) return k.color;
+            return keyColors.Length > 0 ? keyColors[0].color : Color.white;
+        }
+
+        // One sticky note a prompt, hanging down from the bottom edge of the slip, each turned a little.
+        private void Stickies()
+        {
+            var prompts = player.Prompts();
+            while (_stickies.Count < prompts.Count)
+            {
+                var note = Instantiate(stickyTemplate, stickyTemplate.parent);
+                note.localRotation = Quaternion.Euler(0, 0, (_stickies.Count % 2 == 0 ? 1.2f : -1.2f) * (1 + _stickies.Count % 2));
+                _stickies.Add(note);
+                // A long label shrinks to fit its note rather than wrapping out of it.
+                var label = note.GetComponentInChildren<TMP_Text>();
+                label.enableAutoSizing = true;
+                label.fontSizeMax = label.fontSize;
+                label.fontSizeMin = label.fontSize * .6f;
+                label.textWrappingMode = TextWrappingModes.NoWrap;
+                label.overflowMode = TextOverflowModes.Ellipsis;
+                _stickyText.Add(label);
+                _stickyImage.Add(note.GetComponent<Image>());
+            }
+            for (var i = 0; i < _stickies.Count; i++)
+            {
+                var on = i < prompts.Count;
+                _stickies[i].gameObject.SetActive(on);
+                if (!on) continue;
+                _stickyText[i].text = $"<b>[{prompts[i].key}]</b>  {prompts[i].label}";
+                _stickyImage[i].color = KeyColorFor(prompts[i].key);
+                var size = _stickies[i].sizeDelta;
+                _stickies[i].anchoredPosition = new Vector2(stickyTemplate.anchoredPosition.x - i * stickyShift, stickyTemplate.anchoredPosition.y - i * (size.y + stickyGap + 5));
+            }
         }
     }
 }
