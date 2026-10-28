@@ -193,9 +193,9 @@ namespace CoalRun.Core
             public string title = "PAUSED";
             [TextArea(6, 14)]
             public string controls = "A / D, arrows:  walk (tap twice to dash)\nW / S:  stairs at a door, crank at the lift\nSpace:  take hold of the cart (A / D to haul, Shift to heave)\nE:  pick up, put down, hook on (hold it to light the fire or fit a wheel)\nF:  shovel, aimed with the mouse\nMouse:  drag levers and the lift's wheel, click to throw";
-            public string resume = "Esc: back to the shift";
+            public string resume = "Resume   [Esc]";
             [Tooltip("Left out in a web build, which has nothing to quit.")]
-            public string quit = "Q: quit the game";
+            public string quit = "Quit   [Q]";
         }
 
         // The briefing and the report: the big notebook page in the middle.

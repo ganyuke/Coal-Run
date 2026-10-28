@@ -44,6 +44,11 @@ MonoBehaviour:
       right now."'
     freezing: '"Please... please handle this... please keep us alive, even just a
       little longer."'
+    frozen: "\u201CIt\u2019s below zero up here. We can see our breath. Please, whatever
+      it takes.\u201D"
+    warmed: "\u201CThanks for doing your job. It\u2019s nice and cozy up here. We\u2019ll
+      be sure to pitch in to buy a blanket for you.\u201D"
+    burned: "\u201COur power just spiked. We don\u2019t want to know why. Do it again.\u201D"
     deaths:
     - "\"We heard there was an... incident. We\u2019re sending another guy down.\""
     - "\"Again? Fine. We\u2019re sending another guy down.\""
@@ -170,6 +175,27 @@ MonoBehaviour:
     outputLabel: Electrical output
     deliveredLabel: Coal delivered
     lostLabel: Operators lost
+    bodiesLabel: Bodies burned
+    bodiesNote: Brass noticed the extra output and has chosen not to ask.
     again: 'Run the shift again   [R]'
     nextDay: 'Next day   [R]'
     fromDay1: 'Play again from Day 1   [R]'
+  pause:
+    title: PAUSED
+    controls: 'A / D, arrows:  walk (tap twice to dash)
+
+      W / S:  stairs at
+      a door, crank at the lift
+
+      Space:  take hold of the cart (A / D to haul,
+      Shift to heave)
+
+      E:  pick up, put down, hook on (hold it to light the
+      fire or fit a wheel)
+
+      F:  shovel, aimed with the mouse
+
+      Mouse: 
+      drag levers and the lift''s wheel, click to throw'
+    resume: 'Resume   [Esc]'
+    quit: 'Quit   [Q]'

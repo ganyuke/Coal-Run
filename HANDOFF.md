@@ -1,4 +1,4 @@
-# Coal Run: handoff (current as of v0.3, 10/28)
+# Coal Run: handoff (current as of v0.4, 10/29)
 
 For whoever picks the project up: how it fits together, where to change things, and what to watch out for. `PLAN.md` has the full decision history (what was tried, scrapped, superseded); `SESSION-LOG.md` is the story of how it got built. Read this one first.
 
@@ -6,10 +6,10 @@ Unity 6000.5.9f1, URP 2D, new Input System. Scope so far is Day 1 plus Day 2 of 
 
 ## Run, test, ship
 
-- **Play** `Assets/Scenes/Boiler.unity`. It starts in the Day 1 training with the cart parked. Controls: A/D or arrows walk, double-tap A/D dash, W/S take stairs at the doors or crank the lift at a crank, Space grips the cart, Shift heaves a one-wheel cart from its skid end, E interacts (hold it to light the fire or bolt on a wheel), F shovels (aim with the mouse, release to throw), mouse drag works levers and the lift's wheel, click throws a carried wheel or body, Enter begins the shift, R restarts or moves on from the report, Esc pauses (and shows these controls; Q then quits a desktop build).
-- **Debug keys** (also listed top left when you press F3): F2 knock a wheel off, F4 cart load, F5 loose coal back to the bunker, F6 cart to you, F7 replay the training, F8 skip into the shift, F9 the shift bot plays (press again to stop).
+- **Play** `Assets/Scenes/Boiler.unity`. It starts in the Day 1 training with the cart parked. Controls: A/D or arrows walk, double-tap A/D dash, W/S take stairs at the doors or crank the lift at a crank, Space grips the cart, Shift heaves a one-wheel cart from its skid end, E interacts (hold it to light the fire or bolt on a wheel), F shovels (aim with the mouse, release to throw), mouse drag works levers and the lift's wheel, click throws a carried wheel or body, Enter begins the shift, R restarts or moves on from the report, Esc pauses and shows these controls, with Resume [Esc] and Quit [Q] buttons you can also click (Quit is left out of a web build).
+- **Debug keys** (also listed top left when you press F3): F2 knock a wheel off, F4 cart load, F5 loose coal back to the bunker, F6 cart to you, F7 replay the training, F8 skip into the shift, F9 the shift bot plays (press again to stop), F10 jumps the clock to the last 30 seconds of the shift.
 - **The shift bot** (`Dev/ShiftBot.cs`) plays Day 1 using only the player's controls, and prints a report to the console (`Logs/ShiftBot.csv` has samples). Use it after any physics or balance change: it should finish with no deaths and a "Coal error" near 0. It varies from run to run (last runs: 167 and 176 kWh against a target of 175), so judge a change on several runs, not one.
-- **Build** with `python3 Tools/release.py 0.3` (optionally `--target WebGL`, `--background`, `--release` to make a GitHub release). It builds in a separate Unity process, so the editor can stay open, and puts zips in `dist/<version>/`. Only saved assets are included.
+- **Build** with `python3 Tools/release.py 0.4` (optionally `--target WebGL`, `--background`, `--release` to make a GitHub release). It builds in a separate Unity process, so the editor can stay open, and puts zips in `dist/<version>/`. Only saved assets are included.
 - **Unity CLI**: `CLAUDE.md` (local only) has the working recipes for driving the editor from a terminal. Not needed for normal work.
 
 ## Where things live
@@ -101,7 +101,7 @@ Tools/                    ArtGen (sprites), AudioGen (sounds), release.py (build
 | Change the freeze alarm | Volume on the `alarm` cue in `AudioSetup.cs`; number of rings is `FreezeLamp.alarmRings`; the sound is `alarm()` in `Tools/AudioGen/make_audio.py` |
 | Change the report's layout | `NotebookView.Sheet` and `NotebookView.Fit` (the headline grows to its text, the figures sit at the foot, the body shrinks to fit); the `Stats` text is under `Systems/Notebook UI/Book/Page/Sheet` |
 | Change a key binding | `InputReader.cs`, then the prompts text in `Lines.prompts` and the pause card's list in `Lines.pause` |
-| Change the pause card | Its words are `Lines.pause`; its look is `Systems/Pause UI` in the scene; the behaviour is `PauseMenu` (Esc stops the game and the sound, Esc again carries on) |
+| Change the pause card | Its words are `Lines.pause`; its look is `Systems/Pause UI` in the scene (the two buttons are copies of the report's stamped button); the behaviour is `PauseMenu` (Esc stops the game and the sound, Esc again carries on) |
 | Add a new lever or crank | Subclass `Machine` (implement `CanOperate`, `Drag`), or reuse `FloorLever` by dropping the `Floor lever` prefab in and having your station read `lever.Value`. Machines register themselves in `OnEnable` |
 | Add a new station | A MonoBehaviour in `Scripts/Stations` (namespace `CoalRun.Stations`), a serialized field for it on `ShiftManager`, make it a prefab. Use `_game.Sound` and `_game.Say`, not direct audio calls |
 | Move a floor or wall | The scene colliders are `Room/Colliders` (box colliders). **Also change `Room.cs`**: coal logic reads those constants (floors y 2 and 9.5, walls x 0.35 and 31.7) |
