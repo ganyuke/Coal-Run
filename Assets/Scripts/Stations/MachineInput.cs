@@ -10,9 +10,12 @@ namespace CoalRun.Stations
     {
         [SerializeField] private PlayerController player;
         [SerializeField] private Camera cam;
-        [Tooltip("A handle's light times this with the operator in reach: below 1 dims it there, where the hat lamp already lights it.")]
+        [Tooltip("A handle's light times this with the operator right by it, where the hat lamp already lights it and the two would bloom.")]
         [SerializeField]
-        private float glowInReach = .4f;
+        private float glowNear = .4f;
+        [Tooltip("The operator's distance from a handle at which its light is fully dimmed, and back to full.")]
+        [SerializeField]
+        private Vector2 glowFade = new(1, 3);
 
         public Machine Active { get; private set; }
         public Machine Hover { get; private set; }
@@ -39,7 +42,7 @@ namespace CoalRun.Stations
             }
             if (Active) Active.Drag(p, Time.deltaTime);
             foreach (var m in Machine.All)
-                m.Glow(game.Tutorial.Allows(m) ? m.CanOperate(player) && game.CanAct ? glowInReach : 1 : 0, Time.deltaTime);
+                m.Glow(game.Tutorial.Allows(m) ? Mathf.Lerp(glowNear, 1, Mathf.InverseLerp(glowFade.x, glowFade.y, Vector2.Distance(player.Position, m.HandlePosition))) : 0, Time.deltaTime);
         }
 
         public void Release()
