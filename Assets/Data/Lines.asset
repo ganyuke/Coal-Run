@@ -13,77 +13,98 @@ MonoBehaviour:
   m_Name: Lines
   m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Core.Lines
   speech:
-    freezing: God, it's freezing in here. Gotta get the fire up.
-    shiftOver: Shift's over. Into the staff lift.
-    fireOut: Damn, the fire's out. Gotta light it again.
-    nothingToLight: Nothing in the hopper to light. Need coal first.
+    freezing: God, it's freezing in here. Should I turn the fire up?
+    shiftOver: The next guy can clean up this mess. I'm off to the staff elevator.
+    fireOut: The fire went out. I need to relight it.
+    nothingToLight: This isn't going to burn without coal. I need to fill the hopper
+      first.
     fell: Ow! That hurt.
-    wheelOff: Shit, a wheel came off!
-    cartLanding: Hold on, the cart's still landing.
-    cartBuried: The cart's buried. Gotta dig it out first.
-    tooMuchCoal: Too much coal here to hold the cart. Dig a path.
-    handsFull: My hands are full. Put the wheel down first.
-    cartNotLevel: Hold on, let the cart come level first.
-    hookFirst: Gotta hook the cart on first.
-    cartToCradle: The cart needs to be at the tip cradle.
-    bothWheels: It's already got both wheels.
-    notNow: Not now.
-    offCradleFirst: Gotta lower the cart off the cradle first.
-    standCartFirst: Gotta stand the cart up first.
-    cartMoving: The cart needs to stop moving first.
-    tooFar: Gotta get closer.
-    crankFar: Gotta get to the wheel.
-    shovelFar: Gotta get closer to the shovel.
-    clearShaft: Better get clear of the shaft.
-    underLift: The {0}'s under the lift. Can't lower it.
-    standOnLift: Gotta stand fully on the lift.
-    hangingOff: The {0}'s hanging off the side. Can't raise it.
+    wheelOff: There goes a wheel...
+    cartLanding: I'm not touching that thing until it's still.
+    cartBuried: Ah jeez, the cart's buried. I need to dig it out.
+    tooMuchCoal: I can't pull out the cart. There's too much coal.
+    handsFull: I can't carry anything else. Maybe I should put this down?
+    cartNotLevel: I'm not touching that thing until it's level.
+    hookFirst: I should hook the cart onto the winch first.
+    cartToCradle: I need to move the cart under the cradle first.
+    bothWheels: If only they let us put three wheels on this thing.
+    notNow: Wow, this cart's made of pure steel. Amazing.
+    offCradleFirst: I gotta get the cart off the cradle first.
+    standCartFirst: I can't put on the wheel until the cart's stood up.
+    cartMoving: Might be a bad idea to stick my hand in there while the cart's moving.
+    tooFar: I can't reach that.
+    crankFar: I can't reach the crank from here.
+    shovelFar: I can't reach the shovel from here.
+    clearShaft: Maybe I shouldn't stand here.
+    underLift: I should consider clearing the {0} under the lift.
+    standOnLift: I should probably not stand this close to the edge.
+    hangingOff: The {0} is jamming the lift.
   phone:
-    cold: "\u201CIt\u2019s getting cold upstairs. Could you turn the furnace up?\u201D"
-    freezing: "\u201CWe can\u2019t feel our hands. Forget the target. Just keep us
-      alive.\u201D"
+    cold: '"Would you kindly turn up the furnace? We''re all rather uncomfortable
+      right now."'
+    freezing: '"Please... please handle this... please keep us alive, even just a
+      little longer."'
     deaths:
-    - "\u201CWe heard. We\u2019re sending another guy down.\u201D"
-    - "\u201CAgain? Fine. We\u2019re sending another guy down.\u201D"
-    - "\u201CWe\u2019re sending another guy down. Please. Keep this one alive.\u201D"
+    - "\"We heard there was an... incident. We\u2019re sending another guy down.\""
+    - "\"Again? Fine. We\u2019re sending another guy down.\""
+    - "\"We\u2019re sending another guy down. Please keep this one alive.\""
+    - '"Is there something going on down there? It can''t be that dangerous, right?"'
+    - '"How do you guys keep dying? What are you doing down there?"'
+    - '"This is starting to get worrying."'
+    - '"Mina suggested that there must be some foreman-eating machine down there
+      that you''re feeding our guys into. Are you doing that?"'
+    - '"At some point, we really just ought to stop sending guys down there."'
+    - '"We let the next guy know that he should write his will before he went down
+      there."'
+    - '"Oh, looks like we prepared right."'
+    - '"We''ve decided together that since you''re keeping us alive, we''ll keep
+      sending you guys to work on the boiler."'
+    - '"We feel like monsters for sending these people to die down there, but as
+      long as you keep the rest of us alive... just keep doing what you''re doing."'
+    - '"Let''s cut a deal. We say nothing from now on, you keep us alive. Cool? Cool."'
+    - '"..."'
   training:
-    helperIntro: "\u201CAlright newbie, just get up there and pull the lever. I\u2019ll
-      handle everything after this.\u201D"
-    helperReassure: "\u201CNo, it\u2019ll be fine. I\u2019ve done this hundreds of
-      times. Just do it so we can get this done and report back to those pencil-pushers
-      upstairs.\u201D"
-    helperGrease: "\u201CGotta put in a little more elbow grease.\u201D"
-    helperOw: "\u201COw! Maybe I should\u2019ve brought the hard hat today.\u201D"
-    helpDead: "\u201CWell, the help is all dead. That\u2019s awesome.\u201D"
-    installerArrives: "\u201CEngineering sent me down to fix your cart. Here\u2019s
-      the other axle. We stole it from the other guy\u2019s cart. Give it a try.\u201D"
-    installerRunOver: "\u201CI figured you\u2019d run me over. Good luck down here.\u201D"
-    goPullLever: Go up to the control room (W at the stairs) and pull the chute lever.
-    pullLever: Pull the chute lever over with the mouse.
-    pullAgain: Pull the lever again, all the way over.
-    stayUp: Stay in the control room.
-    goDownDig: Go down and dig the cart out.
+    helperIntro: '"Alright, newbie. Go up to the control chamber and pull the lever.
+      I can handle the rest after that."'
+    helperReassure: "\u201CMove? It\u2019ll be fine. I\u2019ve done this hundreds
+      of times and it's faster this way. Just hurry up so we can report back to those
+      pencil-pushers upstairs.\""
+    helperGrease: '"Oh yeah, sometimes the lever gets a little finnickly first thing
+      in the morning. Should be fine later. Just give it a nice and hard tug to get
+      it free."'
+    helperOw: "\"Ow! Maybe I should\u2019ve brought the hard hat today.\""
+    helpDead: "\"...Well, the help is all dead... that\u2019s awesome.\""
+    installerArrives: "\"Engineering sent me down to fix your cart. Here\u2019s your
+      promised second axle. Give it a try.\""
+    installerHit: '"Huh. So it goes."'
+    installerLeaves: '"Ain''t she a beaut? Well, wish you luck down here. Oh, and
+      if some guy comes down here looking for an axle, ignore him."'
+    goPullLever: Enter the control room (W at the stairs) and pull the chute lever.
+    pullLever: Pull the chute lever using the mouse.
+    pullAgain: Try pulling the chute lever harder.
+    stayUp: Watch chaos unfold from the safety of the control room.
+    goDownDig: Leave the control room.
     grabShovel: Grab the shovel by the furnace (E).
-    dig: Dig the cart out. Stand at the coal and hold F.
+    dig: Dig the cart out (hold F).
     keepDigging: Keep digging until the cart is free.
-    haulUp: Haul the cart onto the freight lift (hold Space and walk), then turn
+    haulUp: Drag the cart onto the freight lift (hold Space and walk), then turn
       the crank to go up.
-    hook: Push the cart to the tip cradle and hook it on with E.
-    tip: Pull the tip lever to pour into the hopper.
+    hook: Drag the cart under the tip cradle and hook it on (E).
+    tip: Pull the tip lever and pour coal into the hopper.
   tasks:
-    fireOut: The fire's out. Light it (hold E at the firebox)
-    fireOutEmpty: The fire's out and the hopper's empty. Get coal to the furnace
-    standCart: Stand the cart back up (E)
-    fixWheel: Put the wheel back on (pick it up with E, then hold E at the cart)
-    digOut: Dig the cart out (hold F at the coal)
-    fill: Fill the cart at the chute
-    haul: Take the cart up on the freight lift
-    hook: Hook the cart on at the tip cradle (E)
-    tip: Tip the cart into the hopper
-    lower: Lower the cart (E)
-    returnCart: Take the empty cart back down
-    burnUp: "Turn the burn lever up: it's heading for {0:0}\xB0 outside and the fire
-      only holds {1:0}\xB0"
+    fireOut: Relight the fire (hold E at the firebox).
+    fireOutEmpty: Refill the coal hopper, then relight the fire.
+    standCart: Stand the cart back up (E).
+    fixWheel: Put the wheel back on (pick it up with E, then hold E at the cart).
+    digOut: Dig the cart out.
+    fill: Fill the cart at the chute.
+    haul: Take the cart up on the freight lift.
+    hook: Hook the cart on at the tip cradle.
+    tip: Tip the cart into the hopper.
+    lower: Lower the cart.
+    returnCart: Take the empty cart back down.
+    burnUp: "Turn the burn lever up: it's heading for {0:0}\xB0 outside, colder than
+      the heat line ({1:0}\xB0)"
     leave: The shift is over. Stand in the staff lift
   prompts:
     upStairs: Up to the control room
