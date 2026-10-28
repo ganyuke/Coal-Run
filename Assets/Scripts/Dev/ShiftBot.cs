@@ -62,7 +62,7 @@ namespace CoalRun.Dev
         private int _haulRepeat;
         private string _mark;
         private float _markAt;
-        private int _deliveries, _rescues;
+        private int _deliveries, _rescues, _deaths;
         private float _lapStart, _lapTime;
 
         // Cart positions the route stops at: on the freight lift's platform, over the tip cradle, under the chute.
@@ -187,7 +187,7 @@ namespace CoalRun.Dev
             }
             if (cart.InCradle) { yield return Lower(); yield break; }
             if (cart.Overturned) { yield return Right(); yield break; }
-            if (cart.Burial > .5f || cart.Wheels == 0 || !(onLift || lower || upper)) { yield return Rescue($"cart stuck: burial {cart.Burial:0.0}, wheels {cart.Wheels}, at {p.x:0.0},{p.y:0.0}"); yield break; }
+            if (cart.Burial > StuckBurial || cart.Wheels == 0 || !(onLift || lower || upper)) { yield return Rescue($"cart stuck: burial {cart.Burial:0.0}, wheels {cart.Wheels}, at {p.x:0.0},{p.y:0.0}"); yield break; }
             // Passing the firebox on the lower floor, keep the fire going.
             if (!_game.Furnace.Lit && _game.Furnace.Hopper > .5f && _game.Player.Lane == 0 && _game.Player.Position.y < 4.3f) yield return Light();
 
@@ -515,18 +515,39 @@ namespace CoalRun.Dev
         {
             var player = _game.Player;
             float stillFor = 0, last = player.Position.x;
+            var digs = 0;
             for (float t = 0; t < 15; t += Time.fixedDeltaTime)
             {
                 var d = x - player.Position.x;
                 if (Mathf.Abs(d) < .15f) { yield return Wait(.1f); yield break; }
                 _c.Move = Mathf.Sign(d);
                 yield return null;
-                // Not getting anywhere: fail at once rather than push on a wall for 15 s.
+                // Not getting anywhere: dig through a pile in the way a few times, then fail rather than push on a wall for 15 s.
                 stillFor = Mathf.Abs(player.Position.x - last) < .02f ? stillFor + Time.fixedDeltaTime : 0;
                 last = player.Position.x;
-                if (stillFor > 1.5f) break;
+                if (stillFor <= 1.5f) continue;
+                if (digs++ >= 3) break;
+                yield return DigThrough((int)Mathf.Sign(d));
+                stillFor = 0;
             }
             yield return Fail($"walking stuck at {player.Position.x:0.0},{player.Position.y:0.0} going to {x:0.0}");
+        }
+
+        // On a pile too tall to step up onto: shovel the way ahead clear, throwing it on past where they are going so it lands
+        // as a spread of low lumps they can walk over.
+        private IEnumerator DigThrough(int direction)
+        {
+            var player = _game.Player;
+            Event("dig through", $"stuck at {player.Position.x:0.0}, going {(direction > 0 ? "right" : "left")}");
+            var aim = player.Position + new Vector2(direction * 4.5f, .6f);
+            for (float t = 0; t < 2.5f; t += Time.fixedDeltaTime)
+            {
+                _c.Shovel = true;
+                _c.Aim = aim;
+                yield return null;
+            }
+            _c.Aim = aim;
+            yield return Wait(.4f);
         }
 
         // Takes hold at the end of the cart facing the way it's going and pulls it there, as in the JS route test.
@@ -581,15 +602,26 @@ namespace CoalRun.Dev
                 yield return null;
                 stillFor = Mathf.Abs(cart.Body.linearVelocity.x) < .1f ? stillFor + Time.fixedDeltaTime : 0;
                 if (stillFor < 3) continue;
-                // Not moving: let go and take hold again, a few times, before giving up.
+                // Not moving: kick it along with a few lurches if it's held, then let go and take hold again, a few times,
+                // before giving up.
                 stillFor = 0;
                 if (++tries > 3) break;
                 Event("cart won't move", $"at {cx:0.0}, burial {cart.Burial:0.00}, wheels {cart.Wheels}, holding {player.Holding}");
+                for (var kick = 0; kick < 3 && player.Holding && cart.Burial < StuckBurial; kick++)
+                {
+                    _c.Grip = true;
+                    _c.Dash = (int)Mathf.Sign(d);
+                    yield return Wait(.7f);
+                    if (Mathf.Abs(cart.Body.linearVelocity.x) > .3f) break;
+                }
                 yield return Wait(.3f);
             }
             yield return Fail($"couldn't haul the cart to {x:0.0} (it's at {cart.Body.position.x:0.0},{cart.Body.position.y:0.0})");
         }
 
+        // A cart buried deeper than this can't be hauled at all (it doesn't move past 1.2); shallower, it's slow work, and a
+        // lurch (a kick along the way) gets it through a heap at the lift's edge, so it is hauled rather than put back by hand.
+        private const float StuckBurial = 1.0f;
         private const float HeaveMargin = 2.5f, LeftWall = .75f, SweepFrom = 12.5f, SpinRadius = .8f, SpinRate = 20, SweepMin = .1f;
         // Coal to load: the bin holds 10, and 12 before it spills over by itself.
         public static float LoadTarget = 11;
@@ -646,6 +678,11 @@ namespace CoalRun.Dev
 
         private void Measure()
         {
+            if (_game.Deaths != _deaths)
+            {
+                _deaths = _game.Deaths;
+                Event("DEATH", $"{_game.LastDeath}, operator at {_game.Player.Position.x:0.0},{_game.Player.Position.y:0.0} while {Doing}");
+            }
             if (!_game.ShiftRunning) return;
             _minTemperature = Mathf.Min(_minTemperature, _game.Temperature);
             if (_game.Freezing) _frozenFor += Time.fixedDeltaTime;
