@@ -73,11 +73,16 @@ namespace CoalRun.UI
             dim.color = new Color(0, 0, 0, Mathf.Max(_dimmed, game.Fade));
 
             var canvas = ((RectTransform)book.parent).rect;
-            // The report and the briefing rise up from below the screen, whichever way they come.
-            if (shown && !_shownLast && sheetMode)
+            // Hanging from the top right, as tall as the task; or grown into the middle of the screen.
+            var inset = (book.rect.height - ((RectTransform)pageRoot.parent).rect.height) / 2;
+            var size = sheetMode ? sheetSize : new Vector2(_width, inset - pageRoot.anchoredPosition.y + row.Rect.sizeDelta.y + inset);
+            var at = sheetMode ? new Vector2(-(canvas.width - size.x) / 2, -(canvas.height - sheetY - size.y)) : new Vector2(-30, 0);
+            // Coming into view, it starts off screen at its full size: the report and the briefing rise up from below,
+            // the task drops down from above.
+            if (shown && !_shownLast)
             {
-                book.sizeDelta = sheetSize;
-                book.anchoredPosition = new Vector2(-(canvas.width - sheetSize.x) / 2, -canvas.height - 20);
+                book.sizeDelta = size;
+                book.anchoredPosition = sheetMode ? new Vector2(at.x, -canvas.height - 20) : new Vector2(at.x, size.y + 20);
             }
             _shownLast = shown;
             book.gameObject.SetActive(shown);
@@ -98,10 +103,6 @@ namespace CoalRun.UI
                 if (PointerOver && mouse.leftButton.wasPressedThisFrame && RectTransformUtility.RectangleContainsScreenPoint(button, screen)) Press(game);
             }
 
-            // Hanging from the top right, as tall as the task; or grown into the middle of the screen.
-            var inset = (book.rect.height - ((RectTransform)pageRoot.parent).rect.height) / 2;
-            var size = sheetMode ? sheetSize : new Vector2(_width, inset - pageRoot.anchoredPosition.y + row.Rect.sizeDelta.y + inset);
-            var at = sheetMode ? new Vector2(-(canvas.width - size.x) / 2, -(canvas.height - sheetY - size.y)) : new Vector2(-30, 0);
             var k = 1 - Mathf.Exp(-slideSpeed * Time.unscaledDeltaTime);
             book.sizeDelta = Vector2.Lerp(book.sizeDelta, size, k);
             book.anchoredPosition = Vector2.Lerp(book.anchoredPosition, at, k);
