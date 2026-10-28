@@ -45,6 +45,7 @@ Each milestone ends with something you can play. Don't start the next one until 
 - [x] **M6 · Art and sound** (Thu 10/29): done early on `polish`; the audio mix is untuned by ear, needs a listen.
 - [ ] **M7 · Build, playtest, submit** (Fri 10/30)
   - [x] Linux standalone build (112 MB) made from the editor and smoke-run headless for 25 s without errors; the editor runs ~350 fps with 12 lights + post. Still to do: a human playtest, the Windows/Mac builds if wanted, submission.
+  - [x] Background release workflow verified (10/28): isolated WebGL 0.2 build completed with 0 errors and 118 bundled audio clips; archive integrity checked. FFmpeg is installed. The original Editor kept running; existing Linux/Windows downloads and a backup of the previous release were retained. Release-script isolation/failure checks: 10 passing.
 
 ## Status (Sun 10/25, 1 am)
 
@@ -93,7 +94,7 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 
 - **Text** (10/28, your call): every line the player reads is in `Assets/Data/Lines.asset` (`Lines.cs`, on `ShiftManager.Lines`), grouped: speech, phone, training, tasks, prompts, levers, sheets. `{0}`/`{1}` are filled in by the game. Not in it: the day memo (on the `DayConfig`), debug lines, and death causes/corpse names (never shown). Levers get their name and reach lines from the station that owns them.
 
-- **Releases:** `python3 Tools/release.py 0.2 [--release]` sets the version, builds every target with an installed module (`Assets/Editor/Builder.cs`; through the open editor, or batch mode if it's closed) into `dist/0.2/<Target>/`, zips each as `CoalRun-0.2-<Target>.zip`, and with `--release` makes GitHub release `v0.2` via `gh`. `dist/` is git-ignored. Deploying the WebGL folder is by hand. Only the Linux module is installed so far.
+- **Releases:** `python3 Tools/release.py 0.2 [--release]` snapshots saved `Assets`, `Packages`, and `ProjectSettings` (including uncommitted files) into git-ignored `.build-cache/project`, then uses `unity build` in a separate batch Editor with its own persistent `Library`. The interactive Editor can stay in Play mode; unsaved changes aren't included. `--background` detaches and prints a PID/log, `--target WebGL` builds only web (repeat for multiple targets), `--prepare-only` refreshes the snapshot without building. Requires `unity`, `rsync`, and FFmpeg with AAC for Linux WebGL audio. Concurrent releases are locked out. Build/import errors prevent packaging; previous release outputs are kept until success and backed up under `.build-cache` when replaced. Outputs are `dist/0.2/<Target>/` and `CoalRun-0.2-<Target>.zip`; `--release` publishes via `gh`. Deploying WebGL remains manual. First build imports from scratch; later builds reuse the isolated cache.
 
 - Room geometry is constants in `Room.cs`, which the scene was laid out from. If you move a floor in the scene by hand, update `Room.cs` too.
 - Fixed timestep is 1/60, as in the prototype. There's no substepping yet; fast carts use continuous collision instead. Add substeps if the cart tunnels through things.
