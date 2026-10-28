@@ -10,10 +10,9 @@ namespace CoalRun.Stations
     {
         [SerializeField] private PlayerController player;
         [SerializeField] private Camera cam;
-        [Header("Glow")]
-        [Tooltip("The intensity of each machine's handle light across the room, and with the operator in reach.")]
+        [Tooltip("How many times brighter a handle's light gets with the operator in reach.")]
         [SerializeField]
-        private Vector2 glowLevel = new(.7f, 1.8f);
+        private float glowInReach = 2.5f;
 
         public Machine Active { get; private set; }
         public Machine Hover { get; private set; }
@@ -40,7 +39,7 @@ namespace CoalRun.Stations
             }
             if (Active) Active.Drag(p, Time.deltaTime);
             foreach (var m in Machine.All)
-                m.Glow(game.Tutorial.Allows(m) ? m.CanOperate(player) && game.CanAct ? glowLevel.y : glowLevel.x : 0, Time.deltaTime);
+                m.Glow(game.Tutorial.Allows(m) ? m.CanOperate(player) && game.CanAct ? glowInReach : 1 : 0, Time.deltaTime);
         }
 
         public void Release()

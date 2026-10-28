@@ -13,9 +13,11 @@ namespace CoalRun.Stations
 
         [SerializeField] protected Transform handle;
         [SerializeField] private float grabRadius = 1;
-        [Tooltip("A faint light over the handle, so it shows in the dark; brighter with the operator in reach.")]
+        [Tooltip("A faint light over the handle, so it shows in the dark. Its intensity in the scene is how bright it is across the room; in reach it's brighter.")]
         [SerializeField]
         private Light2D glow;
+
+        private float _glowRest = -1;
 
         public bool InUse { get; private set; }
         public virtual Vector2 HandlePosition => handle ? handle.position : transform.position;
@@ -38,10 +40,12 @@ namespace CoalRun.Stations
         public virtual void Walk(float dx) { }
         protected virtual void OnBegin(Vector2 mouse) { }
 
-        // Eases the faint light over its handle towards level (its intensity), so it shows however dark the room is.
-        public void Glow(float level, float dt)
+        // Eases the light over its handle towards its scene intensity times `boost` (0 for off).
+        public void Glow(float boost, float dt)
         {
-            if (glow) glow.intensity = Mathf.MoveTowards(glow.intensity, level, dt * 2);
+            if (!glow) return;
+            if (_glowRest < 0) _glowRest = glow.intensity;
+            glow.intensity = Mathf.MoveTowards(glow.intensity, _glowRest * boost, _glowRest * dt * 3);
         }
         protected virtual void OnEnd() { }
     }
