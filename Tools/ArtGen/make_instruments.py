@@ -129,11 +129,37 @@ def parts():
     dash.save(os.path.join(OUT, "dash.png"))
 
 
+def cold_lamp():
+    """A squat caged warning light, 0.42 x 0.5, sitting on the panel above the thermometer. The bulb is its own white
+    sprite, tinted red in code, behind the cage."""
+    P = 128
+    W, H = int(.42 * P), int(.5 * P)
+    cx, cy = W / 2, H - 20
+    b = Canvas(W, H)
+    sphere_facets(b, cx, cy, 17, hexc("#ffffff"), sides=10, seed=4, light=(-.4, -.6))
+    b.save(os.path.join(OUT, "cold_lamp_bulb@128.png"))
+    c = Canvas(W, H)
+    wire = hexc("#1e1e22")
+    # Wires from the base, bowed out round the dome, to a cap on top; and a ring round the middle.
+    for x in (-19, -9.5, 0, 9.5, 19):
+        c.line([(cx + x, H - 13), (cx + x * 1.05, cy - 6), (cx + x * .5, cy - 17), (cx, cy - 21)], wire, 1.6)
+    c.line([(cx - 20, cy - 3), (cx - 10, cy - 1), (cx + 10, cy - 1), (cx + 20, cy - 3)], wire, 1.6)
+    sphere_facets(c, cx, cy - 21, 4, hexc("#3a3d44"), sides=6, seed=1)
+    # The base: a steel collar on a wider foot.
+    c.rect(4, H - 14, W - 4, H - 6, hexc("#3e4654"))
+    c.rect(0, H - 6, W, H, hexc("#2b313b"))
+    bevel(c, 4, H - 14, W - 4, H - 6, w=2, hi=.25, lo=.35)
+    for sx in (5, W - 5):
+        rivet(c, sx, H - 3, 1.6, STEEL)
+    c.save(os.path.join(OUT, "cold_lamp_cage@128.png"))
+
+
 if __name__ == "__main__":
     panel()
     tube()
     parts()
-    names = ["instrument_panel", "thermo_tube@128", "mercury", "mercury_bulb", "marker", "pip"]
+    cold_lamp()
+    names = ["instrument_panel", "thermo_tube@128", "mercury", "mercury_bulb", "marker", "pip", "cold_lamp_bulb@128", "cold_lamp_cage@128"]
     ims = [Image.open(os.path.join(OUT, n + ".png")) for n in names]
     preview(ims, os.path.join(os.path.dirname(__file__), "preview_instruments.png"), cols=6)
     print("instruments written")

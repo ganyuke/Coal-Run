@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using CoalRun.Core;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace CoalRun.UI
 {
@@ -10,7 +11,8 @@ namespace CoalRun.UI
     // and, on the same gridlines, a chart of the whole shift. The chart carries the outside temperature as the day's
     // forecast (bright up to now), what the building has actually done so far, and the temperature the burn lever's notch
     // holds against (dotted while the fire is out). Read the forecast against the orange line to see when the lever has to
-    // go up. A big readout and the shift clock make the numbers plain. "Nothing about the weather is a surprise."
+    // go up. A red cage light on top of the thermometer comes on while it's colder outside than the fire holds against,
+    // so nobody has to read the lines to know. "Nothing about the weather is a surprise."
     public class InstrumentPanel : MonoBehaviour
     {
         [Header("Scale")]
@@ -39,7 +41,17 @@ namespace CoalRun.UI
         [SerializeField]
         private int dots = 26;
         [Header("Readout")]
-        [SerializeField] private TMP_Text insideText, outsideText, clockText;
+        [SerializeField] private TMP_Text clockText;
+        [Header("Cold lamp")]
+        [Tooltip("The red cage light's bulb, white in the art and tinted here, and the light it throws.")]
+        [SerializeField]
+        private SpriteRenderer coldBulb;
+        [SerializeField] private Light2D coldGlow;
+        [SerializeField] private Color bulbOff = new(.3f, .1f, .1f), bulbOn = new(1, .15f, .1f);
+        [SerializeField] private float glowIntensity = 1.2f;
+        [Tooltip("Seconds for the bulb to come up or die down.")]
+        [SerializeField]
+        private float warmUp = .15f;
         [Header("Colours")]
         [SerializeField] private Color icy = new(.55f, .82f, 1), cool = new(.82f, .96f, 1), mild = new(1, .9f, .45f), warm = new(1, .55f, .25f);
         [SerializeField] private Color outsideColor = new(.62f, .83f, 1), holdColor = new(1, .54f, .22f), dimOutside = new(.3f, .42f, .52f);
@@ -49,6 +61,7 @@ namespace CoalRun.UI
         private readonly List<Vector3> _record = new();
         private float _nextRecord;
         private Material _holdsMaterial;
+        private float _cold;
 
         private void Start()
         {
@@ -102,10 +115,6 @@ namespace CoalRun.UI
             mercury.transform.localPosition = new Vector3(tubeX, bulbY + height / 2, 0);
             var heat = Heat(inside);
             mercury.color = bulb.color = heat;
-            insideText.text = $"{inside:0}°";
-            insideText.color = heat;
-            outsideText.text = $"OUT {outside:0}°";
-            outsideText.color = outsideColor;
             clockText.text = _game.Ended || time >= length ? "OVER" : $"{(int)time / 60}:{(int)time % 60:00}";
 
             // Markers beside the tube: outside on the right, what the fire holds on the left (faint when it's out).
@@ -129,6 +138,12 @@ namespace CoalRun.UI
             // Scaled to a sliver the texture stays on its solid first pixel: solid when lit, dotted when out.
             holdsLine.textureScale = new Vector2(lit ? .01f : dots / chart.width, 1);
             holdsLine.startColor = holdsLine.endColor = holdColor;
+
+            // The cold lamp: on while the outside is colder than the notch holds against, or there's no fire to hold it.
+            var cold = !_game.Ended && (!lit || outside < held);
+            _cold = Mathf.MoveTowards(_cold, cold ? 1 : 0, Time.deltaTime / warmUp);
+            coldBulb.color = Color.Lerp(bulbOff, bulbOn, _cold);
+            if (coldGlow) coldGlow.intensity = glowIntensity * _cold;
 
             if (_game.ShiftRunning && time >= _nextRecord)
             {
