@@ -242,7 +242,7 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 - Room brightened: Storm ambient (.5 calm, .38 worst), post exposure +.1.
 
 ## Red phone (10/27, your call)
-- No longer interactive (not a `Machine`, no E, no notebook page): every call rings three times and the voice answers itself. Cold calls repeat every cooldown + 4/8/15 s while below `ringBelow`; a death's news cuts in over one.
+- No longer interactive (not a `Machine`, no E, no notebook page): a cold call rings once and a death call twice, then the voice answers itself. Cold calls repeat every cooldown + 4/8/15 s while below `ringBelow`; a death's news cuts in over one.
 - Fixed: a dying operator's queued lines carried on over the replacement. `Speaker.Hush` drops them in `PlayerController.Kill`.
 
 ## Storm (10/27, your calls: driven by the forecast)

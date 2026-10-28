@@ -353,7 +353,7 @@ namespace CoalRun.Core
                 1 => "“We heard. We’re sending another guy down.”",
                 2 => "“Again? Fine. We’re sending another guy down.”",
                 _ => "“We’re sending another guy down. Please. Keep this one alive.”"
-            });
+            }, 2);
             Sound("hurt");
         }
 

@@ -5,8 +5,8 @@ using UnityEngine.Rendering.Universal;
 
 namespace CoalRun.Stations
 {
-    // The red phone by the staff lift: brass upstairs ringing down for heat. Nobody answers it: it rings three
-    // times and then the voice comes on the line by itself. It calls once the building drops below `ringBelow`,
+    // The red phone by the staff lift: brass upstairs ringing down for heat. Nobody answers it: it rings once (twice
+    // for a death) and then the voice comes on the line by itself. It calls once the building drops below `ringBelow`,
     // more often the colder it gets, and rings down too when someone dies. It's how the player hears that the
     // building is cooling without looking at the thermometer.
     public class RedPhone : MonoBehaviour
@@ -59,19 +59,19 @@ namespace CoalRun.Stations
             if (ringLight) ringLight.intensity = burst ? ringLightIntensity * (.6f + .4f * Mathf.Sin(Time.time * 40)) : 0;
         }
 
-        // Rings three times, then says its piece. A death's news cuts in over a call about the cold, hanging up on
+        // Rings `rings` times, then says its piece. A death's news cuts in over a call about the cold, hanging up on
         // whatever it was saying first.
-        public void Announce(string line)
+        public void Announce(string line, int rings = 1)
         {
             StopAllCoroutines();
             if (voice) voice.Hush();
-            StartCoroutine(Call(line));
+            StartCoroutine(Call(line, rings));
         }
 
-        private IEnumerator Call(string line)
+        private IEnumerator Call(string line, int rings)
         {
             _calling = true;
-            for (var i = 0; i < 3; i++)
+            for (var i = 0; i < rings; i++)
             {
                 _game.Sound("ring", 1);
                 yield return new WaitForSeconds(1.3f);
