@@ -23,7 +23,7 @@ namespace CoalRun.Editor
         public static List<SpriteRenderer> Find(string tail)
         {
             var found = new List<SpriteRenderer>();
-            foreach (var r in Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var r in Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include))
                 if (PathOf(r.transform).EndsWith(tail)) found.Add(r);
             return found;
         }
@@ -129,7 +129,7 @@ namespace CoalRun.Editor
                 AssetDatabase.CreateAsset(mat, path);
             }
             var n = 0;
-            foreach (var r in Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            foreach (var r in Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include))
             {
                 var p = PathOf(r.transform);
                 if (p.Contains("Notebook UI") || p.Contains("Speech")) continue;
