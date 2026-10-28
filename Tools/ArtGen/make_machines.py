@@ -19,8 +19,9 @@ def save(c, name):
     return c
 
 
-def worker_body(name, overalls, shirt, trousers, seed=1):
-    """A worker seen from the front, 0.4 x 1.0 units at 192 px a unit: boots, overalls, straps, arms and hands."""
+def worker_body(name, overalls, shirt, trousers, seed=1, arms=True):
+    """A worker seen from the front, 0.4 x 1.0 units at 192 px a unit: boots, overalls, straps, arms and hands.
+    Without arms it's the body the operator wears with the shovel out, its arms drawn separately (worker_arm)."""
     P = 192
     W, H = int(.40 * P), int(1.0 * P)
     c = Canvas(W, H)
@@ -42,12 +43,24 @@ def worker_body(name, overalls, shirt, trousers, seed=1):
     c.rect(cx - 30, H * .58, cx + 30, H * .62, hexc("#2b2118"))
     c.rect(cx - 4, H * .575, cx + 4, H * .625, hexc("#d6b24a"))
     # Arms: shirt sleeves hanging at the sides, with hands.
-    for side in (-1, 1):
+    for side in (-1, 1) if arms else ():
         x = cx + side * 33
         fan(c, [(x - 8, H * .23), (x + 8, H * .23), (x + 7, H * .53), (x - 7, H * .53)], shirt, seed + 8 + side)
         fan(c, [(x - 7, H * .52), (x + 7, H * .52), (x + 5, H * .61), (x - 5, H * .61)], SKIN, seed + 11 + side)
     # Shoulders: a short neck.
     c.poly([(cx - 9, H * .20), (cx + 9, H * .20), (cx + 7, H * .24), (cx - 7, H * .24)], mul(SKIN, .88))
+    return save(c, name + "@192")
+
+
+def worker_arm(name, shirt, seed=1):
+    """One arm on its own, hanging straight down from the shoulder at the top: a sleeve and a hand, the same size
+    as the ones on the body (0.083 x 0.4 units at 192 px a unit). The operator swings these to hold the shovel."""
+    P = 192
+    W, H = 18, int(.40 * P)
+    c = Canvas(W, H)
+    x = W / 2
+    fan(c, [(x - 8, 0), (x + 8, 0), (x + 7, H * .78), (x - 7, H * .78)], shirt, seed)
+    fan(c, [(x - 7, H * .76), (x + 7, H * .76), (x + 5, H), (x - 5, H)], SKIN, seed + 3)
     return save(c, name + "@192")
 
 
@@ -197,6 +210,8 @@ def platform_parts():
 
 if __name__ == "__main__":
     worker_body("op_body", hexc("#e2872e"), hexc("#c9c2b4"), hexc("#31405a"), seed=1)
+    worker_body("op_body_bare", hexc("#e2872e"), hexc("#c9c2b4"), hexc("#31405a"), seed=1, arms=False)
+    worker_arm("op_arm", hexc("#c9c2b4"), seed=9)
     worker_head("op_head", hexc("#e8b923"), "hard", seed=2)
     worker_body("helper_body", hexc("#a39c78"), hexc("#7a7f8a"), hexc("#444a40"), seed=3)
     worker_head("helper_head", hexc("#6a6f78"), "cap", seed=4, hair=hexc("#8a8a8a"))
@@ -204,7 +219,7 @@ if __name__ == "__main__":
     lever_parts()
     crank_wheel()
     platform_parts()
-    names = ["op_body@192", "op_head@192", "helper_body@192", "helper_head@192", "cart_bin", "wheel_spoked@128", "skid", "lever_knob", "lever_base", "crank_wheel@128", "lift_platform", "tube_orange", "shoe", "spoke"]
+    names = ["op_body@192", "op_body_bare@192", "op_arm@192", "op_head@192", "helper_body@192", "helper_head@192", "cart_bin", "wheel_spoked@128", "skid", "lever_knob", "lever_base", "crank_wheel@128", "lift_platform", "tube_orange", "shoe", "spoke"]
     from PIL import Image as _I
     ims = [_I.open(os.path.join(OUT, n + ".png")) for n in names]
     preview(ims, os.path.join(os.path.dirname(__file__), "preview_machines.png"), scale=1.0, cols=7)

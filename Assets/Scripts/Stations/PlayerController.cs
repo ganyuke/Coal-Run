@@ -46,6 +46,37 @@ namespace CoalRun.Stations
         [SerializeField]
         private LineRenderer scoopOutline;
 
+        [Header("Shovel arms")]
+        [Tooltip("The body sprite, swapped for the armless one while the shovel is out so its arms can be swung onto the handle.")]
+        [SerializeField]
+        private SpriteRenderer bodyArt;
+        [SerializeField] private Sprite armlessBody;
+        [Tooltip("Pivots at the shoulders, each with an arm sprite hanging down its local -y, `armLength` long.")]
+        [SerializeField]
+        private Transform frontArm, backArm;
+        [SerializeField] private float armLength = .4f;
+        [Tooltip("Nods a beat behind the body as it walks.")]
+        [SerializeField]
+        private Transform head;
+        [Tooltip("The shoulders, in the art's space facing right (mirrored facing left): front arm, back arm.")]
+        [SerializeField]
+        private Vector2 frontShoulder = new(.1f, .2f), backShoulder = new(-.08f, .2f);
+        [Tooltip("How far down the handle from the top hand the lower hand grips.")]
+        [SerializeField]
+        private float gripSpacing = .3f;
+
+        [Header("Walking")]
+        [Tooltip("Metres a step: the bob comes round once a step, so it keeps time with however fast they go.")]
+        [SerializeField]
+        private float stepLength = .55f;
+        [SerializeField] private float stepBob = .045f;
+        [Tooltip("Degrees leaned into the walk at full pace.")]
+        [SerializeField]
+        private float walkLean = 4;
+        [Tooltip("How far behind the body the head is in each step, as a fraction of a step: it nods rather than riding along stiff.")]
+        [SerializeField]
+        private float headLag = .15f;
+
         public Rigidbody2D Body { get; private set; }
         public Speaker Voice => voice;
         // Out in the room, not dead or waiting out of the world.
@@ -101,6 +132,8 @@ namespace CoalRun.Stations
         {
             Body = GetComponent<Rigidbody2D>();
             _box = GetComponent<BoxCollider2D>();
+            if (head) _headRest = head.localPosition;
+            if (bodyArt) _armedBody = bodyArt.sprite;
         }
 
         private void Start() => _game = ShiftManager.Instance;
@@ -556,13 +589,40 @@ namespace CoalRun.Stations
             Strike();
             HeldShovel();
             ScoopOutline();
-            // Crouched to strike at the firebox; shivering in the cold, harder the nearer to freezing.
+            // Crouched to strike at the firebox, or into a dig; shivering in the cold, harder the nearer to freezing.
             var art = visual.transform;
-            var crouch = _striking ? .82f : 1;
+            var crouch = _striking ? .82f : _poseCrouch;
             var shiver = _game.Ended ? 0 : _game.Freezing ? .015f + .035f * _game.Chill : _game.Temperature < 6 ? .008f : 0;
             art.localScale = new Vector3(1, Mathf.MoveTowards(art.localScale.y, crouch, Time.deltaTime * 2), 1);
-            art.localPosition = new Vector3(shiver * Mathf.Sin(Time.time * 55), -.66f * (1 - art.localScale.y), 0);
+            var (bob, lean) = Walk();
+            // Leaned over from the feet, so they stay planted.
+            lean = Mathf.LerpAngle(_lean, lean + _poseLean, 1 - Mathf.Exp(-14 * Time.deltaTime));
+            _lean = lean;
+            var turn = Quaternion.Euler(0, 0, -lean);
+            var feet = new Vector3(0, -.66f, 0);
+            art.localRotation = turn;
+            art.localPosition = new Vector3(shiver * Mathf.Sin(Time.time * 55), -.66f * (1 - art.localScale.y) + bob, 0) + feet - turn * feet;
         }
+
+        // A bob that comes round once a step and a lean into the walk, both fading in and out with the pace. The bob
+        // follows the distance walked, so it keeps time with a heavy haul or a freezing rush. The head nods a beat
+        // behind. Returns the body's lift and its lean in degrees, positive toward the right.
+        private (float bob, float lean) Walk()
+        {
+            var vx = Body.linearVelocity.x;
+            var walking = Body.simulated && !Climbing && !_flying && !_striking && Mathf.Abs(Body.linearVelocity.y) < 1.5f;
+            var pace = walking ? Mathf.Clamp01(Mathf.Abs(vx) / _game.Tune.walkSpeed * 1.6f) : 0;
+            _pace = Mathf.MoveTowards(_pace, pace, Time.deltaTime * 6);
+            _stride += Mathf.Abs(vx) * Time.deltaTime;
+            float Lift(float steps) => Mathf.Abs(Mathf.Sin(steps * Mathf.PI)) * stepBob * _pace;
+            var step = _stride / stepLength;
+            if (head) head.localPosition = _headRest + new Vector3(0, Lift(step - headLag) - Lift(step), 0);
+            return (Lift(step), Mathf.Sign(vx) * walkLean * _pace);
+        }
+
+        private float _pace, _stride, _lean, _poseLean;
+        private float _poseCrouch = 1;
+        private Vector3 _headRest;
 
         // In the hands, or while a wheel is being fitted, offered up to its slot and jiggled about, less and
         // less, until it lines up.
@@ -673,6 +733,7 @@ namespace CoalRun.Stations
             var dx = s.Start + (i + .5f) * t.columnWidth - Body.position.x;
             // A pile right under their feet doesn't flip the shovel from one side to the other.
             if (Mathf.Abs(dx) > .3f) _digSide = (int)Mathf.Sign(dx);
+            _digAt = new Vector2(Body.position.x + dx, s.Y + s.Heights[i]);
             var taken = _game.Coal.TakeFromPile(s, i, Mathf.Min(t.shovelRate * dt, t.handCapacity - Hands));
             Hands += taken;
             Scooped += taken;
@@ -742,41 +803,98 @@ namespace CoalRun.Stations
             _game.Sound("coal");
         }
 
-        // Out while digging or carrying coal: jabbed into the pile on whichever side it's digging as it fills,
-        // the heap on the blade growing, then swung across and up toward the throw and back down.
+        // Out while digging or carrying coal, held in both hands on the side they face. Each scoop is one stroke,
+        // following how full the blade is: jabbed in low and forward, leaning into it, then levered back up as the
+        // heap on the blade grows, coming round to point at the cursor so you can see where the throw will go. Then
+        // swung across and up into the throw, leaning back, and down again.
         private void HeldShovel()
         {
             if (!heldShovel) return;
             var throwing = Time.time - _thrownAt;
-            var shown = (_digging || Hands > 0 || throwing < .4f) && Lane == 0 && !CarryingWheel && !Machine;
+            var shown = (_digging || Hands > 0 || throwing < .4f) && Lane == 0 && !CarryingWheel && !Machine && !_carriedBody;
             heldShovel.gameObject.SetActive(shown);
+            Arms(shown);
+            _poseLean = 0;
+            _poseCrouch = 1;
             if (!shown) return;
+            var f = Facing;
             var full = Hands / _game.Tune.handCapacity;
-            // Degrees the shaft is swung from straight down, positive to the right: low toward the pile being
-            // dug, coming round to point at the cursor as it fills, so you can see where the throw will go.
-            var hand = Body.position + new Vector2(heldShovel.localPosition.x, -.08f);
-            var toAim = input.Current.Aim - hand;
-            var aimed = Mathf.Clamp(Mathf.Atan2(toAim.x, -toAim.y) * Mathf.Rad2Deg, -120, 120);
-            var angle = _digging ? Mathf.LerpAngle(_digSide * 50, aimed, full * full) : Hands > 0 ? aimed : Facing * 50;
-            if (_digging && Hands > 0 && full < .99f) angle += _digSide * Mathf.Sin(Time.time * 16) * 9 * (1 - full);
+            // The top hand, in the art's space, and the shaft's angle from straight down (positive to the right).
+            Vector2 grip;
+            float angle;
+            var stroke = _digging && full < .99f && _idleFor <= 0;
+            if (stroke)
+            {
+                grip = new Vector2(f * Mathf.Lerp(.2f, .08f, full), Mathf.Lerp(-.12f, .02f, full));
+                // Into the top of the heap it's digging from, and levered up from there.
+                var toHeap = _digAt - (Vector2)visual.transform.TransformPoint(grip);
+                var dig = f * Mathf.Clamp(Mathf.Atan2(f * toHeap.x, -toHeap.y) * Mathf.Rad2Deg, 20, 100);
+                angle = Mathf.Lerp(dig, f * 40, full);
+                _poseLean = f * Mathf.Lerp(10, 2, full);
+                _poseCrouch = Mathf.Lerp(.93f, 1, full);
+            }
+            else
+            {
+                // Carried: across the body, blade out front and low.
+                grip = new Vector2(f * .08f, 0);
+                angle = f * 35;
+            }
+            var gripWorld = (Vector2)visual.transform.TransformPoint(grip);
+            if (Hands > 0)
+            {
+                var toAim = input.Current.Aim - gripWorld;
+                var aimed = Mathf.Clamp(Mathf.Atan2(toAim.x, -toAim.y) * Mathf.Rad2Deg, -120, 120);
+                angle = Mathf.LerpAngle(angle, aimed, full * full);
+            }
+            // Working the blade into the heap: short pushes along the shaft, fading as it fills.
+            if (stroke && Hands > 0) grip += Shaft(angle) * (.035f * Mathf.Sin(Time.time * 14) * (1 - full));
             if (throwing < .4f)
             {
                 // Across and up in .12 s, back down over the rest.
                 var swing = throwing < .12f ? Mathf.SmoothStep(0, 1, throwing / .12f) : 1 - Mathf.SmoothStep(0, 1, (throwing - .12f) / .28f);
-                angle = Mathf.Lerp(angle, Facing * 145, swing);
+                angle = Mathf.Lerp(angle, f * 145, swing);
+                grip = Vector2.Lerp(grip, new Vector2(f * .05f, .15f), swing);
+                _poseLean = Mathf.Lerp(_poseLean, -f * 6, swing);
             }
             // Eased, so a pile appearing and vanishing under the cursor as they walk doesn't snap it about.
-            _shovelAngle = Mathf.LerpAngle(_shovelAngle, angle, 1 - Mathf.Exp(-22 * Time.deltaTime));
-            var toward = _shovelAngle >= 0 ? 1 : -1;
-            heldShovel.localPosition = new Vector3(Mathf.Lerp(heldShovel.localPosition.x, toward * .2f, Time.deltaTime * 20), -.08f, 0);
+            var ease = 1 - Mathf.Exp(-22 * Time.deltaTime);
+            _shovelAngle = Mathf.LerpAngle(_shovelAngle, angle, ease);
+            _grip = Vector2.Lerp(_grip, grip, ease);
+            heldShovel.localPosition = _grip;
             heldShovel.localRotation = Quaternion.Euler(0, 0, _shovelAngle);
+            // The back arm to the top of the handle, the front one further down it.
+            Reach(backArm, new Vector2(f * backShoulder.x, backShoulder.y), _grip);
+            Reach(frontArm, new Vector2(f * frontShoulder.x, frontShoulder.y), _grip + Shaft(_shovelAngle) * gripSpacing);
             if (!shovelLoad) return;
             shovelLoad.gameObject.SetActive(full > .01f);
             // On the blade's upper face.
-            shovelLoad.localPosition = new Vector3(toward * .06f * Mathf.Sqrt(full), -.86f, 0);
+            shovelLoad.localPosition = new Vector3((_shovelAngle >= 0 ? 1 : -1) * .06f * Mathf.Sqrt(full), -.86f, 0);
             shovelLoad.localScale = new Vector3(.18f + .16f * full, .12f + .14f * full, 1);
         }
 
+        // Down the shaft from the top hand toward the blade, at `angle` degrees from straight down.
+        private static Vector2 Shaft(float angle) => new(Mathf.Sin(angle * Mathf.Deg2Rad), -Mathf.Cos(angle * Mathf.Deg2Rad));
+
+        // The arms out (and the body without its painted ones) while the shovel is, or back to hanging at the sides.
+        private void Arms(bool on)
+        {
+            if (frontArm) frontArm.gameObject.SetActive(on);
+            if (backArm) backArm.gameObject.SetActive(on);
+            if (bodyArt && armlessBody) bodyArt.sprite = on ? armlessBody : _armedBody;
+        }
+
+        // Swings an arm from its shoulder to point at `hand`, stretched a little to meet it.
+        private void Reach(Transform arm, Vector2 shoulder, Vector2 hand)
+        {
+            if (!arm) return;
+            var d = hand - shoulder;
+            arm.localPosition = shoulder;
+            arm.localRotation = Quaternion.Euler(0, 0, Mathf.Atan2(d.x, -d.y) * Mathf.Rad2Deg);
+            arm.localScale = new Vector3(1, Mathf.Clamp(d.magnitude / armLength, .6f, 1.4f), 1);
+        }
+
+        private Sprite _armedBody;
+        private Vector2 _grip, _digAt;
         private bool _digging;
         private int _digSide = 1;
         // Seconds the shovel has been out with nothing in reach to dig, and how it's turned (smoothed).
@@ -836,6 +954,7 @@ namespace CoalRun.Stations
             _fit = 0;
             Body.bodyType = RigidbodyType2D.Dynamic;
             if (CarryingWheel) ReleaseWheel(Vector2.zero);
+            Arms(false);
             var body = Corpse.Topple(Instantiate(visual.gameObject), "Dead operator", Body.position, Body.linearVelocity);
             Hide();
             return body;

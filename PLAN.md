@@ -87,6 +87,8 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 
 ### Smaller calls made while porting (change any of them)
 
+- **Operator motion** (10/28): procedural, in `PlayerController.Update`. Walking: a bob once a step (`stepLength`, `stepBob`, by distance walked, so it keeps pace with hauling and rushing), a lean into the walk (`walkLean`) from the feet, the head a beat behind (`headLag`). Shoveling: the body swaps to `op_body_bare` and two arm sprites (`op_arm`, Art/Front arm and Back arm) reach to the handle; each scoop is a stroke following how full the blade is (jabbed into the top of the heap it's digging, leaning in and crouching, levered up toward the cursor), then the throw leans back.
+
 - **Text** (10/28, your call): every line the player reads is in `Assets/Data/Lines.asset` (`Lines.cs`, on `ShiftManager.Lines`), grouped: speech, phone, training, tasks, prompts, levers, sheets. `{0}`/`{1}` are filled in by the game. Not in it: the day memo (on the `DayConfig`), debug lines, and death causes/corpse names (never shown). Levers get their name and reach lines from the station that owns them.
 
 - **Releases:** `python3 Tools/release.py 0.2 [--release]` sets the version, builds every target with an installed module (`Assets/Editor/Builder.cs`; through the open editor, or batch mode if it's closed) into `dist/0.2/<Target>/`, zips each as `CoalRun-0.2-<Target>.zip`, and with `--release` makes GitHub release `v0.2` via `gh`. `dist/` is git-ignored. Deploying the WebGL folder is by hand. Only the Linux module is installed so far.
