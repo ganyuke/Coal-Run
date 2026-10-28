@@ -288,3 +288,10 @@ Your calls are marked; the rest are smaller calls, change any of them.
 - **Helper speech speed** (your 03:24 question, set by you in the scene): `Speaker.charsPerSecond` per character.
 - **0.3** (10/28): `bundleVersion` 0.3, built by `Tools/release.py 0.3`.
 
+
+
+## Overnight branch (10/28 to 10/29, `overnight/bot-and-polish`)
+
+- **ShiftBot** digs through a pile that stalls its walk (`DigThrough`, up to three times), and lurches a cart through a heap instead of putting it back by hand: a cart is only rescued past `StuckBurial` 1.0 now, where any burial over 0.5 was an immediate rescue. 6 coal spilled across the freight lift's platform used to cost a lap (158 kWh, rescue); now 171 kWh with no rescue. Clean runs went 167 to 177 kWh with one or two rescues, to 176 and 180 with none. **Not fixed:** 10 coal over the whole platform (1.0 deep) still beats it: it can't be dug away because the shovel throws toward the cursor and the cursor sets the digging side, so a pile can't be thrown "behind". Tried and scrapped: clearing the platform into its far end (the cart then hit the heap at the wall and the bot froze the building), and pushing the cart from its right end.
+- **Pause card** (Esc): stops the game and the sound, lists the controls (`Lines.pause`), Q quits a desktop build. The game had no way to pause or quit and no list of controls anywhere.
+\n

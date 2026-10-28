@@ -34,6 +34,8 @@ namespace CoalRun.Core
         private float doubleTap = .25f;
 
         public Controls Current { get; private set; }
+        // Esc and Q, for the pause card: fired from Update, so they still arrive while the game is stopped.
+        public event System.Action Pause, Quit;
 
         private bool _interactPressed, _restartPressed, _beginPressed, _clickPressed;
         private int _debugPressed;
@@ -45,6 +47,10 @@ namespace CoalRun.Core
         {
             var k = Keyboard.current;
             if (k == null) return;
+            if (k.escapeKey.wasPressedThisFrame) Pause?.Invoke();
+            if (k.qKey.wasPressedThisFrame) Quit?.Invoke();
+            // Stopped: nothing pressed now should be waiting to happen when it starts again.
+            if (Time.timeScale == 0) return;
             // Taps are found from isPressed rather than wasPressedThisFrame, which never fires while the
             // editor window is unfocused (see CLAUDE.md), so the dash can be tested from the CLI.
             bool left = k.aKey.isPressed || k.leftArrowKey.isPressed, right = k.dKey.isPressed || k.rightArrowKey.isPressed;

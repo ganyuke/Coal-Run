@@ -1,0 +1,71 @@
+using CoalRun.Core;
+using TMPro;
+using UnityEngine;
+
+namespace CoalRun.UI
+{
+    // Esc stops the game and shows what the keys do; Esc again carries on, Q leaves (not in a web build). The card is
+    // the scene's `Pause UI`: restyle it there, and change its words in Lines.asset (Pause).
+    public class PauseMenu : MonoBehaviour
+    {
+        [SerializeField] private InputReader input;
+        [Tooltip("The whole card, hidden until paused.")]
+        [SerializeField]
+        private GameObject card;
+        [SerializeField] private TMP_Text title, controls, hints;
+
+        public static bool Paused { get; private set; }
+
+        // The speed the game was going at before, so a bot running fast comes back at that speed.
+        private float _speed = 1;
+
+        private void Start()
+        {
+            card.SetActive(false);
+            input.Pause += Toggle;
+            input.Quit += Quit;
+        }
+
+        private void OnDestroy()
+        {
+            if (input)
+            {
+                input.Pause -= Toggle;
+                input.Quit -= Quit;
+            }
+            if (Paused) Carry();
+        }
+
+        private void Toggle()
+        {
+            if (Paused) { Carry(); return; }
+            var say = ShiftManager.Instance.Lines.pause;
+            title.text = say.title;
+            controls.text = say.controls;
+            hints.text = Application.platform == RuntimePlatform.WebGLPlayer ? say.resume : $"{say.resume}\n{say.quit}";
+            _speed = Time.timeScale;
+            Time.timeScale = 0;
+            AudioListener.pause = true;
+            Paused = true;
+            card.SetActive(true);
+        }
+
+        private void Carry()
+        {
+            Time.timeScale = _speed;
+            AudioListener.pause = false;
+            Paused = false;
+            if (card) card.SetActive(false);
+        }
+
+        private void Quit()
+        {
+            if (!Paused || Application.platform == RuntimePlatform.WebGLPlayer) return;
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+    }
+}

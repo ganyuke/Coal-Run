@@ -16,6 +16,7 @@ namespace CoalRun.Core
         public Prompts prompts = new();
         public Levers levers = new();
         public Sheets sheets = new();
+        public Pause pause = new();
 
         // What the operator says out loud.
         [Serializable]
@@ -183,6 +184,18 @@ namespace CoalRun.Core
             public Lever chute = new() { name = "Chute lever", tooFar = "Gotta get closer to the lever.", wrongFloor = "That lever's up in the control room." };
             public Lever tip = new() { name = "Tip lever", tooFar = "Gotta get closer to the tip lever.", wrongFloor = "Gotta come out of the control room first." };
             public Lever burn = new() { name = "Burn lever", tooFar = "Gotta get closer to the burn lever.", wrongFloor = "Gotta come out of the control room first." };
+        }
+
+        // The pause card, opened with Esc: what the keys do, and how to leave.
+        [Serializable]
+        public class Pause
+        {
+            public string title = "PAUSED";
+            [TextArea(6, 14)]
+            public string controls = "A / D, arrows:  walk (tap twice to dash)\nW / S:  stairs at a door, crank at the lift\nSpace:  take hold of the cart (A / D to haul, Shift to heave)\nE:  pick up, put down, hook on (hold it to light the fire or fit a wheel)\nF:  shovel, aimed with the mouse\nMouse:  drag levers and the lift's wheel, click to throw";
+            public string resume = "Esc: back to the shift";
+            [Tooltip("Left out in a web build, which has nothing to quit.")]
+            public string quit = "Q: quit the game";
         }
 
         // The briefing and the report: the big notebook page in the middle.
