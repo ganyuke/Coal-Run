@@ -11,7 +11,7 @@ namespace CoalRun.UI
     // and, on the same gridlines, a chart of the whole shift. The chart carries the outside temperature as the day's
     // forecast (bright up to now), what the building has actually done so far, and the temperature the burn lever's notch
     // holds against (dotted while the fire is out). Read the forecast against the orange line to see when the lever has to
-    // go up. A red cage light on top of the thermometer comes on while it's colder outside than the fire holds against,
+    // go up. A red cage light on the wall by the top of the thermometer comes on while it's colder outside than the fire holds against,
     // so nobody has to read the lines to know. "Nothing about the weather is a surprise."
     public class InstrumentPanel : MonoBehaviour
     {
