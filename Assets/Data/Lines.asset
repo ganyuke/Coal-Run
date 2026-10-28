@@ -105,20 +105,20 @@ MonoBehaviour:
     returnCart: Take the empty cart back down.
     burnUp: "Turn the burn lever up: it's heading for {0:0}\xB0 outside, colder than
       the heat line ({1:0}\xB0)"
-    leave: The shift is over. Stand in the staff lift
+    leave: The shift is over. Wait in the staff lift to return home for the day.
   prompts:
-    upStairs: Up to the control room
-    downStairs: Down the stairs
+    upStairs: Ascend stairs
+    downStairs: Descend stairs
     grip: Grip cart
-    haul: Haul the cart
-    heave: Heave the skid up
-    letGo: Let go to drop it
+    haul: Drag cart
+    heave: Heave cart up
+    letGo: Drop object
     rightCart: Right cart
     hookCart: Hook cart
     lowerCart: Lower cart
     shovel: Shovel
-    pickShovel: Pick up the shovel
-    lightFire: Light the fire
+    pickShovel: Pick up shovel
+    lightFire: Light fire
     pickWheel: Pick up wheel
     fitWheel: Fit wheel
     putWheel: Put wheel down
@@ -130,16 +130,16 @@ MonoBehaviour:
   levers:
     chute:
       name: Chute lever
-      tooFar: Gotta get closer to the lever.
+      tooFar: I can't reach the chute lever from here.
       wrongFloor: That lever's up in the control room.
     tip:
       name: Tip lever
-      tooFar: Gotta get closer to the tip lever.
-      wrongFloor: Gotta come out of the control room first.
+      tooFar: I can't reach the tip lever from here.
+      wrongFloor: I need to get to the second floor first.
     burn:
       name: Burn lever
-      tooFar: Gotta get closer to the burn lever.
-      wrongFloor: Gotta come out of the control room first.
+      tooFar: I can't reach the burn lever from here.
+      wrongFloor: I need to get to the second floor first.
   sheets:
     day: DAY {0:00}
     briefing: BRIEFING
@@ -147,15 +147,28 @@ MonoBehaviour:
     clockOver: OVER
     briefingHeadline: Keep the building warm until the blizzard passes.
     briefingBody: 'Haul coal from the chute to the furnace. Feed it, light it, and
-      set the burn lever: the colder it gets outside, the harder it has to burn.'
+      set the burn rate. The colder it gets outside, the harder it has to burn.
+
+
+      We
+      the people appreciate your voluntary toil for the betterment of us all. You
+      are truly an inspiration.'
     targetLabel: Electrical output target
     oneWheel: The cart has 1 wheel.
     wheels: The cart has {0} wheels.
     begin: 'Begin the shift   [Enter]'
-    survived: You kept them alive.
-    lost: No one is coming down.
-    pleased: Brass is pleased with the output.
-    notPleased: Brass is not pleased with the output.
+    survived: 'You have maintained our way of life.
+
+
+      You successfully kept
+      the offices warm.'
+    lost: 'You let everyone freeze.
+
+
+      Return, refit, and redeploy to purge
+      the stain of this failure with the peroxide of victory.'
+    pleased: We are pleased with your electrical output today.
+    notPleased: We are displeased with your performance today.
     memoWaiting: A memo is waiting for you in the morning.
     lastShift: That is all the shifts there are, for now.
     frozeOver: The offices froze first. There is nobody left to send a replacement.
