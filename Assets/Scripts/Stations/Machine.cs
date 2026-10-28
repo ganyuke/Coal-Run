@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace CoalRun.Stations
 {
@@ -12,12 +13,11 @@ namespace CoalRun.Stations
 
         [SerializeField] protected Transform handle;
         [SerializeField] private float grabRadius = 1;
-        [Tooltip("The parts you take hold of. They keep a faint glow so they show in the dark, brighter in reach.")]
+        [Tooltip("The parts you take hold of. A faint light over them shows them in the dark, brighter in reach.")]
         [SerializeField]
         private SpriteRenderer[] accents;
 
-        private SpriteRenderer[] _glows;
-        private float _glow;
+        private Light2D _glow;
 
         public bool InUse { get; private set; }
         public virtual Vector2 HandlePosition => handle ? handle.position : transform.position;
@@ -40,32 +40,19 @@ namespace CoalRun.Stations
         public virtual void Walk(float dx) { }
         protected virtual void OnBegin(Vector2 mouse) { }
 
-        // Eases the glow towards level (its alpha). The glow is an unlit copy of each accent laid over it, so
-        // the room's light can't put it out; made on first use.
-        public void Glow(float level, Material material, Color color, float dt)
+        // Eases a faint light over the handle towards level (its intensity), so it shows however dark the room
+        // is. A copy of `template`, made on first use and carried on the first accent so it moves with it.
+        public void Glow(float level, Light2D template, float dt)
         {
-            if (accents == null || accents.Length == 0) return;
-            if (_glows == null)
+            if (accents == null || accents.Length == 0 || !template) return;
+            if (!_glow)
             {
-                _glows = new SpriteRenderer[accents.Length];
-                for (var i = 0; i < accents.Length; i++)
-                {
-                    var a = accents[i];
-                    var copy = new GameObject("Glow").AddComponent<SpriteRenderer>();
-                    copy.transform.SetParent(a.transform, false);
-                    copy.sprite = a.sprite;
-                    copy.drawMode = a.drawMode;
-                    copy.size = a.size;
-                    copy.flipX = a.flipX;
-                    copy.sharedMaterial = material;
-                    copy.sortingLayerID = a.sortingLayerID;
-                    copy.sortingOrder = a.sortingOrder + 1;
-                    _glows[i] = copy;
-                }
+                _glow = Instantiate(template, accents[0].transform);
+                _glow.name = "Glow";
+                _glow.transform.localPosition = Vector3.zero;
+                _glow.gameObject.SetActive(true);
             }
-            _glow = Mathf.MoveTowards(_glow, level, dt * 2);
-            color.a = _glow;
-            foreach (var g in _glows) g.color = color;
+            _glow.intensity = Mathf.MoveTowards(_glow.intensity, level, dt * 2);
         }
         protected virtual void OnEnd() { }
     }

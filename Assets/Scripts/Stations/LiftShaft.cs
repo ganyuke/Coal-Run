@@ -7,10 +7,8 @@ namespace CoalRun.Stations
     // The freight lift's shaft, dressed to show the lift working: its guide shoes spark on the rails, more
     // the faster it goes and in a burst when it jolts to a stop; a counterweight on the other end of its
     // cable goes the opposite way over a turning pulley; a caged work lamp swings when it jolts; coal
-    // dust trickles off the platform's edges, puffing up when it comes down on coal; and signal lamps say
-    // where it is: a beacon on the platform flashes while it moves, and the lamp over each landing's plate
-    // is green with the lift there and blinks amber while it's on its way. Only looks: nothing here
-    // touches the lift.
+    // dust trickles off the platform's edges, puffing up when it comes down on coal; and the lamp by each
+    // landing's number glows red with the lift there. Only looks: nothing here touches the lift.
     public class LiftShaft : MonoBehaviour
     {
         [SerializeField] private Lift lift;
@@ -66,12 +64,8 @@ namespace CoalRun.Stations
         [SerializeField]
         private SpriteRenderer[] landingLamps;
         [SerializeField] private Light2D[] landingLights;
-        [Tooltip("The beacon on the platform's post.")]
-        [SerializeField]
-        private SpriteRenderer beacon;
-        [SerializeField] private Light2D beaconLight;
-        [SerializeField] private Color here = new(.35f, 1, .45f), coming = new(1, .62f, .15f), unlit = new(.2f, .17f, .14f);
-        [SerializeField] private float landingIntensity = 1.2f, beaconIntensity = 1.8f;
+        [SerializeField] private Color here = new(1, .12f, .08f), unlit = new(.2f, .17f, .14f);
+        [SerializeField] private float landingIntensity = 1.2f;
 
         [Header("Dust")]
         [SerializeField] private ParticleSystem dust;
@@ -199,29 +193,17 @@ namespace CoalRun.Stations
             _swing = Mathf.Clamp(_swing + _swingSpeed * dt, -60, 60);
             var shiver = Mathf.Min(Mathf.Abs(lift.Speed), 4) * .6f * Mathf.Sin(Time.time * 47);
             if (lamp) lamp.localRotation = Quaternion.Euler(0, 0, _swing + shiver);
-            Signals(y, lift.Speed);
+            Signals(y);
         }
 
-        private void Signals(float y, float speed)
+        private void Signals(float y)
         {
-            var moving = Mathf.Abs(speed) > .05f;
-            var blink = Mathf.Repeat(Time.time * 1.6f, 1) < .5f;
             for (var i = 0; i < landingLamps.Length; i++)
             {
-                var up = i == 1;
-                var at = !moving && Mathf.Abs(y - (up ? Room.Upper : Room.Lower)) < .1f;
-                var on = at || moving && (speed > 0) == up && blink;
-                var color = at ? here : on ? coming : unlit;
-                landingLamps[i].color = color;
-                if (i >= landingLights.Length || !landingLights[i]) continue;
-                landingLights[i].color = color;
-                landingLights[i].intensity = on ? landingIntensity : 0;
+                var at = Mathf.Abs(y - (i == 1 ? Room.Upper : Room.Lower)) < .1f;
+                landingLamps[i].color = at ? here : unlit;
+                if (i < landingLights.Length && landingLights[i]) landingLights[i].intensity = at ? landingIntensity : 0;
             }
-            // A rotating beacon: a sharp flash about twice a second while it moves, a faint glow at rest.
-            var flash = moving ? Mathf.Pow(Mathf.Abs(Mathf.Sin(Time.time * 2 * Mathf.PI)), 4) : 0;
-            var k = .12f + .88f * flash;
-            if (beacon) beacon.color = Color.Lerp(unlit, coming, k);
-            if (beaconLight) beaconLight.intensity = beaconIntensity * k;
         }
 
         // Stretches a cable sprite (pivot at its centre, 1 unit long) between two heights.

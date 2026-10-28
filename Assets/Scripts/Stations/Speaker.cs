@@ -108,6 +108,14 @@ namespace CoalRun.Stations
             while (_queue.Count > maxQueued) _queue.Dequeue();
         }
 
+        // Stops mid-line and forgets what was waiting: the operator died.
+        public void Hush()
+        {
+            _queue.Clear();
+            _lineEnd = _talkUntil = Time.time;
+            if (_text) _text.gameObject.SetActive(false);
+        }
+
         private void Begin(string text, float seconds)
         {
             var say = text.Length / charsPerSecond;

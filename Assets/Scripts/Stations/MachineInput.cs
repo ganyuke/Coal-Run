@@ -1,6 +1,7 @@
 using CoalRun.Core;
 using UnityEngine.InputSystem;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace CoalRun.Stations
 {
@@ -11,11 +12,12 @@ namespace CoalRun.Stations
         [SerializeField] private PlayerController player;
         [SerializeField] private Camera cam;
         [Header("Glow")]
-        [SerializeField] private Material glowMaterial;
-        [SerializeField] private Color glowColor = new(1, .86f, .6f);
-        [Tooltip("The glow's strength across the room, and with the operator in reach.")]
+        [Tooltip("The faint light each machine's handle carries, copied onto it. Kept inactive here.")]
         [SerializeField]
-        private Vector2 glowLevel = new(.1f, .3f);
+        private Light2D glowLight;
+        [Tooltip("Its intensity across the room, and with the operator in reach.")]
+        [SerializeField]
+        private Vector2 glowLevel = new(.7f, 1.8f);
 
         public Machine Active { get; private set; }
         public Machine Hover { get; private set; }
@@ -42,7 +44,7 @@ namespace CoalRun.Stations
             }
             if (Active) Active.Drag(p, Time.deltaTime);
             foreach (var m in Machine.All)
-                m.Glow(game.Tutorial.Allows(m) ? m.CanOperate(player) && game.CanAct ? glowLevel.y : glowLevel.x : 0, glowMaterial, glowColor, Time.deltaTime);
+                m.Glow(game.Tutorial.Allows(m) ? m.CanOperate(player) && game.CanAct ? glowLevel.y : glowLevel.x : 0, glowLight, Time.deltaTime);
         }
 
         public void Release()

@@ -6,8 +6,8 @@ using UnityEngine;
 namespace CoalRun.Stations
 {
     // The operator's notebook: what needs doing right now, written down as the shift goes. It never has a
-    // fixed list of pages. A page is written when the game needs something (the fire's out, the cart's empty,
-    // the phone's ringing) and ticked when that need goes away. Pages are only ever added and ticked, never
+    // fixed list of pages. A page is written when the game needs something (the fire's out, the cart's empty)
+    // and ticked when that need goes away. Pages are only ever added and ticked, never
     // removed or un-ticked: a need that comes back is written down again as a new page, so the notebook reads
     // as a log. The one that's open is the oldest unticked page, unless the fire's out, which takes over.
     // The training's objective lines are pages too.
@@ -126,7 +126,6 @@ namespace CoalRun.Stations
                 }
             }
 
-            if (_game.Phone.Ringing) Add("phone", "Answer the red phone (click it, or E)");
             if (_game.Phase == Phase.Leaving) Add("leave", "The shift is over. Stand in the staff lift");
             return list;
         }

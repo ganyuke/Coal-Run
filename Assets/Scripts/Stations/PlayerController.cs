@@ -358,15 +358,13 @@ namespace CoalRun.Stations
             _game.Sound("ram", .2f, cart.mass);
         }
 
-        // E: one press, one action, picked by what the operator is standing next to: answering the phone,
-        // righting the cart, putting a carried wheel down, picking one up, hooking the cart onto the tip
+        // E: one press, one action, picked by what the operator is standing next to: righting the cart, putting a carried wheel down, picking one up, hooking the cart onto the tip
         // cradle or lowering it, or clocking out at the staff lift.
         private void Interact()
         {
             if (Machine || Lane != 0) return;
             if (_game.Tutorial.ShovelInReach(this)) { _game.Tutorial.TakeShovel(); return; }
             if (_game.Tutorial.Restricts) return;
-            if (_game.Phone.CanAnswer(this)) { _game.Phone.Answer(); return; }
             if (CartOverturnedInReach()) { RightCart(); return; }
             if (_carriedBody)
             {
@@ -833,6 +831,7 @@ namespace CoalRun.Stations
             ReleaseGrip();
             machines.Release();
             StopAllCoroutines();
+            if (Voice) Voice.Hush();
             _flying = Climbing = _striking = false;
             _fit = 0;
             Body.bodyType = RigidbodyType2D.Dynamic;
@@ -1029,7 +1028,6 @@ namespace CoalRun.Stations
                 if (AtDoor) list.Add(("W", "Up to the control room"));
                 return list;
             }
-            if (_game.Phone.CanAnswer(this)) list.Add(("E", "Answer the phone"));
             if (_carriedBody)
             {
                 list.Add(("E", "Put body down"));

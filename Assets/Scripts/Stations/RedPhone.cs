@@ -5,11 +5,11 @@ using UnityEngine.Rendering.Universal;
 
 namespace CoalRun.Stations
 {
-    // The red phone by the staff lift: brass upstairs ringing down for heat. It starts once the building
-    // drops below `ringBelow` and rings more often the colder it gets, until answered with E. Answering
-    // only puts brass on the line; ignoring it is allowed. It's how the player hears that the building is
-    // cooling without a thermometer on screen. Clicking it answers too, like E.
-    public class RedPhone : Machine
+    // The red phone by the staff lift: brass upstairs ringing down for heat. Nobody answers it: it rings three
+    // times and then the voice comes on the line by itself. It calls once the building drops below `ringBelow`,
+    // more often the colder it gets, and rings down too when someone dies. It's how the player hears that the
+    // building is cooling without looking at the thermometer.
+    public class RedPhone : MonoBehaviour
     {
         [SerializeField] private float ringBelow = 13;
         [Tooltip("A red light that flashes in time with the ringing.")]
@@ -19,20 +19,17 @@ namespace CoalRun.Stations
         [Tooltip("Brass's voice on the line, above the phone.")]
         [SerializeField]
         private Speaker voice;
-        [Tooltip("Quiet this long after it's answered.")]
+        [Tooltip("Quiet this long after a call, on top of the wait for the next (shorter the colder it is).")]
         [SerializeField]
         private float cooldown = 10;
         [Tooltip("How far it rocks on its hook while ringing, in degrees.")]
         [SerializeField]
         private float shake = 9;
 
-        public bool Ringing { get; private set; }
-
         private ShiftManager _game;
-        // Seconds to the next ring and to the end of the quiet after an answer.
-        private float _timer, _quiet;
+        // Seconds to the next call.
+        private float _timer;
         private Quaternion _rest;
-        // Ringing by itself to announce something, not a call to answer.
         private bool _calling;
 
         private void Start()
@@ -43,33 +40,25 @@ namespace CoalRun.Stations
 
         private void FixedUpdate()
         {
-            if (!_game.ShiftRunning) { Ringing = false; return; }
-            var dt = Time.fixedDeltaTime;
-            _timer -= dt;
-            _quiet -= dt;
+            if (!_game.ShiftRunning || _calling) return;
             var t = _game.Temperature;
-            // Warm again: whatever it was ringing about is fixed.
-            if (t >= ringBelow) { Ringing = false; return; }
-            if (_timer > 0 || _quiet > 0) return;
-            Ringing = true;
-            _timer = t < 6 ? 4 : t < 9 ? 8 : 15;
-            _game.Sound("ring", 1);
+            // Warm again: whatever it was calling about is fixed.
+            if (t >= ringBelow) { _timer = 0; return; }
+            _timer -= Time.fixedDeltaTime;
+            if (_timer > 0) return;
+            _timer = cooldown + (t < 6 ? 4 : t < 9 ? 8 : 15);
+            Announce(t < 7 ? "“We can’t feel our hands. Forget the target. Just keep us alive.”" : "“It’s getting cold upstairs. Could you turn the furnace up?”");
         }
 
         // Rings in bursts: a quick rattle, then a pause.
         private void Update()
         {
-            var burst = (Ringing || _calling) && Time.time % .9f < .45f;
+            var burst = _calling && Time.time % .9f < .45f;
             transform.localRotation = _rest * Quaternion.Euler(0, 0, burst ? Mathf.Sin(Time.time * 60) * shake : 0);
             if (ringLight) ringLight.intensity = burst ? ringLightIntensity * (.6f + .4f * Mathf.Sin(Time.time * 40)) : 0;
         }
 
-        public override string OutOfReach => Ringing ? "Gotta get to the phone." : "It's not even ringing.";
-        public override bool CanOperate(PlayerController player) => CanAnswer(player);
-        protected override void OnBegin(Vector2 mouse) => Answer();
-
-        // Rings of its own accord (someone upstairs has heard about a death) and then says its piece, with no one
-        // there to answer. It rattles and bobs like any other call but isn't a call to answer.
+        // Rings three times, then says its piece. A death's news cuts in over a call about the cold.
         public void Announce(string line)
         {
             StopAllCoroutines();
@@ -79,24 +68,14 @@ namespace CoalRun.Stations
         private IEnumerator Call(string line)
         {
             _calling = true;
-            _game.Sound("ring", 1);
-            yield return new WaitForSeconds(1.3f);
-            _game.Sound("ring", 1);
-            yield return new WaitForSeconds(1.3f);
+            for (var i = 0; i < 3; i++)
+            {
+                _game.Sound("ring", 1);
+                yield return new WaitForSeconds(1.3f);
+            }
             _calling = false;
             _game.Sound("phone");
             _game.Say(line, 6, voice);
-        }
-
-        public bool CanAnswer(PlayerController player) =>
-            Ringing && player.Lane == 0 && Mathf.Abs(player.Position.x - transform.position.x) < 1 && player.Position.y < 4.3f;
-
-        public void Answer()
-        {
-            Ringing = false;
-            _quiet = cooldown;
-            _game.Say(_game.Temperature < 7 ? "“We can’t feel our hands. Forget the target. Just keep us alive.”" : "“It’s getting cold upstairs. Could you turn the furnace up?”", 6, voice);
-            _game.Sound("phone");
         }
     }
 }

@@ -230,12 +230,18 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 - The instrument panel's board, the thermometer glass, the cold lamp's cage and the burn lever's dial (tiles, snowflakes) use `SpriteLit` now, so they darken with the room and the storm. What glows stays unlit: chart lines, markers, mercury, the clock digits, bulbs and lenses, the fire. World text (TMP) ignores 2D lights, so painted labels should be sprites; the panel's scale labels and legend already are (baked into `instrument_panel`).
 
 ## Freight lift signals (10/27, your calls)
-- The old greybox "1"/"2" boards are gone; small worn yellow stencil numbers (scale .62, 70% paint) are painted on the shaft wall (`shaft_number_*`, lit), clear of the platform at either landing. The stencilled name plates were tried and dropped.
-- `Signal lamp` prefab (caged bulkhead lamp + light; the cold lamp on the panel is one too). One beside each number: green with the lift parked at that landing, blinking amber while it's heading there. A dome `Beacon` on the platform's post flashes amber while it moves. All driven from `LiftShaft.Signals`.
+- The old greybox "1"/"2" boards are gone; small worn yellow stencil numbers (scale .62, 70% paint) are painted on the shaft wall, clear of the platform at either landing. Stencilled name plates were tried and dropped.
+- `Signal lamp` prefab (caged bulkhead lamp + light; the cold lamp on the panel is one too). One beside each number, glowing red while the lift is at that landing (`LiftShaft.Signals`). A steady amber `Beacon` sits in the middle of the platform's top rail.
 
-## Handles in the dark (10/27, your calls: A + B)
-- Each `Machine` lists its `accents` (lever knobs, crank wheels and spokes, the phone, the shovel). `Machine.Glow` lays an unlit copy of each over it, so they show however dark the room is: alpha .1 across the room, easing to .3 when the operator can reach it (`MachineInput.glowLevel`, warm white `glowColor`). Nothing on hover. Machines the training hasn't introduced yet don't glow.
+## Handles in the dark (10/27, your calls: A + B, as lights)
+- Each `Machine` lists its `accents` (lever knobs, crank wheels). `Machine.Glow` puts a copy of `MachineInput`'s inactive `Handle glow` light on the first accent: intensity .7 across the room, easing to 1.8 when the operator can reach it (`glowLevel`). Nothing on hover; machines the training hasn't introduced don't glow.
 - Not done yet: the E interactables (cart wheels, bodies, axle installer), which aren't machines.
+- The operator wears a hard hat lamp (`Operator` prefab, Art/Head/Hat lamp). Bodies keep theirs lit.
+- Room brightened: Storm ambient (.5 calm, .38 worst), post exposure +.1.
+
+## Red phone (10/27, your call)
+- No longer interactive (not a `Machine`, no E, no notebook page): every call rings three times and the voice answers itself. Cold calls repeat every cooldown + 4/8/15 s while below `ringBelow`; a death's news cuts in over one.
+- Fixed: a dying operator's queued lines carried on over the replacement. `Speaker.Hush` drops them in `PlayerController.Kill`.
 
 ## Storm (10/27, your calls: driven by the forecast)
 - `Storm` (was `StormSnow`, on Room/Art/Walls/Storm; `ShiftManager.Storm`): `Strength` 0..1 from the outside temperature (-4 → -38), `Gust` (Perlin swells, quicker the worse it is), `Blow` = strength with the gust on it.
