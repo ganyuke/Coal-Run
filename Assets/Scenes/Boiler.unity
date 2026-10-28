@@ -6275,7 +6275,7 @@ Transform:
   m_GameObject: {fileID: 119337447}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 16, y: 8, z: -10}
+  m_LocalPosition: {x: 16, y: 9, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6736,11 +6736,11 @@ RectTransform:
   - {fileID: 1259485650}
   m_Father: {fileID: 907187680}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -30, y: -240}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -30, y: 0}
   m_SizeDelta: {x: 350, y: 360}
-  m_Pivot: {x: 1, y: 0}
+  m_Pivot: {x: 1, y: 1}
 --- !u!114 &173804752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41945,14 +41945,11 @@ MonoBehaviour:
     color: {r: 1, g: 0.7, b: 0.8, a: 1}
   - key: A/D
     color: {r: 0.58, g: 0.92, b: 0.88, a: 1}
-  shutY: -240
-  openY: 16
+  shutHeight: 120
+  topGap: 0
   bounce: 14
   bounceTime: 0.45
   slideSpeed: 9
-  autoSide: 1
-  sideMargin: 100
-  sideDelay: 0.35
   dragStart: 6
   headerHeight: 52
   tickedShown: 3
@@ -46543,11 +46540,11 @@ RectTransform:
   - {fileID: 1727606734}
   m_Father: {fileID: 173804751}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -26, y: 0}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -26, y: -2}
   m_SizeDelta: {x: 230, y: 26}
-  m_Pivot: {x: 1, y: 0}
+  m_Pivot: {x: 1, y: 1}
 --- !u!114 &1259485651
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53367,6 +53364,7 @@ GameObject:
   - component: {fileID: 1393814758}
   - component: {fileID: 1393814760}
   - component: {fileID: 1393814759}
+  - component: {fileID: 1393814761}
   m_Layer: 0
   m_Name: Page
   m_TagString: Untagged
@@ -53435,6 +53433,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1393814757}
   m_CullTransparentMesh: 1
+--- !u!114 &1393814761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1393814757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RectMask2D
+  m_Padding: {x: 0, y: 0, z: 0, w: 0}
+  m_Softness: {x: 0, y: 0}
 --- !u!1 &1400171466
 GameObject:
   m_ObjectHideFlags: 0
@@ -61411,7 +61423,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MachineInput
   player: {fileID: 1137301203}
   cam: {fileID: 119337448}
-  glowInReach: 0.4
+  glowNear: 0
+  dimWithin: 1
+  fullBeyond: 3
 --- !u!114 &1727399067
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62159,7 +62173,11 @@ MonoBehaviour:
         m_SelectedSource:
           rid: -2
         m_Provider2DCache:
-          rid: -2
+          rid: 203243164056682576
+    - rid: 203243164056682576
+      type: {class: 'Provider2DCache`1[[UnityEngine.Rendering.Universal.Light2DProvider, Unity.RenderPipelines.Universal.2D.Runtime]]', ns: UnityEngine.Rendering.Universal, asm: Unity.RenderPipelines.Universal.2D.Runtime}
+      data:
+        m_Cache: []
 --- !u!4 &1798826077
 Transform:
   m_ObjectHideFlags: 0

@@ -9,10 +9,11 @@ using UnityEngine.UI;
 
 namespace CoalRun.UI
 {
-    // The notebook on screen: a book resting at the bottom right with its top edge showing. Click it and it
-    // slides up, open to the page that matters; click its top edge and it slides down. Past pages are ticked
-    // above it, the current page is big, and a few empty boxes wait below for whatever comes next. The key
-    // prompts are sticky notes stacked on top of it, so they show even while it's shut. Not a screen of its
+    // The notebook on screen: a book hanging from the top right of the screen, shut to its heading and the page
+    // that matters. Click it and it drops open; click its top edge and it folds back up. It stays put: the operator
+    // never gets up that high. The current page is big, a few empty boxes wait under it for whatever comes next,
+    // and past pages are ticked below those. The key prompts are sticky notes hanging under it, so they show even
+    // while it's shut. Not a screen of its
     // own: the game runs on underneath. Between shifts it's the briefing and the report too: it opens bigger in
     // the middle of the screen, on a page with a stamped button.
     [DefaultExecutionOrder(-200)] // Before InputReader, so a click on the book isn't also a click in the room.
@@ -62,22 +63,18 @@ namespace CoalRun.UI
             new() { key = "A/D", color = new Color(.58f, .92f, .88f) }
         };
         [Header("Where the book sits")]
-        [Tooltip("Vertical position when shut: just the heading and the open page showing.")]
+        [Tooltip("How much of the book shows when it's shut, at least: it grows to fit the heading and the whole open page.")]
         [SerializeField]
-        private float shutY = -244;
-        [SerializeField] private float openY = 16;
-        [Tooltip("When a page is written while it's shut, it hops up this far, once, to catch the eye. It never pops up and stays.")]
+        private float shutHeight = 120;
+        [Tooltip("Gap between the top of the screen and the book.")]
+        [SerializeField]
+        private float topGap;
+        [Tooltip("When a page is written while it's shut, it drops this much further, once, to catch the eye. It never drops open and stays.")]
         [SerializeField]
         private float bounce = 14;
         [SerializeField] private float bounceTime = .45f;
         [SerializeField] private float slideSpeed = 9;
-        [Tooltip("The book keeps to whichever side of the screen the operator isn't on.")]
-        [SerializeField]
-        private bool autoSide = true;
-        [Tooltip("How close the operator can come to the book, in canvas units, before it moves across, and how long they must stay there.")]
-        [SerializeField]
-        private float sideMargin = 100, sideDelay = .35f;
-        [Tooltip("Mouse travel, in pixels, before pressing the top edge becomes pulling the book up or down.")]
+        [Tooltip("Mouse travel, in pixels, before pressing the top edge becomes pulling the book open or shut.")]
         [SerializeField]
         private float dragStart = 6;
         [Tooltip("The top part of the book that closes it again when clicked, in canvas units.")]
@@ -105,9 +102,9 @@ namespace CoalRun.UI
         private readonly List<TMP_Text> _stickyText = new();
         private readonly List<Image> _stickyImage = new();
         private bool _open, _dirty = true, _pressing, _dragging, _shownLast;
-        private float _bounceAt = -10, _dimmed, _dragY, _pressY, _grab, _overlapFor;
-        // Which side of the screen it's on: 1 right, -1 left.
-        private int _side = 1;
+        private float _bounceAt = -10, _dimmed, _dragHeight, _pressY, _grab;
+        // How tall the shut book has to be to show the open page whole.
+        private float _shutFit;
         private Vector2 _bookSize, _bookRest;
         private Phase _sheetFor = Phase.Shift;
 
@@ -154,9 +151,9 @@ namespace CoalRun.UI
             // The report and the briefing rise up from below the screen, whichever way they come.
             if (shown && !_shownLast && sheetMode)
             {
-                var width = ((RectTransform)book.parent).rect.width;
+                var rect = ((RectTransform)book.parent).rect;
                 book.sizeDelta = sheetSize;
-                book.anchoredPosition = new Vector2(-(width - sheetSize.x) / 2, -sheetSize.y - 20);
+                book.anchoredPosition = new Vector2(-(rect.width - sheetSize.x) / 2, -rect.height - 20);
             }
             _shownLast = shown;
             book.gameObject.SetActive(shown);
@@ -170,6 +167,7 @@ namespace CoalRun.UI
 
             var canvas = (RectTransform)book.parent;
             var canvasWidth = canvas.rect.width;
+            var canvasHeight = canvas.rect.height;
             if (mouse != null)
             {
                 var screen = mouse.position.ReadValue();
@@ -181,9 +179,10 @@ namespace CoalRun.UI
                 else
                 {
                     RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas, screen, null, out var at);
-                    var mouseY = at.y + canvas.rect.height / 2;
+                    // How far down the screen the mouse is.
+                    var mouseDown = canvasHeight / 2 - at.y;
                     // Pressing the top edge (any of it while it's shut) either clicks it open and shut, or, moved
-                    // far enough, pulls it up and down. Where it's let go is where it stays.
+                    // far enough, pulls it down and up. Where it's let go is where it stays.
                     if (PointerOver && mouse.leftButton.wasPressedThisFrame)
                     {
                         RectTransformUtility.ScreenPointToLocalPointInRectangle(book, screen, null, out var local);
@@ -192,7 +191,7 @@ namespace CoalRun.UI
                             _pressing = true;
                             _dragging = false;
                             _pressY = screen.y;
-                            _grab = book.anchoredPosition.y - mouseY;
+                            _grab = book.sizeDelta.y - mouseDown;
                         }
                     }
                     if (_pressing)
@@ -200,12 +199,12 @@ namespace CoalRun.UI
                         if (mouse.leftButton.isPressed)
                         {
                             if (!_dragging && Mathf.Abs(screen.y - _pressY) > dragStart) _dragging = true;
-                            if (_dragging) _dragY = Mathf.Clamp(mouseY + _grab, shutY, openY);
+                            if (_dragging) _dragHeight = Mathf.Clamp(mouseDown + _grab, Mathf.Max(shutHeight, _shutFit), _bookSize.y);
                         }
                         else
                         {
-                            // Pulled past halfway it opens, pushed down past halfway it shuts: never left in between.
-                            _open = _dragging ? _dragY > (shutY + openY) / 2 : !_open;
+                            // Pulled past halfway it opens, pushed back past halfway it shuts: never left in between.
+                            _open = _dragging ? _dragHeight > (Mathf.Max(shutHeight, _shutFit) + _bookSize.y) / 2 : !_open;
                             _pressing = _dragging = false;
                         }
                     }
@@ -213,45 +212,25 @@ namespace CoalRun.UI
             }
             if (!sheetMode && Keyboard.current != null && Keyboard.current.tabKey.wasPressedThisFrame) _open = !_open;
 
-            Side(game, sheetMode, canvas);
-
-            // Sliding up from the bottom, or growing into the middle of the screen.
-            var size = sheetMode ? sheetSize : _bookSize;
-            var margin = -_bookRest.x;
-            var x = sheetMode ? -(canvasWidth - size.x) / 2 : _side > 0 ? -margin : -(canvasWidth - margin - size.x);
-            // A new page hops the shut book up a little, once.
+            // Dropping open from the top, or growing into the middle of the screen. Shut, it's cut short: the page
+            // masks whatever's below the fold.
             var since = Time.time - _bounceAt;
+            // A new page drops the shut book a little further, once.
             var hop = !_open && since < bounceTime ? bounce * Mathf.Sin(Mathf.PI * since / bounceTime) : 0;
-            var y = sheetMode ? sheetY : _open ? openY : shutY + hop;
+            var shut = Mathf.Max(shutHeight, _shutFit);
+            var size = sheetMode ? sheetSize : new Vector2(_bookSize.x, _open ? _bookSize.y : shut + hop);
+            var x = sheetMode ? -(canvasWidth - size.x) / 2 : _bookRest.x;
+            var y = sheetMode ? -(canvasHeight - sheetY - size.y) : -topGap;
             var k = 1 - Mathf.Exp(-slideSpeed * Time.unscaledDeltaTime);
-            book.sizeDelta = Vector2.Lerp(book.sizeDelta, size, k);
-            var next = Vector2.Lerp(book.anchoredPosition, new Vector2(x, y), k);
+            var nextSize = Vector2.Lerp(book.sizeDelta, size, k);
             // Under the mouse while it's being pulled.
-            if (_dragging) next.y = _dragY;
-            book.anchoredPosition = next;
+            if (_dragging) nextSize.y = _dragHeight;
+            book.sizeDelta = nextSize;
+            book.anchoredPosition = Vector2.Lerp(book.anchoredPosition, new Vector2(x, y), k);
 
             if (sheetMode) { for (var i = 0; i < _stickies.Count; i++) _stickies[i].gameObject.SetActive(false); return; }
             if (_dirty) Rebuild();
             Stickies();
-        }
-
-        // Out of the operator's way: when they walk up to the book (on screen), it slides across to the other side
-        // once they've stayed there a moment.
-        private void Side(ShiftManager game, bool sheetMode, RectTransform canvas)
-        {
-            var cam = Camera.main;
-            if (sheetMode || !autoSide || !cam || !player.Visible) { _overlapFor = 0; return; }
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas, cam.WorldToScreenPoint(player.Position), null, out var at);
-            var operatorX = at.x + canvas.rect.width / 2;
-            var operatorY = at.y + canvas.rect.height / 2;
-            var margin = -_bookRest.x;
-            var left = _side > 0 ? canvas.rect.width - margin - _bookSize.x : margin;
-            var top = book.anchoredPosition.y + _bookSize.y;
-            var near = operatorX > left - sideMargin && operatorX < left + _bookSize.x + sideMargin && operatorY < top + sideMargin;
-            _overlapFor = near ? _overlapFor + Time.unscaledDeltaTime : 0;
-            if (_overlapFor < sideDelay) return;
-            _side = -_side;
-            _overlapFor = 0;
         }
 
         // Begin the shift, or run it again: what the stamped button does, like Enter and R.
@@ -299,6 +278,9 @@ namespace CoalRun.UI
             var used = 0;
             var y = 0f;
             y = Row(ref used, y, current?.Text ?? "", false, currentHeight, currentSize, current is { Urgent: true } ? urgentInk : ink, true);
+            // Down to the end of the open page, from the top of the book: the page's inset, the heading, the page.
+            var inset = (book.rect.height - ((RectTransform)pageRoot.parent).rect.height) / 2;
+            _shutFit = inset - pageRoot.anchoredPosition.y + y + inset;
             for (var i = 0; i < emptyShown; i++) y = Row(ref used, y, "", false, rowHeight, tickedSize, fadedInk, false);
             for (var i = ticked.Count - 1; i >= 0; i--) y = Row(ref used, y, ticked[i].Text, true, rowHeight, tickedSize, fadedInk, false);
             for (var i = used; i < _rows.Count; i++) _rows[i].gameObject.SetActive(false);
@@ -327,7 +309,7 @@ namespace CoalRun.UI
             return keyColors.Length > 0 ? keyColors[0].color : Color.white;
         }
 
-        // One sticky note a prompt, stacked up from the top edge of the book, each turned a little.
+        // One sticky note a prompt, hanging down from the bottom edge of the book, each turned a little.
         private void Stickies()
         {
             var prompts = player.Prompts();
@@ -354,7 +336,7 @@ namespace CoalRun.UI
                 _stickyText[i].text = $"<b>[{prompts[i].key}]</b>  {prompts[i].label}";
                 _stickyImage[i].color = KeyColorFor(prompts[i].key);
                 var size = _stickies[i].sizeDelta;
-                _stickies[i].anchoredPosition = new Vector2(stickyTemplate.anchoredPosition.x - i * stickyShift, stickyTemplate.anchoredPosition.y + i * (size.y + stickyGap + 5));
+                _stickies[i].anchoredPosition = new Vector2(stickyTemplate.anchoredPosition.x - i * stickyShift, stickyTemplate.anchoredPosition.y - i * (size.y + stickyGap + 5));
             }
         }
     }
