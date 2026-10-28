@@ -125,9 +125,9 @@ namespace CoalRun.Core
             [TextArea] public string tip = "Tip the cart into the hopper";
             [TextArea] public string lower = "Lower the cart (E)";
             [TextArea] public string returnCart = "Take the empty cart back down";
-            [Tooltip("{0}: the coldest it's heading for outside; {1}: what the fire holds now.")]
+            [Tooltip("{0}: the coldest it's heading for outside; {1}: the heat line, the coldest outside the fire keeps the building warm against at this setting.")]
             [TextArea]
-            public string burnUp = "Turn the burn lever up: it's heading for {0:0}° outside and the fire only holds {1:0}°";
+            public string burnUp = "Turn the burn lever up: it's heading for {0:0}° outside, colder than the heat line ({1:0}°)";
             [TextArea] public string leave = "The shift is over. Stand in the staff lift";
         }
 

@@ -67,7 +67,7 @@ def panel():
     c.rect(tx - 12, ty0, tx + 12, ty1, hexc("#14181f"))
     # Captions along the bottom.
     cy = H - 13
-    for x, col, text in [(-1.5, hexc("#ffb050"), "INSIDE"), (-0.5, hexc("#9fd3ff"), "OUTSIDE"), (.72, hexc("#ff8a3a"), "FIRE HOLDS")]:
+    for x, col, text in [(-1.5, hexc("#ffb050"), "INSIDE"), (-0.5, hexc("#9fd3ff"), "OUTSIDE"), (.72, hexc("#ff8a3a"), "HEAT")]:
         sx, _ = px(x, 0, W, H)
         c.rect(sx - 14, cy - 3, sx - 6, cy + 3, col)
         label(c, text, sx - 2, cy, 11, hexc("#9aa6b8"), "lm")
