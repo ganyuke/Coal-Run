@@ -346,6 +346,14 @@ def relay():
     save("relay", norm((snap + .6 * thunk + tick) * env(len(k), .0005, .03), .55))
 
 
+def alarm():
+    """The freeze alarm's "drrrt": a harsh buzzer, two stacked square tones a fifth apart, chopped fast by a ragged gate."""
+    k = t(.55)
+    buzz = np.sign(np.sin(2 * np.pi * 740 * k)) + .8 * np.sign(np.sin(2 * np.pi * 1110 * k))
+    gate = (np.sin(2 * np.pi * 38 * k) > -.3).astype(float)
+    save("alarm", norm(buzz * gate * env(len(k), .004, .05), .8))
+
+
 if __name__ == "__main__":
     for f in (wind, fire, hum, groan, cart_roll, shovel, coal_patter, bin_rattle, crank, scrape, roll, phone, paper, pour, spill, kindle, ignite, wrench, chain, blip, drone, heartbeat, shiver, gong):
         f()
@@ -356,4 +364,5 @@ if __name__ == "__main__":
     storm_knock()
     storm_rattle()
     relay()
+    alarm()
     print("audio written to", os.path.abspath(OUT), sorted(os.listdir(OUT)))

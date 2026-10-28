@@ -31,6 +31,9 @@ namespace CoalRun.UI
         [SerializeField]
         private RectTransform sheet;
         [SerializeField] private TMP_Text sheetHeadline, sheetBody, buttonLabel;
+        [Tooltip("The report's figures, pinned to the bottom of the page above the button, so a long message above them can take all the room it needs.")]
+        [SerializeField]
+        private TMP_Text sheetStats;
         [Tooltip("Clicked to begin the shift or run it again.")]
         [SerializeField]
         private RectTransform button;
@@ -87,7 +90,7 @@ namespace CoalRun.UI
         private float _dimmed, _tickedAt = -1, _width, _bigHeading;
         // Where the heading, rule and task sit from the top of the page on the big sheet; over a task they're
         // pulled up to suit the smaller heading.
-        private float _headingHeight, _ruleY, _rootY;
+        private float _headingHeight, _ruleY, _rootY, _bodyFoot;
         private Phase _sheetFor = Phase.Shift;
         private static readonly System.Collections.Generic.List<(string key, string label)> NoPrompts = new();
 
@@ -100,6 +103,7 @@ namespace CoalRun.UI
             _headingHeight = heading.rectTransform.sizeDelta.y;
             _ruleY = rule.anchoredPosition.y;
             _rootY = pageRoot.anchoredPosition.y;
+            _bodyFoot = sheetBody.rectTransform.offsetMin.y;
         }
 
         private void Update()
@@ -135,6 +139,7 @@ namespace CoalRun.UI
             PointerOver = false;
             if (!shown) return;
             if (sheetMode && _sheetFor != game.Phase) Sheet(game);
+            if (sheetMode) Fit(game.Phase != Phase.Briefing);
             if (!sheetMode)
             {
                 _sheetFor = Phase.Shift;
@@ -231,10 +236,25 @@ namespace CoalRun.UI
             }
             var complete = game.Phase == Phase.Complete;
             sheetHeadline.text = complete ? t.survived : t.lost;
-            sheetBody.text =
-                (complete ? (game.Furnace.Output >= game.Day.target ? t.pleased : t.notPleased) + " " + (game.HasNextDay ? t.memoWaiting : t.lastShift) : t.frozeOver) +
-                $"\n\n{t.outputLabel}\n<b>{game.Furnace.Output:0.0} / {game.Day.target:0} kWh</b>\n\n{t.deliveredLabel}  <b>{game.Furnace.Delivered:0.0}</b>\n{t.lostLabel}  <b>{game.Deaths}</b>";
+            var verdict = complete ? (game.Furnace.Output >= game.Day.target ? t.pleased : t.notPleased) + " " + (game.HasNextDay ? t.memoWaiting : t.lastShift) : t.frozeOver;
+            var written = complete ? t.survivedBody : t.lostBody;
+            sheetBody.text = string.IsNullOrEmpty(written) ? verdict : $"{written}\n\n{verdict}";
+            sheetStats.text = $"{t.outputLabel}\n<b>{game.Furnace.Output:0.0} / {game.Day.target:0} kWh</b>\n{t.deliveredLabel}  <b>{game.Furnace.Delivered:0.0}</b>\n{t.lostLabel}  <b>{game.Deaths}</b>";
             buttonLabel.text = !complete ? t.again : game.HasNextDay ? t.nextDay : t.fromDay1;
+        }
+
+        // The headline is as tall as what's written in it, the figures (on a report) sit at the foot of the page, and the
+        // body takes what's left between them.
+        private void Fit(bool report)
+        {
+            var headline = sheetHeadline.rectTransform;
+            var h = sheetHeadline.GetPreferredValues(sheetHeadline.text, headline.rect.width, 0).y;
+            headline.sizeDelta = new Vector2(headline.sizeDelta.x, h);
+            sheetStats.gameObject.SetActive(report);
+            var stats = sheetStats.rectTransform;
+            var body = sheetBody.rectTransform;
+            body.offsetMax = new Vector2(body.offsetMax.x, -(h + 8));
+            body.offsetMin = new Vector2(body.offsetMin.x, report ? stats.anchoredPosition.y + stats.sizeDelta.y + 6 : _bodyFoot);
         }
 
         private Color KeyColorFor(string key)

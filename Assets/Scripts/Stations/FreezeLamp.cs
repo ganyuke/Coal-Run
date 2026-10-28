@@ -20,6 +20,7 @@ namespace CoalRun.Stations
         private float pulse = 1.2f;
 
         private ShiftManager _game;
+        private float _beat;
 
         private void Start() => _game = ShiftManager.Instance;
 
@@ -27,6 +28,10 @@ namespace CoalRun.Stations
         {
             var lit = _game.Freezing && !_game.Ended;
             var k = lit ? .6f + .4f * Mathf.Cos(Time.time * pulse * 2 * Mathf.PI) : 0;
+            // The buzzer sounds as each pulse begins.
+            var beat = Mathf.Floor(Time.time * pulse);
+            if (lit && beat != _beat) _game.Sound("alarm", .5f);
+            _beat = beat;
             lamp.color = Color.Lerp(off, on, k);
             if (glow) glow.intensity = glowIntensity * k;
         }

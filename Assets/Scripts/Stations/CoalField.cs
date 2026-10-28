@@ -270,7 +270,7 @@ namespace CoalRun.Stations
             {
                 var room = _game.Tune.hopperCapacity - _game.Furnace.Hopper;
                 if (room <= 0) return;
-                if (s.Heights[i] > 0) _game.Furnace.Feed(TakeFromPile(s, i, room));
+                if (s.Heights[i] > 0) _game.Furnace.Feed(TakeFromPile(s, i, room), false);
             }
         }
 

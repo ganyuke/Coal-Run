@@ -197,7 +197,11 @@ namespace CoalRun.Core
 
             [Header("Report")]
             [TextArea] public string survived = "You kept them alive.";
+            [Tooltip("Written under the headline of a survived shift, above the line about the output.")]
+            [TextArea] public string survivedBody = "";
             [TextArea] public string lost = "No one is coming down.";
+            [Tooltip("Written under the headline of a lost shift, above the line about the offices.")]
+            [TextArea] public string lostBody = "";
             [TextArea] public string pleased = "Brass is pleased with the output.";
             [TextArea] public string notPleased = "Brass is not pleased with the output.";
             [TextArea] public string memoWaiting = "A memo is waiting for you in the morning.";

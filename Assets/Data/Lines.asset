@@ -157,21 +157,16 @@ MonoBehaviour:
     oneWheel: The cart has 1 wheel.
     wheels: The cart has {0} wheels.
     begin: 'Begin the shift   [Enter]'
-    survived: 'You have maintained our way of life.
-
-
-      You successfully kept
-      the offices warm.'
-    lost: 'You let everyone freeze.
-
-
-      Return, refit, and redeploy to purge
-      the stain of this failure with the peroxide of victory.'
+    survived: You have maintained our way of life.
+    survivedBody: You successfully kept the offices warm.
+    lost: You let everyone freeze to death.
+    lostBody: Return, refit, and redeploy to purge the stain of this failure with
+      the peroxide of victory.
     pleased: We are pleased with your electrical output today.
-    notPleased: We are displeased with your performance today.
-    memoWaiting: A memo is waiting for you in the morning.
+    notPleased: However, we are displeased with your performance today.
+    memoWaiting: A memo will be waiting for you in the morning.
     lastShift: That is all the shifts there are, for now.
-    frozeOver: The offices froze first. There is nobody left to send a replacement.
+    frozeOver: 
     outputLabel: Electrical output
     deliveredLabel: Coal delivered
     lostLabel: Operators lost

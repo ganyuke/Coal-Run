@@ -202,14 +202,15 @@ namespace CoalRun.Stations
             return false;
         }
 
-        // Takes what fits of `amount`. Returns how much went in.
-        public float Feed(float amount)
+        // Takes what fits of `amount`. Returns how much went in. `audible` is off for the grate's slow drip, which
+        // would otherwise pour all shift long.
+        public float Feed(float amount, bool audible = true)
         {
             var q = Mathf.Min(amount, _game.Tune.hopperCapacity - Hopper);
             if (q <= 0) return 0;
             Hopper += q;
             Delivered += q;
-            _game.Sound("pour");
+            if (audible) _game.Sound("pour");
             return q;
         }
     }
