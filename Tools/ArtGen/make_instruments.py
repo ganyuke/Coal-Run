@@ -154,12 +154,67 @@ def cold_lamp():
     c.save(os.path.join(OUT, "cold_lamp_cage@128.png"))
 
 
+def lift_signals():
+    """The dome beacon on the freight lift's post. Its bulb is its own white sprite, tinted in code, behind the cage."""
+    P = 128
+    W, H = int(.36 * P), int(.42 * P)
+    cx, cy = W / 2, H - 17
+    b = Canvas(W, H)
+    sphere_facets(b, cx, cy, 14, hexc("#ffffff"), sides=10, seed=4, light=(-.4, -.6))
+    b.save(os.path.join(OUT, "beacon_bulb@128.png"))
+    c = Canvas(W, H)
+    wire = hexc("#1e1e22")
+    for x in (-16, -8, 0, 8, 16):
+        c.line([(cx + x, H - 11), (cx + x * 1.05, cy - 5), (cx + x * .5, cy - 14), (cx, cy - 17)], wire, 1.5)
+    c.line([(cx - 17, cy - 2), (cx - 8, cy), (cx + 8, cy), (cx + 17, cy - 2)], wire, 1.5)
+    sphere_facets(c, cx, cy - 17, 3.5, hexc("#3a3d44"), sides=6, seed=1)
+    c.rect(3, H - 12, W - 3, H - 5, hexc("#3e4654"))
+    c.rect(0, H - 5, W, H, hexc("#2b313b"))
+    bevel(c, 3, H - 12, W - 3, H - 5, w=2, hi=.25, lo=.35)
+    c.save(os.path.join(OUT, "beacon_cage@128.png"))
+
+
+def shaft_numbers():
+    """The landing numbers, stencilled straight onto the shaft wall in yellow paint gone patchy with wear."""
+    from PIL import ImageChops, ImageFilter
+    P = 128
+    for n in ("1", "2"):
+        W, H = int(.9 * P), int(1.25 * P)
+        f = ImageFont.truetype(BOLD, int(150 * SS))
+        m = Image.new("L", (W * SS, H * SS), 0)
+        d = ImageDraw.Draw(m)
+        d.text((W * SS / 2, H * SS / 2), n, font=f, fill=255, anchor="mm")
+        # Stencil bridges: the paint stops where the card held the letter together.
+        for y in (.36, .64) if n == "2" else (.42,):
+            d.rectangle([0, H * SS * y, W * SS, H * SS * y + 7 * SS], fill=0)
+        # Wear: the paint thin in patches, flaked off in small ragged chips, and a few scrapes across it.
+        g = np.random.default_rng(int(n) * 11)
+
+        def blotch(radius):
+            x = Image.fromarray((g.random((H * SS, W * SS)) * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(radius))
+            a = np.asarray(x, float)
+            return (a - a.min()) / (a.max() - a.min() + 1e-9)
+
+        thin = .7 + .3 * blotch(14)
+        chips = blotch(2.5)
+        keep = np.where(chips > .72, .08, 1.0) * thin * (.9 + .1 * g.random((H * SS, W * SS)))
+        for _ in range(5):
+            y = int(g.uniform(0, H * SS))
+            keep[y:y + SS, int(g.uniform(0, W * SS * .5)):int(g.uniform(W * SS * .5, W * SS))] *= .3
+        alpha = Image.fromarray((np.asarray(m, float) * keep * .85).astype(np.uint8))
+        img = Image.new("RGBA", m.size, hexc("#d9a326"))
+        img.putalpha(alpha)
+        img.resize((W, H), Image.LANCZOS).save(os.path.join(OUT, f"shaft_number_{n}.png"))
+
+
 if __name__ == "__main__":
     panel()
     tube()
     parts()
     cold_lamp()
-    names = ["instrument_panel", "thermo_tube@128", "mercury", "mercury_bulb", "marker", "pip", "cold_lamp_bulb@128", "cold_lamp_cage@128"]
+    lift_signals()
+    shaft_numbers()
+    names = ["instrument_panel", "thermo_tube@128", "mercury", "mercury_bulb", "marker", "pip", "cold_lamp_bulb@128", "cold_lamp_cage@128", "beacon_cage@128", "shaft_number_1", "shaft_number_2"]
     ims = [Image.open(os.path.join(OUT, n + ".png")) for n in names]
     preview(ims, os.path.join(os.path.dirname(__file__), "preview_instruments.png"), cols=6)
     print("instruments written")

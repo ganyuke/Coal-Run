@@ -229,6 +229,10 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 ## Lit fixtures (10/27)
 - The instrument panel's board, the thermometer glass, the cold lamp's cage and the burn lever's dial (tiles, snowflakes) use `SpriteLit` now, so they darken with the room and the storm. What glows stays unlit: chart lines, markers, mercury, the clock digits, bulbs and lenses, the fire. World text (TMP) ignores 2D lights, so painted labels should be sprites; the panel's scale labels and legend already are (baked into `instrument_panel`).
 
+## Freight lift signals (10/27, your calls)
+- The old greybox "1"/"2" boards are gone; worn yellow stencil numbers are painted on the shaft wall (`shaft_number_*`, lit), clear of the platform at either landing. The stencilled name plates were tried and dropped.
+- `Signal lamp` prefab (caged bulkhead lamp + light; the cold lamp on the panel is one too). One beside each number: green with the lift parked at that landing, blinking amber while it's heading there. A dome `Beacon` on the platform's post flashes amber while it moves. All driven from `LiftShaft.Signals`.
+
 ## Storm (10/27, your calls: driven by the forecast)
 - `Storm` (was `StormSnow`, on Room/Art/Walls/Storm; `ShiftManager.Storm`): `Strength` 0..1 from the outside temperature (-4 → -38), `Gust` (Perlin swells, quicker the worse it is), `Blow` = strength with the gust on it.
 - Snow: soft round flakes (`snow_flake`) drifting and fluttering when calm, thick sideways streaks at worst (stretched by speed). The window art no longer has painted streaks.
