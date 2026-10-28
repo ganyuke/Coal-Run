@@ -10,7 +10,7 @@ namespace CoalRun.UI
 {
     // The notebook on screen: a slip hanging from the top right of the screen with the day and the one task that
     // matters now. When it's done it's ticked and held a moment so you see it, then the next task takes its place.
-    // The key prompts are sticky notes in the bottom-left corner. Not a screen of its own: the game runs on underneath. Between shifts it's the briefing and the report: it opens bigger in
+    // The key prompts are sticky notes hanging under the slip. Not a screen of its own: the game runs on underneath. Between shifts it's the briefing and the report: it opens bigger in
     // the middle of the screen, on a page with a stamped button.
     [DefaultExecutionOrder(-200)] // Before InputReader, so a click on the briefing isn't also a click in the room.
     public class NotebookView : MonoBehaviour
@@ -54,7 +54,7 @@ namespace CoalRun.UI
         private float bottomPadding = 8;
         [SerializeField] private Color ink = new(.16f, .13f, .1f), urgentInk = new(.7f, .12f, .08f);
         [Header("Sticky notes")]
-        [Tooltip("The key prompt notes in the bottom-left corner, first prompt first, laid out in the scene. There are never more than three prompts.")]
+        [Tooltip("The key prompt notes hanging under the slip (children of the Book, so they go with it), first prompt on top, laid out in the scene. There are never more than three prompts.")]
         [SerializeField]
         private Image[] stickies;
         [Tooltip("The colour of a note by the key it's for, so the keys you can press are told apart at a glance. Anything else is the first colour.")]
@@ -131,7 +131,6 @@ namespace CoalRun.UI
             }
             _shownLast = shown;
             book.gameObject.SetActive(shown);
-            // The key prompts go with play, not with the slip: there can be keys to press with no task written.
             Stickies(playing && !sheetMode && !game.Departing);
             PointerOver = false;
             if (!shown) return;
