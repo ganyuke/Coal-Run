@@ -649,7 +649,7 @@ Transform:
   m_GameObject: {fileID: 71787282}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.4444442, z: 0}
+  m_LocalPosition: {x: 0, y: 0.6944444, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -41263,7 +41263,6 @@ GameObject:
   - component: {fileID: 825623889}
   - component: {fileID: 825623890}
   - component: {fileID: 825623891}
-  - component: {fileID: 825623892}
   m_Layer: 0
   m_Name: Staff lift
   m_TagString: Untagged
@@ -41362,39 +41361,6 @@ MonoBehaviour:
   door: {fileID: 1096090703}
   slideTime: 0.4
   holdOpen: 1.6
---- !u!114 &825623892
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 825623888}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b76ac81bfb1a035f9868c6d27ffeacfc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Stations.Speaker
-  head: {fileID: 0}
-  bob: 0
-  bobRate: 13
-  anchor: {fileID: 1954785811}
-  puffs: {fileID: 0}
-  puffRate: 10
-  textSize: 3.4
-  width: 6
-  outline: 0.3
-  ink: {r: 1, g: 0.96, b: 0.85, a: 1}
-  charsPerSecond: 14
-  holdAfter: 1.8
-  gap: 0.6
-  maxQueued: 2
-  repeatAfter: 6
-  stackGap: 0.12
-  fadeTime: 0.5
-  sortingOrder: 60
-  voicePitch: 1
-  font: {fileID: 11400000, guid: 21fb8bfdad92cf375ba8e80398620f6e, type: 2}
-  breathBelow: 0
 --- !u!1 &835871937
 GameObject:
   m_ObjectHideFlags: 0
@@ -62153,7 +62119,6 @@ MonoBehaviour:
   tutorial: {fileID: 1419860674}
   notebook: {fileID: 2106511976}
   cameraRig: {fileID: 119337450}
-  staffLiftVoice: {fileID: 825623892}
   firstArrival: 1.2
 --- !u!4 &1727399069
 Transform:

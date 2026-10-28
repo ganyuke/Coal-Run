@@ -43,9 +43,6 @@ namespace CoalRun.Core
         [SerializeField] private Tutorial tutorial;
         [SerializeField] private Notebook notebook;
         [SerializeField] private CameraRig cameraRig;
-        [Tooltip("Says what no one in particular does, when the operator isn't about.")]
-        [SerializeField]
-        private Speaker staffLiftVoice;
         [Tooltip("Seconds from Play until the first operator steps out of the staff lift.")]
         [SerializeField]
         private float firstArrival = 1.2f;
@@ -324,13 +321,14 @@ namespace CoalRun.Core
             }
         }
 
-        // Said by `speaker`, as little text above them. By default it's the operator's, or the staff lift's when
-        // they're not about (dead, and the replacement still on the way).
+        // Said by `speaker`, as little text above them. By default it's the operator's, and dropped while there's no
+        // operator on the floor (dead, or the replacement still riding down in the staff lift): nobody saw it happen.
         public void Say(string message, float duration = 5, Speaker speaker = null)
         {
             Message = message;
             MessageFor = duration;
-            speaker ??= player.Visible ? player.Voice : staffLiftVoice;
+            if (!speaker && (!player.Visible || Phase == Phase.Replacement)) return;
+            speaker ??= player.Voice;
             if (speaker) speaker.Speak(message, duration);
         }
 
