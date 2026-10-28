@@ -219,11 +219,18 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 
 ## Art and lighting (polish branch)
 - Art is generated: `Tools/ArtGen/*.py` draw flat-shaded low-poly sprites into `Assets/Art/Generated`; `Assets/Editor/ArtApplier.cs` swaps them into the scene. Objects whose scale code drives need 64x64 unit-square sprites.
-- Lighting: 2D lights under Systems/Lights (fire, lamps with `LightFlicker`, window, phone, freeze lamp), bloom/vignette/grade in `GameVolume`, renderer HDR emulation 2.5.
+- Lighting: 2D lights under Systems/Lights (window, chute, staff lift, control room, ambient), plus the fire, phone and freeze lamp on their objects. Hanging lamps are the `Hanging lamp` prefab (sprite + `Light` child with `LightFlicker`): three in Room/Art/Decor and one on the freight lift shaft's swinging pivot, bloom/vignette/grade in `GameVolume`, renderer HDR emulation 2.5.
 - `InstrumentPanel` (thermometer + chart) replaced the TV. Fonts: Special Elite (notebook), Barlow Condensed (speech). Cold breath on the operator (`Speaker.breathBelow`).
 - Panel (10/27, your call): the inside/outside number readouts are gone (the mercury, markers and chart say it). A red cage light, face on, sits on the wall beside the top of the thermometer (`Instrument panel/Cold lamp`, art `cold_lamp_*` in `make_instruments.py`), steady red while the outside is colder than the notch holds against. Smaller call: it's also on while the fire is out (it holds nothing), and it's steady rather than pulsing so it doesn't read as the freeze lamp.
+- Hanging lamps (10/27, your request): `lamp_cage` redrawn with the shade over the bulb (its lit underside showing) and a wire guard below. The freight lift shaft lamp now uses the same sprite and light settings as the room's lamps; the fake glow disc and the greybox bulb are gone, and the `Light2D` (with `LightFlicker`) does the glowing. It no longer dims while it swings hard (that was the disc).
 - Bot note: the freight lift stops dead at the shaft ends, so a loaded cart rammed into them spills; `ShiftBot` eases off in the last 2 units.
 - Effects check (10/26, bot-driven Day 1, 8 full-room frames over 2 minutes): mean luminance 65-70/255 and only ~1% of pixels near white (window, lamps, fire), steady across the run, so bloom and lights are not blowing out the picture.
+
+## Storm (10/27, your calls: driven by the forecast)
+- `Storm` (was `StormSnow`, on Room/Art/Walls/Storm; `ShiftManager.Storm`): `Strength` 0..1 from the outside temperature (-4 → -38), `Gust` (Perlin swells, quicker the worse it is), `Blow` = strength with the gust on it.
+- Snow: soft round flakes (`snow_flake`) drifting and fluttering when calm, thick sideways streaks at worst (stretched by speed). The window art no longer has painted streaks.
+- Light: the window sprite and window light go from bright daylight to dim grey-blue; the ambient light gets darker and bluer with strength (so Ambient's scene values are overridden in Play).
+- Sound: the wind bed rises with `Blow`; a new `howl` bed (moaning, roaring loop) fades in as it gets bad; `rattle` one-shots (window/sheet metal) come in the gusts, `knock` (something loose banging on the building, sometimes twice) only once it's bad. Synth in `make_audio.py` (new sounds generated last so the older ones stay identical); `AudioSetup.Build()` re-run.
 
 ## Playtest feedback (10/26, from your run) and fixes
 - Dashing into the parked cart in the training moved it: a parked cart is now a wall (`PlayerController.Ram`).

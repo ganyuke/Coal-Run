@@ -175,7 +175,7 @@ namespace CoalRun.Stations
                 var strength = Mathf.Lerp(lightRange.x * ember, lightRange.y, _heat) * (.85f + .3f * flicker);
                 fireLight.intensity = strength;
                 fireLight.color = Color.Lerp(embers, flames, _heat);
-                fireLight.pointLightOuterRadius = Mathf.Lerp(4.5f, 9f, _heat);
+                fireLight.pointLightOuterRadius = Mathf.Lerp(5.5f, 11f, _heat);
             }
 
             if (meterDisc) meterDisc.Rotate(0, 0, -BurnRate * meterSpin * Time.deltaTime);

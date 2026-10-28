@@ -57,9 +57,6 @@ namespace CoalRun.Stations
         [Tooltip("Degrees a second of swing per m/s of jolt.")]
         [SerializeField]
         private float lampKick = 120;
-        [Tooltip("The lamp's glow, flickering, and dimmed while it swings hard.")]
-        [SerializeField]
-        private SpriteRenderer glow;
 
         [Header("Dust")]
         [SerializeField] private ParticleSystem dust;
@@ -73,13 +70,8 @@ namespace CoalRun.Stations
         // The fastest it went since it left an end of the shaft, and whether it was at one last step.
         private float _peak;
         private bool _wasAtEnd = true;
-        private Color _glowColor;
 
-        private void Start()
-        {
-            _game = ShiftManager.Instance;
-            if (glow) _glowColor = glow.color;
-        }
+        private void Start() => _game = ShiftManager.Instance;
 
         private void FixedUpdate()
         {
@@ -192,9 +184,6 @@ namespace CoalRun.Stations
             _swing = Mathf.Clamp(_swing + _swingSpeed * dt, -60, 60);
             var shiver = Mathf.Min(Mathf.Abs(lift.Speed), 4) * .6f * Mathf.Sin(Time.time * 47);
             if (lamp) lamp.localRotation = Quaternion.Euler(0, 0, _swing + shiver);
-            if (!glow) return;
-            var flicker = .85f + .15f * Mathf.PerlinNoise(Time.time * 6, 0) - Mathf.Min(.3f, Mathf.Abs(_swingSpeed) / 400);
-            glow.color = new Color(_glowColor.r, _glowColor.g, _glowColor.b, _glowColor.a * flicker);
         }
 
         // Stretches a cable sprite (pivot at its centre, 1 unit long) between two heights.

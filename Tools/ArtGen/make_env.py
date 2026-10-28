@@ -107,7 +107,7 @@ def window():
     W, H = 6 * PPU, int(3.5 * PPU)
     c = Canvas(W, H)
     fr = 14
-    # The storm: a grey-blue sky, layered faceted drifts, streaks of snow.
+    # The storm: a grey-blue sky and layered faceted drifts. The falling snow is particles (Storm), not painted on.
     vgrad(c, fr, fr, W - fr, H - fr, hexc("#6f7f95"), hexc("#b8c8da"))
     rnd = random.Random(7)
     for layer, (col, base_y, amp) in enumerate([("#c7d6e6", .68, 26), ("#dbe7f3", .78, 22), ("#f1f6fb", .9, 16)]):
@@ -122,10 +122,6 @@ def window():
         for i in range(len(pts) - 3):
             tri = [pts[i + 1], pts[i + 2], (pts[i + 1][0], H - fr)]
             c.poly(tri, (255, 255, 255, 18 + 10 * layer))
-    for _ in range(120):
-        x, y = rnd.uniform(fr, W - fr), rnd.uniform(fr, H - fr)
-        l = rnd.uniform(10, 34)
-        c.poly([(x, y), (x + 2.2, y), (x - l * .5 + 2.2, y + l), (x - l * .5, y + l)], (255, 255, 255, rnd.randint(70, 190)))
     # Glass: a pale diagonal sheen, in low-poly facets.
     c.poly([(fr, fr), (fr + 150, fr), (fr + 70, H - fr), (fr, H - fr)], (255, 255, 255, 22))
     c.poly([(fr + 190, fr), (fr + 240, fr), (fr + 150, H - fr), (fr + 100, H - fr)], (255, 255, 255, 14))
@@ -145,10 +141,20 @@ def window():
     c.save(os.path.join(OUT, "window.png"))
 
 
+def snow_flake():
+    """A soft white dot for the snow: the Storm stretches it into a streak when the wind is up."""
+    c = Canvas(32, 32)
+    for r in range(15, 0, -1):
+        a = int(255 * (1 - r / 15) ** .6)
+        c.ellipse(16 - r, 16 - r, 16 + r, 16 + r, (255, 255, 255, max(a // 3, 8) if r > 6 else a))
+    c.save(os.path.join(OUT, "snow_flake.png"))
+
+
 if __name__ == "__main__":
     wall()
     floor_lower()
     floor_upper()
     shaft_back()
     window()
+    snow_flake()
     print("environment written to", os.path.abspath(OUT))

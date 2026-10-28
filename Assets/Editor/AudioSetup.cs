@@ -58,12 +58,15 @@ namespace CoalRun.Editor
             ("crank", "crank_loop", .25f, 1f, 1f, .15f, true, false),
             ("scrape", "scrape_loop", .35f, 1f, 1f, .4f, true, false),
             ("roll", "cart_roll_loop", .4f, 1f, 1f, .5f, true, false),
+            ("rattle", "storm_rattle", .45f, .9f, 1.12f, 1, false, false),
+            ("knock", "storm_knock", .7f, .85f, 1.1f, 1, false, false),
         };
 
         // name, clip prefix, volume
         private static readonly (string, string, float)[] Beds =
         {
             ("wind", "wind_loop", .55f),
+            ("howl", "howl_loop", .55f),
             ("fire", "fire_loop", .7f),
             ("lift", "lift_groan_loop", .5f),
             ("drone", "drone_loop", .5f),

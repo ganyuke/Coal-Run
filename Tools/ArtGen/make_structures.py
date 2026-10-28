@@ -477,14 +477,23 @@ def props():
     po.poly([(po.w / 2, 62), (po.w / 2 + 12, 76), (po.w / 2, 72), (po.w / 2 - 12, 76)], hexc("#e0902c"))
     bevel(po, 0, 0, po.w, po.h, w=2, hi=.1, lo=.25)
     save(po, "poster_fire")
-    # Hanging cage lamp.
+    # Hanging cage lamp: an enamel shade over the bulb, its lit underside showing, and a wire guard round the bulb.
     lp = Canvas(int(.5 * P), int(.7 * P))
-    lp.rect(lp.w / 2 - 3, 0, lp.w / 2 + 3, 14, hexc("#2b2118"))
-    fan(lp, [(lp.w / 2 - 20, 30), (lp.w / 2 - 8, 14), (lp.w / 2 + 8, 14), (lp.w / 2 + 20, 30)], hexc("#3e5440"), seed=3)
-    sphere_facets(lp, lp.w / 2, 36, 11, hexc("#ffe39a"), sides=8, seed=2, light=(0, 0))
-    for x in (-12, -4, 4, 12):
-        lp.line([(lp.w / 2 + x, 26), (lp.w / 2 + x * 1.2, 52)], hexc("#1e1e22"), 1.5)
-    lp.line([(lp.w / 2 - 14, 52), (lp.w / 2 + 14, 52)], hexc("#1e1e22"), 1.5)
+    cx = lp.w / 2
+    wire = hexc("#1e1e22")
+    lp.rect(cx - 1.5, 0, cx + 1.5, 12, wire)
+    lp.rect(cx - 5, 10, cx + 5, 19, hexc("#2e3036"))
+    lp.ellipse(cx - 24, 30, cx + 24, 40, hexc("#d9a24e"))
+    sphere_facets(lp, cx, 41, 10, hexc("#ffe7a0"), sides=10, seed=2, light=(0, -.6))
+    sphere_facets(lp, cx, 42, 5, hexc("#fffbea"), sides=8, seed=5)
+    # The guard: wires from the rim down to a small ring under the bulb, with a hoop round its middle.
+    for x in (-15, -5, 5, 15):
+        lp.line([(cx + x, 35), (cx + x * 1.05, 46), (cx + x * .45, 56)], wire, 1.5)
+    lp.line([(cx - 16, 45), (cx + 16, 45)], wire, 1.5)
+    lp.line([(cx - 8, 56), (cx + 8, 56)], wire, 2)
+    # The shade goes on last, so it covers the top of the bulb.
+    fan(lp, [(cx - 26, 35), (cx - 8, 17), (cx + 8, 17), (cx + 26, 35)], hexc("#3e5440"), seed=3)
+    lp.line([(cx - 26, 35), (cx + 26, 35)], hexc("#7a9474"), 2.5)
     save(lp, "lamp_cage@128")
 
 

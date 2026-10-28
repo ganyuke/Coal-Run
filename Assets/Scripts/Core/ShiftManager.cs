@@ -33,6 +33,7 @@ namespace CoalRun.Core
         [SerializeField] private TipCradle cradle;
         [SerializeField] private StaffLift staffLift;
         [SerializeField] private RedPhone phone;
+        [SerializeField] private Storm storm;
         [Tooltip("Owns the coal dust particles, which the rest of the room's coal borrows (CoalDust).")]
         [SerializeField]
         private LiftShaft liftShaft;
@@ -57,6 +58,7 @@ namespace CoalRun.Core
         public Furnace Furnace => furnace;
         public TipCradle Cradle => cradle;
         public RedPhone Phone => phone;
+        public Storm Storm => storm;
         public Tutorial Tutorial => tutorial;
         public Notebook Notebook => notebook;
 

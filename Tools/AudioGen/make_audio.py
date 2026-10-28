@@ -277,9 +277,73 @@ def bin_rattle():
     save("bin_rattle", norm(y * env(len(k), .002, .1), .8))
 
 
+def resonate(x, freq, q):
+    """Noise through a band-pass whose centre moves (one frequency per sample): wind whistling round a corner."""
+    w = 2 * np.pi * np.asarray(freq) / SR
+    r = 1 - w / (2 * q)
+    a1, a2 = list(2 * r * np.cos(w)), list(r * r)
+    xs, g = list(x), list(1 - r)
+    out = [0.0] * len(xs)
+    y1 = y2 = 0.0
+    for i in range(len(xs)):
+        y0 = g[i] * xs[i] + a1[i] * y1 - a2[i] * y2
+        out[i] = y0
+        y2, y1 = y1, y0
+    return np.array(out)
+
+
+def howl():
+    """The blizzard at its worst: a low roar, and the wind moaning round the building, rising and falling."""
+    n = 16
+    k = t(n)
+    roar = band(noise(n), 40, 320)
+    swell = .5 + .5 * np.sin(2 * np.pi * (.0625 * k + .35 * np.sin(2 * np.pi * .0625 * k)))
+    moan = np.zeros_like(k)
+    for f0, depth, rate, ph, amp in [(380, 110, .125, 0, 1), (560, 160, .1875, 1.7, .7), (260, 70, .0625, 3.1, .8)]:
+        f = f0 + depth * np.sin(2 * np.pi * rate * k + ph)
+        moan += norm(resonate(noise(n), f, 18)) * amp * (.4 + .6 * (.5 + .5 * np.sin(2 * np.pi * rate * 2 * k + ph)) ** 2)
+    hiss = band(noise(n), 1800, 6000)
+    y = norm(roar) * .7 * (.6 + .4 * swell) + norm(moan) * .55 * (.5 + .5 * swell) + norm(hiss) * .15 * swell
+    save("howl_loop", norm(loopable(y, 2.0), .7))
+
+
+def storm_knock():
+    """Something loose banging on the building in the wind: a dull thump through the wall, sometimes twice."""
+    for v in range(3):
+        k = t(.9)
+        y = np.zeros_like(k)
+        hits = [(0, 1)] if v == 0 else [(0, 1), (rng.uniform(.14, .26), rng.uniform(.5, .8))]
+        if v == 2:
+            hits.append((hits[1][0] + rng.uniform(.12, .2), .4))
+        for at, amp in hits:
+            i = int(at * SR)
+            m = k[: len(k) - i]
+            f = rng.uniform(70, 95)
+            thump = np.sin(2 * np.pi * f * m * (1 + .4 * np.exp(-m * 30))) * np.exp(-m * 16)
+            body = np.sin(2 * np.pi * rng.uniform(190, 240) * m) * np.exp(-m * 30) * .4
+            burst = band(rng.standard_normal(len(m)), 80, 600) * np.exp(-m * 60) * .5
+            y[i:] += amp * (thump + body + norm(burst) * .5)
+        save(f"storm_knock_{v}", norm(band(y, 30, 2500), .8))
+
+
+def storm_rattle():
+    """The window and the sheet metal round it rattling in a gust: quick ticks swelling and dying away."""
+    for v in range(3):
+        n = rng.uniform(.6, 1.2)
+        k = t(n)
+        ticks = clicks(n, rng.uniform(18, 32), rng.uniform(1100, 1900), .018, jitter=.8)
+        shape = np.sin(np.pi * k / n) ** 1.5
+        ring = band(noise(n), 2500, 5000) * .15
+        save(f"storm_rattle_{v}", norm((norm(ticks) + ring) * shape * env(len(k), .01, .08), .7))
+
+
 if __name__ == "__main__":
     for f in (wind, fire, hum, groan, cart_roll, shovel, coal_patter, bin_rattle, crank, scrape, roll, phone, paper, pour, spill, kindle, ignite, wrench, chain, blip, drone, heartbeat, shiver, gong):
         f()
     whoosh("dash", .4, 300, 2400)
     whoosh("lurch", .3, 200, 1200, .5)
+    # New sounds go last, so the shared random stream leaves the older ones as they were.
+    howl()
+    storm_knock()
+    storm_rattle()
     print("audio written to", os.path.abspath(OUT), sorted(os.listdir(OUT)))

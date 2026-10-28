@@ -8,8 +8,8 @@ namespace CoalRun.Audio
     // Everything you hear. Stations and the hub raise named sounds (ShiftManager.Sound); the director plays the cue
     // with that name: a random one of its clips at a little random pitch, or, for a sound that goes on (a crank turning,
     // a cart dragging), a loop that fades in while the event keeps arriving and out when it stops. Underneath are the beds:
-    // the wind, the fire, the freight lift's hum, a low drone, and, as the cold gets to the operator, a heartbeat and the
-    // chattering of teeth. Nothing here changes the game.
+    // the wind and the storm's howl, the fire, the freight lift's hum, a low drone, and, as the cold gets to the operator,
+    // a heartbeat and the chattering of teeth. Nothing here changes the game.
     public class AudioDirector : MonoBehaviour
     {
         [Serializable]
@@ -137,8 +137,11 @@ namespace CoalRun.Audio
         private void Beds()
         {
             var playing = _game.Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving or Phase.Replacement;
-            var gust = .6f + .4f * Mathf.PerlinNoise(Time.time * .05f, 3);
-            SetBed("wind", (playing || _game.Phase == Phase.Briefing ? .4f : .25f) * gust + _game.Chill * .25f);
+            // The wind follows the storm: always there, rising and gusting with it, and a howl on top in the worst of it.
+            var storm = _game.Storm;
+            var blow = storm ? storm.Blow : .4f;
+            SetBed("wind", (.25f + .5f * Mathf.Min(blow, 1)) * (playing || _game.Phase == Phase.Briefing ? 1 : .6f) + _game.Chill * .25f, .9f + .2f * blow);
+            SetBed("howl", storm ? Mathf.Clamp01(blow * blow) : 0, .92f + .16f * (storm ? storm.Gust : 0));
             SetBed("drone", _game.Phase == Phase.Frozen ? 0 : playing ? .5f : .35f);
             var f = _game.Furnace;
             var top = _game.Tune.burnRates[^1];
