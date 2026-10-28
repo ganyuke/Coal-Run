@@ -13,7 +13,7 @@ namespace CoalRun.Stations
     public class TipCradle : MonoBehaviour
     {
         [SerializeField] private FloorLever lever;
-        [Tooltip("Hung from the hoist beam over either end of the cart, left then right. Drawn to the bin's top corners while it's hooked on.")]
+        [Tooltip("Hung from the hoist beam over either end of the cart, left then right. Drawn to the bin's top corners while it's hooked on: a sprite in Tiled mode grows by links, any other is stretched.")]
         [SerializeField]
         private Transform[] chains = new Transform[2];
         [Tooltip("How high the beam the chains hang from is, above the floor.")]
@@ -165,7 +165,9 @@ namespace CoalRun.Stations
                 var d = bottom - top;
                 chains[i].position = (top + bottom) / 2;
                 chains[i].rotation = Quaternion.FromToRotation(Vector3.up, d);
-                chains[i].localScale = new Vector3(chains[i].localScale.x, d.magnitude, 1);
+                if (chains[i].TryGetComponent<SpriteRenderer>(out var links) && links.drawMode == SpriteDrawMode.Tiled)
+                    links.size = new Vector2(links.size.x, d.magnitude);
+                else chains[i].localScale = new Vector3(chains[i].localScale.x, d.magnitude, 1);
             }
         }
     }

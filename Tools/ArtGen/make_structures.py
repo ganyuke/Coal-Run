@@ -268,15 +268,49 @@ def control_room():
     W, H = int(4.3 * PPU), int(2.7 * PPU)
     c = Canvas(W, H)
     facets(c, 0, 0, W, H, hexc("#2c3a40"), cell=40, amp=.07, seed=21, light=(0, -.4))
-    # A map board, a clock-less wall, a desk.
-    c.rect(24, 26, 98, 80, hexc("#1a1f26"))
-    c.rect(28, 30, 94, 76, hexc("#3a4a42"))
-    for i in range(5):
-        c.line([(32, 36 + i * 8), (90, 40 + i * 7)], (200, 210, 190, 60), 1)
     for x in range(0, W, 96):
         c.rect(x, 0, x + 2, H, (0, 0, 0, 70))
+    # A map board of the building's lines.
+    c.rect(18, 22, 96, 78, hexc("#1a1f26"))
+    c.rect(22, 26, 92, 74, hexc("#3a4a42"))
+    for i in range(5):
+        c.line([(26, 32 + i * 8), (88, 36 + i * 7)], (200, 210, 190, 60), 1)
+    for x, y in [(40, 40), (64, 50), (78, 36)]:
+        c.ellipse(x - 2, y - 2, x + 2, y + 2, hexc("#e8b923"))
+    # A row of gauges.
+    for i, x in enumerate((114, 140, 166)):
+        c.ellipse(x - 11, 30, x + 11, 52, hexc("#1a1f26"))
+        c.ellipse(x - 9, 32, x + 9, 50, hexc("#d8d4c4"))
+        a = -2.2 + i * .9
+        c.line([(x, 41), (x + math.cos(a) * 7, 41 + math.sin(a) * 7)], hexc("#b8322a"), 1.5)
+    c.rect(104, 58, 176, 62, hexc("#1a1f26"))
+    # A switch cabinet with its lamps.
+    c.rect(196, 16, 266, H - 40, hexc("#1a1f26"))
+    facets(c, 199, 19, 263, H - 43, hexc("#4c5a66"), cell=24, amp=.06, seed=22, light=(0, -.5))
+    c.line([(231, 22), (231, H - 46)], (0, 0, 0, 90), 1)
+    lamps = [hexc("#e04a3a"), hexc("#5cd66a"), hexc("#e8b923")]
+    rnd = random.Random(23)
+    for row in range(4):
+        for col in range(5):
+            x, y = 206 + col * 12 + (2 if col > 2 else 0), 28 + row * 12
+            c.ellipse(x - 3, y - 3, x + 3, y + 3, hexc("#141820"))
+            if rnd.random() < .7:
+                c.ellipse(x - 2, y - 2, x + 2, y + 2, lamps[rnd.randrange(3)])
+    for row in range(3):
+        for col in range(4):
+            x, y = 210 + col * 14, 84 + row * 10
+            c.rect(x - 2, y - 3, x + 2, y + 3, hexc("#141820"))
+            c.rect(x - 1, y - 3 + (0 if rnd.random() < .5 else 3), x + 1, y + (0 if rnd.random() < .5 else 3), hexc("#c8ccd4"))
+    # The console along the back: a sloped desk of buttons and a small screen.
     c.rect(0, H - 40, W, H, hexc("#23292f"))
-    c.rect(0, H - 40, W, H - 36, hexc("#46525a"))
+    c.poly([(0, H - 40), (W, H - 40), (W, H - 30), (0, H - 30)], hexc("#46525a"))
+    c.rect(0, H - 40, W, H - 38, (255, 255, 255, 50))
+    c.rect(22, H - 38, 58, H - 31, hexc("#0e1a14"))
+    c.rect(24, H - 37, 56, H - 32, hexc("#2f6a48"))
+    for x in range(70, W - 10, 9):
+        c.rect(x, H - 36, x + 5, H - 33, lamps[rnd.randrange(3)] if rnd.random() < .45 else hexc("#141820"))
+    for x in range(0, W, 46):
+        c.rect(x + 4, H - 26, x + 40, H - 4, (0, 0, 0, 40))
     return save(c, "control_back")
 
 
@@ -287,8 +321,19 @@ def glass():
     c.poly([(0, 0), (90, 0), (30, H), (0, H)], (255, 255, 255, 40))
     c.poly([(120, 0), (150, 0), (80, H), (50, H)], (255, 255, 255, 26))
     c.poly([(W - 120, 0), (W - 70, 0), (W - 150, H), (W - 200, H)], (255, 255, 255, 22))
-    c.rect(0, 0, W, 3, (255, 255, 255, 90))
-    c.rect(0, H - 3, W, H, (0, 0, 0, 70))
+    # The booth's steel front: posts, a transom under the roof, a sill, and one mullion clear of the lever's sweep.
+    frame = hexc("#56637a")
+    for x0, x1 in ((0, 7), (W - 6, W), (168, 174)):
+        c.rect(x0, 0, x1, H, frame)
+        c.rect(x0, 0, x0 + 2, H, (255, 255, 255, 50))
+        c.rect(x1 - 1, 0, x1, H, (0, 0, 0, 80))
+    for y0, y1 in ((0, 8), (32, 37), (H - 7, H)):
+        c.rect(0, y0, W, y1, frame)
+        c.rect(0, y0, W, y0 + 2, (255, 255, 255, 60))
+        c.rect(0, y1 - 1, W, y1, (0, 0, 0, 90))
+    for x in (3, W - 3, 171):
+        for y in (4, 34, H - 4):
+            rivet(c, x, y, 1.6, STEEL)
     return save(c, "glass")
 
 
@@ -497,14 +542,110 @@ def props():
     save(lp, "lamp_cage@128")
 
 
+def framing():
+    """The steel holding the room up: tiled pieces (names ending _tile, drawn in Tiled mode so they stretch by
+    repeating), a pipe elbow, the tip cradle's hoist gear and its floor plate."""
+    girder = hexc("#4b5668")
+    # A bay of the X-braced truss under the upper floor: chords top and bottom, half a post at each side.
+    W, H = 48, 40
+    t = Canvas(W, H)
+    for a, b in (((0, 6), (W, H - 6)), ((0, H - 6), (W, 6))):
+        t.line([a, b], mul(girder, .82), 3)
+    t.rect(0, 6, 3, H - 6, mul(girder, .95))
+    t.rect(W - 3, 6, W, H - 6, mul(girder, .95))
+    for y0 in (0, H - 6):
+        t.rect(0, y0, W, y0 + 6, girder)
+        t.rect(0, y0, W, y0 + 1.5, (255, 255, 255, 60))
+        t.rect(0, y0 + 5, W, y0 + 6, (0, 0, 0, 80))
+    t.ellipse(W / 2 - 3, H / 2 - 3, W / 2 + 3, H / 2 + 3, mul(girder, 1.05))
+    for x in (1.5, W - 1.5):
+        for y in (8.5, H - 8.5):
+            rivet(t, x, y, 1.3, STEEL)
+    save(t, "truss_tile")
+    # A length of lattice column: two rails, X bracing, a batten at each joint.
+    W, H = 32, 40
+    v = Canvas(W, H)
+    for a, b in (((5, 0), (W - 5, H)), ((5, H), (W - 5, 0))):
+        v.line([a, b], mul(girder, .8), 2.5)
+    for y0, y1 in ((0, 3), (H - 3, H)):
+        v.rect(5, y0, W - 5, y1, mul(girder, .9))
+    for x0 in (0, W - 5):
+        v.rect(x0, 0, x0 + 5, H, girder)
+        v.rect(x0, 0, x0 + 1.5, H, (255, 255, 255, 55))
+        v.rect(x0 + 4, 0, x0 + 5, H, (0, 0, 0, 80))
+    for x in (2.5, W - 2.5):
+        rivet(v, x, 1.5, 1.2, STEEL)
+    save(v, "lattice_tile")
+    # The hoist runway: a yellow I-beam.
+    W, H = 32, 16
+    ib = Canvas(W, H)
+    paint = hexc("#c9a227")
+    ib.rect(0, 4, W, 12, mul(paint, .62))
+    for y0 in (0, 12):
+        ib.rect(0, y0, W, y0 + 4, paint)
+        ib.rect(0, y0, W, y0 + 1, (255, 255, 255, 80))
+        ib.rect(0, y0 + 3, W, y0 + 4, (0, 0, 0, 70))
+    rivet(ib, W / 2, 8, 1.4, mul(paint, .9))
+    save(ib, "ibeam_tile")
+    # Chain: a link face on, then one edge on.
+    W, H = 10, 14
+    ch = Canvas(W, H)
+    metal = hexc("#9aa3b0")
+    ch.rect(3.5, 7, 6.5, H, mul(metal, .7))
+    ch.rect(3.5, 0, 6.5, 2, mul(metal, .7))
+    ch.ellipse(.5, 1, W - .5, 9, mul(metal, .55))
+    ch.ellipse(1.5, 2, W - 1.5, 8, metal)
+    ch.ellipse(3.5, 3.5, W - 3.5, 6.5, (0, 0, 0, 0))
+    ch.img.paste((0, 0, 0, 0), (int(3.5 * SS), int(3.5 * SS), int((W - 3.5) * SS), int(6.5 * SS)))
+    save(ch, "chain_tile")
+    # A chain hoist hanging from its trolley.
+    P = 128
+    W, H = int(.36 * P), int(.44 * P)
+    hb = Canvas(W, H)
+    hb.rect(4, 0, W - 4, 7, hexc("#2a303a"))
+    for x in (11, W - 11):
+        hb.ellipse(x - 5, -3, x + 5, 7, hexc("#3a424e"))
+    hb.rect(W / 2 - 3, 6, W / 2 + 3, 12, hexc("#2a303a"))
+    fan(hb, [(4, 14), (W - 4, 14), (W - 2, 22), (W - 2, H - 10), (W - 6, H - 4), (6, H - 4), (2, H - 10), (2, 22)], paint, seed=31)
+    ring(hb, W / 2, (14 + H - 4) / 2, 11, 6, mul(paint, .75), sides=12, seed=32)
+    hb.ellipse(W / 2 - 4, (14 + H - 4) / 2 - 4, W / 2 + 4, (14 + H - 4) / 2 + 4, hexc("#2a303a"))
+    hb.rect(W / 2 - 5, H - 5, W / 2 + 5, H, hexc("#2a303a"))
+    save(hb, "hoist_block@128")
+    # Where the cart parks under the hoist: a steel plate, hazard-striped at each end.
+    W, H = int(2.4 * PPU), int(.14 * PPU)
+    cp = Canvas(W, H)
+    facets(cp, 0, 0, W, H, hexc("#7a8394"), cell=12, amp=.08, seed=33, light=(0, -1))
+    for x0 in (0, W - 26):
+        for i in range(-2, 6):
+            x = x0 + i * 7
+            cp.poly([(x, H), (x + 4, 0), (x + 7.5, 0), (x + 3.5, H)], YELLOW)
+        cp.rect(x0 - 8, 0, x0, H, (0, 0, 0, 0))
+    cp.img.paste((0, 0, 0, 0), (W * SS - 0, 0, W * SS + 60, H * SS))
+    cp.rect(0, 0, W, 1.5, (255, 255, 255, 70))
+    cp.rect(0, H - 1.5, W, H, (0, 0, 0, 90))
+    save(cp, "cradle_plate")
+    # A pipe elbow joining a pipe going up (top edge) to one going left (left edge), shaded like pipe_h.
+    e = Canvas(24, 24)
+    steps = 16
+    for band in range(4):
+        k = .75 + .45 * (1 - abs(band - 1.2) / 3)
+        r0, r1 = 8 + band * 4, 12 + band * 4
+        for i in range(steps):
+            a0, a1 = math.pi / 2 * i / steps, math.pi / 2 * (i + 1) / steps
+            e.poly([(math.cos(a0) * r0, math.sin(a0) * r0), (math.cos(a0) * r1, math.sin(a0) * r1),
+                    (math.cos(a1) * r1, math.sin(a1) * r1), (math.cos(a1) * r0, math.sin(a1) * r0)], mul(hexc("#6a788c"), k))
+    save(e, "pipe_elbow")
+
+
 if __name__ == "__main__":
     furnace(); furnace_mouth(); coal_bed(); hopper_back(); coal_fill(); grate(); hopper_chute(); hopper_grate(); chute_pipe(); bunker(); weigh_plate()
     stair_parts(); control_room(); glass(); slab("slab_concrete", 4.3, .4, 5); staff_lift(); phone_and_lamp()
-    counterweight_parts(); meter_parts(); tile(); props()
+    counterweight_parts(); meter_parts(); tile(); props(); framing()
     names = ["furnace_body", "furnace_mouth", "coal_bed", "hopper_back", "coal_fill", "grate", "hopper_chute", "hopper_grate", "chute_pipe", "bunker", "weigh_plate",
              "tread", "beam_dark", "rail_light", "control_back", "glass", "slab_concrete", "staff_lift_car", "staff_lift_door",
              "phone_red@128", "lamp_lens@128", "counterweight", "pulley", "rope", "meter_housing@128", "meter_disc@128", "tile",
-             "barrel@128", "crate", "pipe_h", "pipe_v", "flange", "valve@128", "gauge@128", "sign_warning@128", "poster_fire", "lamp_cage@128"]
+             "barrel@128", "crate", "pipe_h", "pipe_v", "flange", "valve@128", "gauge@128", "sign_warning@128", "poster_fire", "lamp_cage@128",
+             "truss_tile", "lattice_tile", "ibeam_tile", "chain_tile", "hoist_block@128", "cradle_plate", "pipe_elbow"]
     ims = [Image.open(os.path.join(OUT, n + ".png")) for n in names]
     preview(ims, os.path.join(os.path.dirname(__file__), "preview_structures.png"), scale=1.0, cols=9)
     print("structures written")
