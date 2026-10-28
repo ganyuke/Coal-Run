@@ -226,6 +226,9 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 - Bot note: the freight lift stops dead at the shaft ends, so a loaded cart rammed into them spills; `ShiftBot` eases off in the last 2 units.
 - Effects check (10/26, bot-driven Day 1, 8 full-room frames over 2 minutes): mean luminance 65-70/255 and only ~1% of pixels near white (window, lamps, fire), steady across the run, so bloom and lights are not blowing out the picture.
 
+## Lit fixtures (10/27)
+- The instrument panel's board, the thermometer glass, the cold lamp's cage and the burn lever's dial (tiles, snowflakes) use `SpriteLit` now, so they darken with the room and the storm. What glows stays unlit: chart lines, markers, mercury, the clock digits, bulbs and lenses, the fire. World text (TMP) ignores 2D lights, so painted labels should be sprites; the panel's scale labels and legend already are (baked into `instrument_panel`).
+
 ## Storm (10/27, your calls: driven by the forecast)
 - `Storm` (was `StormSnow`, on Room/Art/Walls/Storm; `ShiftManager.Storm`): `Strength` 0..1 from the outside temperature (-4 → -38), `Gust` (Perlin swells, quicker the worse it is), `Blow` = strength with the gust on it.
 - Snow: soft round flakes (`snow_flake`) drifting and fluttering when calm, thick sideways streaks at worst (stretched by speed). The window art no longer has painted streaks.
