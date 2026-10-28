@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CoalRun.Core
 {
@@ -87,7 +88,13 @@ namespace CoalRun.Core
 
             [Header("The axle installer")]
             [TextArea] public string installerArrives = "“Engineering sent me down to fix your cart. Here’s the other axle. We stole it from the other guy’s cart. Give it a try.”";
-            [TextArea] public string installerRunOver = "“I figured you’d run me over. Good luck down here.”";
+            [Tooltip("The operator, having run him over with the cart.")]
+            [TextArea]
+            public string installerHit = "“Huh. It rolls.”";
+            [Tooltip("Him, walking off to the staff lift once the cart's hauled round him.")]
+            [TextArea]
+            [FormerlySerializedAs("installerRunOver")]
+            public string installerLeaves = "“I figured you’d run me over. Good luck down here.”";
 
             [Header("Notebook steps")]
             [TextArea] public string goPullLever = "Go up to the control room (W at the stairs) and pull the chute lever.";

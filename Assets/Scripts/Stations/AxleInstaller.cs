@@ -64,13 +64,13 @@ namespace CoalRun.Stations
                 _game.Bodies.Add(Corpse.Topple(art, "Dead installer", at, new Vector2(cart.linearVelocity.x, 2.5f)));
                 installer.SetActive(false);
                 _game.Sound("hurt");
-                _game.Say("“Huh. It rolls.”", 4);
+                _game.Say(_game.Lines.training.installerHit, 4);
                 return;
             }
             if (Mathf.Abs(gap) > 6)
             {
                 _left = true;
-                _game.Say(_game.Lines.training.installerRunOver, 5, voice);
+                _game.Say(_game.Lines.training.installerLeaves, 5, voice);
             }
         }
     }
