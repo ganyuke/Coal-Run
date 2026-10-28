@@ -234,7 +234,7 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 - `Signal lamp` prefab (caged bulkhead lamp + light; the cold lamp on the panel is one too). One beside each number, glowing red while the lift is at that landing (`LiftShaft.Signals`). A steady amber `Beacon` sits in the middle of the platform's top rail.
 
 ## Handles in the dark (10/27, your calls: A + B, as lights)
-- Each `Machine` lists its `accents` (lever knobs, crank wheels). `Machine.Glow` puts a copy of `MachineInput`'s inactive `Handle glow` light on the first accent: intensity .7 across the room, easing to 1.8 when the operator can reach it (`glowLevel`). Nothing on hover; machines the training hasn't introduced don't glow.
+- Its `glow` is a Light2D child of the knob or wheel, named "Glow", in the scene (so it shows in the Scene view and can be tuned by hand). `MachineInput` sets its intensity: .7 across the room, easing to 1.8 when the operator can reach it (`glowLevel`). Nothing on hover; machines the training hasn't introduced don't glow.
 - Not done yet: the E interactables (cart wheels, bodies, axle installer), which aren't machines.
 - The operator wears a hard hat lamp (`Operator` prefab, Art/Head/Hat lamp). Bodies keep theirs lit.
 - Room brightened: Storm ambient (.5 calm, .38 worst), post exposure +.1.

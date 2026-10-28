@@ -13,11 +13,9 @@ namespace CoalRun.Stations
 
         [SerializeField] protected Transform handle;
         [SerializeField] private float grabRadius = 1;
-        [Tooltip("The parts you take hold of. A faint light over them shows them in the dark, brighter in reach.")]
+        [Tooltip("A faint light over the handle, so it shows in the dark; brighter with the operator in reach.")]
         [SerializeField]
-        private SpriteRenderer[] accents;
-
-        private Light2D _glow;
+        private Light2D glow;
 
         public bool InUse { get; private set; }
         public virtual Vector2 HandlePosition => handle ? handle.position : transform.position;
@@ -40,19 +38,10 @@ namespace CoalRun.Stations
         public virtual void Walk(float dx) { }
         protected virtual void OnBegin(Vector2 mouse) { }
 
-        // Eases a faint light over the handle towards level (its intensity), so it shows however dark the room
-        // is. A copy of `template`, made on first use and carried on the first accent so it moves with it.
-        public void Glow(float level, Light2D template, float dt)
+        // Eases the faint light over its handle towards level (its intensity), so it shows however dark the room is.
+        public void Glow(float level, float dt)
         {
-            if (accents == null || accents.Length == 0 || !template) return;
-            if (!_glow)
-            {
-                _glow = Instantiate(template, accents[0].transform);
-                _glow.name = "Glow";
-                _glow.transform.localPosition = Vector3.zero;
-                _glow.gameObject.SetActive(true);
-            }
-            _glow.intensity = Mathf.MoveTowards(_glow.intensity, level, dt * 2);
+            if (glow) glow.intensity = Mathf.MoveTowards(glow.intensity, level, dt * 2);
         }
         protected virtual void OnEnd() { }
     }
