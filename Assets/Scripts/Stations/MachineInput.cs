@@ -13,9 +13,12 @@ namespace CoalRun.Stations
         [Tooltip("A handle's light times this with the operator right by it, where the hat lamp already lights it and the two would bloom.")]
         [SerializeField]
         private float glowNear = .4f;
-        [Tooltip("The operator's distance from a handle at which its light is fully dimmed, and back to full.")]
+        [Tooltip("Closer than this (metres), a handle's light is at its dimmest.")]
         [SerializeField]
-        private Vector2 glowFade = new(1, 3);
+        private float dimWithin = 1;
+        [Tooltip("Further than this (metres), a handle's light is at full. Set it to the same as Dim Within for a sharp switch.")]
+        [SerializeField]
+        private float fullBeyond = 3;
 
         public Machine Active { get; private set; }
         public Machine Hover { get; private set; }
@@ -42,8 +45,12 @@ namespace CoalRun.Stations
             }
             if (Active) Active.Drag(p, Time.deltaTime);
             foreach (var m in Machine.All)
-                m.Glow(game.Tutorial.Allows(m) ? Mathf.Lerp(glowNear, 1, Mathf.InverseLerp(glowFade.x, glowFade.y, Vector2.Distance(player.Position, m.HandlePosition))) : 0, Time.deltaTime);
+                m.Glow(game.Tutorial.Allows(m) ? Mathf.Lerp(glowNear, 1, Fade(Vector2.Distance(player.Position, m.HandlePosition))) : 0, Time.deltaTime);
         }
+
+        // 0 within dimWithin, 1 beyond fullBeyond, a ramp between. (InverseLerp gives 0 everywhere if they're equal.)
+        private float Fade(float distance) =>
+            fullBeyond > dimWithin ? Mathf.InverseLerp(dimWithin, fullBeyond, distance) : distance > dimWithin ? 1 : 0;
 
         public void Release()
         {
