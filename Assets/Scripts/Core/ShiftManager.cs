@@ -157,13 +157,13 @@ namespace CoalRun.Core
             RecoverLost();
         }
 
+        // A flare of heat from something thrown into the fire.
+        public void Warm(float degrees) => Temperature += degrees;
+
         // The building warms by what the furnace burns and loses heat to the outside in proportion to the
         // difference, so it changes slowly: run under demand and it cools gradually. Burning a notch's rate
         // holds it at `comfortable` against that notch's held temperature. The furnace runs after the hub,
         // so this is the last step's burn.
-        // A flare of heat from something thrown into the fire.
-        public void Warm(float degrees) => Temperature += degrees;
-
         private void StepHeat(float dt)
         {
             Clock += dt;
@@ -236,6 +236,9 @@ namespace CoalRun.Core
             Fade = 1;
             SetPhase(Phase.Complete);
             ReportReady = true;
+            // The door has closed and the shift is over: nobody acts in Complete anyway, and while this stayed set the
+            // report page was hidden (NotebookView) over a black screen.
+            Departing = false;
         }
 
         public void FinishTraining()
@@ -311,6 +314,9 @@ namespace CoalRun.Core
                 case 8: // Past the training and the briefing, into the shift.
                     tutorial.Skip();
                     BeginShift();
+                    break;
+                case 10: // The clock jumps to the last 30 seconds of the shift.
+                    if (ShiftRunning) Clock = Mathf.Max(Clock, tuning.shiftLength - 30);
                     break;
                 case 9: // The bot plays the shift (balance testing); F9 again stops it.
                     Dev.ShiftBot.Run(this);
