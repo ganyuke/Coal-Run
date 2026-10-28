@@ -87,6 +87,8 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 
 ### Smaller calls made while porting (change any of them)
 
+- **Releases:** `python3 Tools/release.py 0.2 [--release]` sets the version, builds every target with an installed module (`Assets/Editor/Builder.cs`; through the open editor, or batch mode if it's closed) into `dist/0.2/<Target>/`, zips each as `CoalRun-0.2-<Target>.zip`, and with `--release` makes GitHub release `v0.2` via `gh`. `dist/` is git-ignored. Deploying the WebGL folder is by hand. Only the Linux module is installed so far.
+
 - Room geometry is constants in `Room.cs`, which the scene was laid out from. If you move a floor in the scene by hand, update `Room.cs` too.
 - Fixed timestep is 1/60, as in the prototype. There's no substepping yet; fast carts use continuous collision instead. Add substeps if the cart tunnels through things.
 - Holding the cart is not a joint any more. A joint also held the cart up by its middle, so a one-wheel cart's skid never touched the floor and it hauled as fast as two wheels (4.4 m/s both). Now the grip only pulls and pushes along the floor (the force in `Move`), and `Hold` keeps the operator's hands on the rim (1.26 centre to centre; a grab from a step away closes in a fraction of a second). The keep-upright torque leaves the first 7° of lean alone so the cart can rest on its skid.

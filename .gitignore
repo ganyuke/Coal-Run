@@ -111,3 +111,6 @@ InitTestScene*.unity*
 # Art generator
 Tools/ArtGen/__pycache__/
 Tools/ArtGen/preview_*.png
+
+# Release builds (Tools/release.py)
+/dist/
