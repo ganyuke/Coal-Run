@@ -98,7 +98,7 @@ namespace CoalRun.Stations
                 if (objective != "") Add("training: " + objective, objective);
                 return list;
             }
-            if (_game.Phase is not (Phase.Shift or Phase.Leaving or Phase.Replacement)) return list;
+            if (!_game.InShift) return list;
 
             var furnace = _game.Furnace;
             var t = _game.Lines.tasks;

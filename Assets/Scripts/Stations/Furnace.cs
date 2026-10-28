@@ -108,7 +108,7 @@ namespace CoalRun.Stations
             if (emberGlow) emberGlow.Emit(6);
             _game.Sound("ignite", .5f);
             // Only the shift pays (the training's helper, say, is just a body).
-            if (_game.Phase is not (Phase.Shift or Phase.Leaving or Phase.Replacement)) return;
+            if (!_game.InShift) return;
             Output += _game.Tune.bodyOutput;
             _game.Warm(_game.Tune.bodyHeat);
             if (++BodiesBurned == 1) _game.Phone.Announce(_game.Lines.phone.burned);
@@ -126,7 +126,7 @@ namespace CoalRun.Stations
 
         private void FixedUpdate()
         {
-            if (_game.Phase is not (Phase.Shift or Phase.Leaving or Phase.Replacement)) { BurnRate = 0; return; }
+            if (!_game.InShift) { BurnRate = 0; return; }
             var dt = Time.fixedDeltaTime;
             var t = _game.Tune;
             if (!Lit) { BurnRate = 0; return; }
@@ -141,7 +141,7 @@ namespace CoalRun.Stations
 
             Hopper -= used;
             Burned += used;
-            Output += used * 1.5f;
+            Output += used * t.kWhPerCoal;
             BurnRate = used / dt;
         }
 

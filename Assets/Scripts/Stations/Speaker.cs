@@ -201,15 +201,19 @@ namespace CoalRun.Stations
             return at;
         }
 
+        private static readonly List<Speaker> Layout = new();
+        private static readonly System.Comparison<Speaker> ByStart = (a, b) => a._lineStart.CompareTo(b._lineStart);
+
         // Once a frame, after everyone has said their piece: the one who started first keeps its place, and each
         // later one that would overlap an earlier one is lifted above it.
         private void LateUpdate()
         {
             if (_laidOutAt == Time.frameCount) return;
             _laidOutAt = Time.frameCount;
-            var up = new List<Speaker>();
+            var up = Layout;
+            up.Clear();
             foreach (var s in All) if (s.Showing) up.Add(s);
-            up.Sort((a, b) => a._lineStart.CompareTo(b._lineStart));
+            up.Sort(ByStart);
             for (var i = 0; i < up.Count; i++)
             {
                 var me = up[i];

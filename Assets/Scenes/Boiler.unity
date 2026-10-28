@@ -41319,7 +41319,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7677705818877951447, guid: 0fa263733f77bcbc7bc5891764414305, type: 3}
       propertyPath: m_Name
-      value: Bottom Swinging Lamp
+      value: Bottom Swinging lamp
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -76791,7 +76791,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7677705818877951447, guid: 0fa263733f77bcbc7bc5891764414305, type: 3}
       propertyPath: m_Name
-      value: Top Swinging Lamp
+      value: Top Swinging lamp
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

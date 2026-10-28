@@ -20,7 +20,6 @@ namespace CoalRun.Stations
 
         private ShiftManager _game;
         private bool _met, _left;
-        private float _talkAt;
 
         private void Start()
         {

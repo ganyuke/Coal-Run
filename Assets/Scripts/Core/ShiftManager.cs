@@ -67,6 +67,10 @@ namespace CoalRun.Core
         // Training counts as going on while a replacement is on the way in the middle of it.
         public bool InTraining => Phase == Phase.Tutorial || Phase == Phase.Replacement && _resume == Phase.Tutorial;
         public bool Ended => Phase is Phase.Complete or Phase.Frozen;
+        // The room is live: the training or the shift, including the leaving and a replacement on the way.
+        public bool Playing => Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving or Phase.Replacement;
+        // The same, minus the training: the furnace burns, the building cools, and what happens counts.
+        public bool InShift => Phase is Phase.Shift or Phase.Leaving or Phase.Replacement;
         public bool CanAct => !Departing && Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving;
         // In the staff lift with the door closing: the operator is locked in place, and the screen fades out.
         public bool Departing { get; private set; }

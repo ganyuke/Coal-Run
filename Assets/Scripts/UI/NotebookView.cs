@@ -93,6 +93,9 @@ namespace CoalRun.UI
         private float _headingHeight, _ruleY, _rootY, _bodyFoot;
         private Phase _sheetFor = Phase.Shift;
         private static readonly System.Collections.Generic.List<(string key, string label)> NoPrompts = new();
+        // Each sticky note's text and what it was last set to, so a note only rewrites its text when the prompt changes.
+        private TMP_Text[] _stickyText;
+        private (string key, string label)[] _stickyShown;
 
         private void OnDisable() => PointerOver = false;
 
@@ -113,7 +116,7 @@ namespace CoalRun.UI
             var sheetMode = game.Phase == Phase.Briefing || game.Ended && game.ReportReady;
             if (!sheetMode) Follow();
             // Nothing to write in until there's a shift to write about; the staff lift's door closes on it.
-            var playing = game.Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving or Phase.Replacement;
+            var playing = game.Playing;
             var shown = (sheetMode || playing && _showing != null) && !game.Departing;
 
             // Dim the room behind a briefing or report; the fade out of the staff lift is black too.
@@ -268,13 +271,20 @@ namespace CoalRun.UI
         // The key prompts on the notes, in order; the notes left over are hidden, and all of them while `show` is off.
         private void Stickies(bool show)
         {
+            if (_stickyText == null)
+            {
+                _stickyText = new TMP_Text[stickies.Length];
+                _stickyShown = new (string, string)[stickies.Length];
+                for (var i = 0; i < stickies.Length; i++) _stickyText[i] = stickies[i].GetComponentInChildren<TMP_Text>(true);
+            }
             var prompts = show ? player.Prompts() : NoPrompts;
             for (var i = 0; i < stickies.Length; i++)
             {
                 var on = i < prompts.Count;
-                stickies[i].gameObject.SetActive(on);
-                if (!on) continue;
-                stickies[i].GetComponentInChildren<TMP_Text>().text = $"<b>[{prompts[i].key}]</b>  {prompts[i].label}";
+                if (stickies[i].gameObject.activeSelf != on) stickies[i].gameObject.SetActive(on);
+                if (!on || _stickyShown[i] == prompts[i]) continue;
+                _stickyShown[i] = prompts[i];
+                _stickyText[i].text = $"<b>[{prompts[i].key}]</b>  {prompts[i].label}";
                 stickies[i].color = KeyColorFor(prompts[i].key);
             }
         }

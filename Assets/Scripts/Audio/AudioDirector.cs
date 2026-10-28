@@ -136,7 +136,7 @@ namespace CoalRun.Audio
         // The beds follow the game: louder fire for a harder burn, the lift humming faster with its speed, the cold getting in.
         private void Beds()
         {
-            var playing = _game.Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving or Phase.Replacement;
+            var playing = _game.Playing;
             // The wind follows the storm: always there, rising and gusting with it, and a howl on top in the worst of it.
             var storm = _game.Storm;
             var blow = storm ? storm.Blow : .4f;

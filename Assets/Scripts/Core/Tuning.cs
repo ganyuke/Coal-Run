@@ -136,6 +136,8 @@ namespace CoalRun.Core
         [Header("Furnace")]
         public float[] burnRates = { .072f, .144f, .204f, .276f, .348f };
         public float[] heldTemperatures = { 8, -4, -14, -26, -38 };
+        [Tooltip("Electrical output, in kWh, for every unit of coal the furnace burns.")]
+        public float kWhPerCoal = 1.5f;
         public float heatLoss = .006f;
         public float heatCapacity = .28f;
         public float comfortable = 20;

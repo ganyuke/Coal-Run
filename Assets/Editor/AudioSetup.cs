@@ -60,6 +60,8 @@ namespace CoalRun.Editor
             ("roll", "cart_roll_loop", .4f, 1f, 1f, .5f, true, false),
             ("rattle", "storm_rattle", .45f, .9f, 1.12f, 1, false, false),
             ("knock", "storm_knock", .7f, .85f, 1.1f, 1, false, false),
+            ("relay", "relay", .5f, .95f, 1.05f, 0, false, false),
+            ("alarm", "alarm", .4f, 1f, 1f, 0, false, false),
         };
 
         // name, clip prefix, volume
@@ -73,6 +75,15 @@ namespace CoalRun.Editor
             ("heartbeat", "heartbeat_loop", .8f),
             ("shiver", "shiver_loop", .55f),
         };
+
+        // Rebuilds the director from the two tables above. It replaces the whole Audio object, so a level changed by hand
+        // in the Inspector is lost: change the table here instead (the master volume and voice count go back to their defaults).
+        [MenuItem("Coal Run/Rebuild audio table")]
+        private static void BuildFromMenu()
+        {
+            if (!EditorUtility.DisplayDialog("Rebuild audio table", "This replaces Systems/Audio with the cues and beds in AudioSetup.cs. Levels set by hand in the Inspector are lost.", "Rebuild", "Cancel")) return;
+            Debug.Log(Build());
+        }
 
         public static string Build()
         {

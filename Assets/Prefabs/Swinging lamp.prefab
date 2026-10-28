@@ -102,7 +102,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6371431682771303471}
   m_Layer: 0
-  m_Name: Swinging Lamp
+  m_Name: Swinging lamp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
