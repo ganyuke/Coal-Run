@@ -20,6 +20,9 @@ namespace CoalRun.Core
 
         [SerializeField] private Tuning tuning;
         [SerializeField] private DayConfig day;
+        [Tooltip("Every line of text the player reads.")]
+        [SerializeField]
+        private Lines lines;
         [Tooltip("The shifts in order. A survived shift moves on to the next; empty: just the one above.")]
         [SerializeField]
         private DayConfig[] days;
@@ -48,6 +51,7 @@ namespace CoalRun.Core
         private float firstArrival = 1.2f;
 
         public Tuning Tune => tuning;
+        public Lines Lines => lines;
         public DayConfig Day => days is { Length: > 0 } ? days[Mathf.Clamp(_dayIndex, 0, days.Length - 1)] : day;
         public bool HasNextDay => days != null && _dayIndex < days.Length - 1;
         public PlayerController Player => player;
@@ -161,7 +165,7 @@ namespace CoalRun.Core
             Clock += dt;
             Outside = Day.OutsideAt(Clock);
             Temperature += (furnace.BurnRate - tuning.heatLoss * (Temperature - Outside)) / tuning.heatCapacity * dt;
-            if (Freezing && Chill == 0) Say("God, it's freezing in here. Gotta get the fire up.", 4);
+            if (Freezing && Chill == 0) Say(lines.speech.freezing, 4);
             Chill = Mathf.Clamp01(Chill + (Freezing ? dt : -dt) / tuning.freezeGrace);
             if (Chill >= 1)
             {
@@ -173,7 +177,7 @@ namespace CoalRun.Core
                 // A replacement still on the way arrives to a finished shift.
                 if (Phase == Phase.Replacement) _resume = Phase.Leaving;
                 else SetPhase(Phase.Leaving);
-                Say("Shift's over. Into the staff lift.", 6);
+                Say(lines.speech.shiftOver, 6);
             }
         }
 
@@ -348,12 +352,8 @@ namespace CoalRun.Core
             Bodies.Add(player.Kill());
             SendOperator(tuning.replacementDelay);
             // Brass rings down to say another man is on his way, rather than anyone saying why this one died.
-            phone.Announce(Deaths switch
-            {
-                1 => "“We heard. We’re sending another guy down.”",
-                2 => "“Again? Fine. We’re sending another guy down.”",
-                _ => "“We’re sending another guy down. Please. Keep this one alive.”"
-            }, 2);
+            var deaths = lines.phone.deaths;
+            phone.Announce(deaths[Mathf.Min(Deaths, deaths.Length) - 1], 2);
             Sound("hurt");
         }
 

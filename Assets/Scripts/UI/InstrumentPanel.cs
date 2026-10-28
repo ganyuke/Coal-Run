@@ -115,7 +115,7 @@ namespace CoalRun.UI
             mercury.transform.localPosition = new Vector3(tubeX, bulbY + height / 2, 0);
             var heat = Heat(inside);
             mercury.color = bulb.color = heat;
-            clockText.text = _game.Ended || time >= length ? "OVER" : $"{(int)time / 60}:{(int)time % 60:00}";
+            clockText.text = _game.Ended || time >= length ? _game.Lines.sheets.clockOver : $"{(int)time / 60}:{(int)time % 60:00}";
 
             // Markers beside the tube: outside on the right, what the fire holds on the left (faint when it's out).
             outsideMarker.transform.localPosition = new Vector3(tubeX + .2f, HeightOf(outside), 0);

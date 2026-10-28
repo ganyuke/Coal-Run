@@ -43,7 +43,7 @@ namespace CoalRun.Stations
         {
             if (phase != Core.Phase.Shift || _met) return;
             _met = true;
-            _game.Say("“Engineering sent me down to fix your cart. Here’s the other axle. We stole it from the other guy’s cart. Give it a try.”", 9, voice);
+            _game.Say(_game.Lines.training.installerArrives, 9, voice);
         }
 
         private void FixedUpdate()
@@ -70,7 +70,7 @@ namespace CoalRun.Stations
             if (Mathf.Abs(gap) > 6)
             {
                 _left = true;
-                _game.Say("“I figured you’d run me over. Good luck down here.”", 5, voice);
+                _game.Say(_game.Lines.training.installerRunOver, 5, voice);
             }
         }
     }

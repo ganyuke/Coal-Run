@@ -227,7 +227,7 @@ namespace CoalRun.Stations
             {
                 var hurt = (-_lastFall - t.safeFall) * t.fallHurt;
                 Hurt(hurt, "Fell from the upper floor");
-                _game.Say("Ow! That hurt.", 3);
+                _game.Say(_game.Lines.speech.fell, 3);
             }
             _lastFall = v.y;
 
@@ -389,8 +389,8 @@ namespace CoalRun.Stations
             var cp = cart.Body.position;
             var floor = _game.Coal.SurfaceAt(cp.x, cp.y).Floor();
             // A cart at rest has landed, even when it came to rest hung up on something.
-            if (cart.Body.linearVelocity.magnitude > (cp.y - floor > 1.8f ? .3f : 1)) { _game.Say("Hold on, the cart's still landing.", 2); return; }
-            if (cart.Burial > .8f) { _game.Say("The cart's buried. Gotta dig it out first.", 3); return; }
+            if (cart.Body.linearVelocity.magnitude > (cp.y - floor > 1.8f ? .3f : 1)) { _game.Say(_game.Lines.speech.cartLanding, 2); return; }
+            if (cart.Burial > .8f) { _game.Say(_game.Lines.speech.cartBuried, 3); return; }
             ReleaseGrip();
             cart.Right();
         }
@@ -816,7 +816,7 @@ namespace CoalRun.Stations
                 _gripBlocked = true;
                 ReleaseGrip();
                 _box.excludeLayers = GameLayers.Mask(GameLayers.Cart);
-                _game.Say("Too much coal here to hold the cart. Dig a path.", 3);
+                _game.Say(_game.Lines.speech.tooMuchCoal, 3);
             }
             Burial = depth > 1.5f ? Burial + dt : Mathf.Max(0, Burial - dt * 2);
             if (Injury > 2.5f) Stagger = .8f;
@@ -936,7 +936,7 @@ namespace CoalRun.Stations
         private void ChangeLane(int lane)
         {
             if (!AtDoor || Lane == lane) return;
-            if (CarryingWheel) { _game.Say("My hands are full. Put the wheel down first.", 2); return; }
+            if (CarryingWheel) { _game.Say(_game.Lines.speech.handsFull, 2); return; }
             ThrowHands();
             ReleaseGrip();
             machines.Release();
@@ -1006,10 +1006,11 @@ namespace CoalRun.Stations
         public List<(string key, string label)> Prompts()
         {
             var list = new List<(string, string)>();
+            var say = _game.Lines.prompts;
             if (!_game.CanAct || Machine || Climbing) return list;
             if (Lane == 1)
             {
-                if (AtDoor) list.Add(("S", "Down the stairs"));
+                if (AtDoor) list.Add(("S", say.downStairs));
                 MachinePrompt(list);
                 return list;
             }
@@ -1017,37 +1018,37 @@ namespace CoalRun.Stations
             {
                 // What the cart can be made to do while it's held: hauled, and (from the skid end of a one-wheel
                 // cart) heaved up like a wheelbarrow.
-                list.Add(("A/D", "Haul the cart"));
-                if (_game.Cart.Wheels == 1 && Mathf.Approximately(Mathf.Sign(Body.position.x - _game.Cart.Body.position.x), _game.Cart.SkidSide)) list.Add(("Shift", "Heave the skid up"));
-                list.Add(("Space", "Let go to drop it"));
+                list.Add(("A/D", say.haul));
+                if (_game.Cart.Wheels == 1 && Mathf.Approximately(Mathf.Sign(Body.position.x - _game.Cart.Body.position.x), _game.Cart.SkidSide)) list.Add(("Shift", say.heave));
+                list.Add(("Space", say.letGo));
                 return list;
             }
-            if (_game.Tutorial.ShovelInReach(this)) list.Add(("E", "Pick up the shovel"));
+            if (_game.Tutorial.ShovelInReach(this)) list.Add(("E", say.pickShovel));
             if (_game.Tutorial.Restricts)
             {
-                if (AtDoor) list.Add(("W", "Up to the control room"));
+                if (AtDoor) list.Add(("W", say.upStairs));
                 return list;
             }
             if (_carriedBody)
             {
-                list.Add(("E", "Put body down"));
-                list.Add(("Click", "Throw body"));
+                list.Add(("E", say.putBody));
+                list.Add(("Click", say.throwBody));
                 return list;
             }
             if (CarryingWheel)
             {
-                list.Add(CartNear() && _game.Cart.Wheels < 2 ? ("Hold E", "Fit wheel") : ("E", "Put wheel down"));
-                list.Add(("Click", "Throw wheel"));
+                list.Add(CartNear() && _game.Cart.Wheels < 2 ? ("Hold E", say.fitWheel) : ("E", say.putWheel));
+                list.Add(("Click", say.throwWheel));
                 return list;
             }
-            if (WheelInReach()) list.Add(("E", "Pick up wheel"));
-            else if (BodyInReach()) list.Add(("E", "Pick up body"));
-            if (AtDoor) list.Add(("W", "Up to the control room"));
-            if (_game.Furnace.CanLight(this)) list.Add(("Hold E", "Light the fire"));
+            if (WheelInReach()) list.Add(("E", say.pickWheel));
+            else if (BodyInReach()) list.Add(("E", say.pickBody));
+            if (AtDoor) list.Add(("W", say.upStairs));
+            if (_game.Furnace.CanLight(this)) list.Add(("Hold E", say.lightFire));
             if (CartNear() && _game.Cradle.Prompt != null) list.Add(("E", _game.Cradle.Prompt));
-            if (CartOverturnedInReach()) list.Add(("E", "Right cart"));
-            if (PileInReach() && _game.Tutorial.CanDig) list.Add(("F", "Shovel"));
-            if (!Holding && CartInGrip() && Mathf.Cos(_game.Cart.Angle) > .3f) list.Add(("Space", "Grip cart"));
+            if (CartOverturnedInReach()) list.Add(("E", say.rightCart));
+            if (PileInReach() && _game.Tutorial.CanDig) list.Add(("F", say.shovel));
+            if (!Holding && CartInGrip() && Mathf.Cos(_game.Cart.Angle) > .3f) list.Add(("Space", say.grip));
             MachinePrompt(list);
             if (list.Count > 2) list.RemoveRange(2, list.Count - 2);
             return list;
@@ -1058,7 +1059,7 @@ namespace CoalRun.Stations
             foreach (var m in Machine.All)
             {
                 if (!_game.Tutorial.Allows(m)) continue;
-                if (m is LiftCrank && m.CanOperate(this)) { list.Add(("W S", "Crank")); return; }
+                if (m is LiftCrank && m.CanOperate(this)) { list.Add(("W S", _game.Lines.prompts.crank)); return; }
                 if (m is not FloorLever lever || !m.CanOperate(this)) continue;
                 list.Add(("Mouse", lever.Prompt));
                 return;

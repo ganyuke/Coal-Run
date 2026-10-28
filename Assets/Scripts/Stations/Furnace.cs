@@ -84,6 +84,8 @@ namespace CoalRun.Stations
         private float _kindle, _catch, _starved;
 
         // In Awake, so ShiftManager counts the starting hopper in its Start.
+        private void Start() => burnLever.Text = _game.Lines.levers.burn;
+
         private void Awake()
         {
             _game = ShiftManager.Instance;
@@ -112,7 +114,7 @@ namespace CoalRun.Stations
             if (_starved >= t.emberTime)
             {
                 Lit = false;
-                _game.Say("Damn, the fire's out. Gotta light it again.", 4);
+                _game.Say(_game.Lines.speech.fireOut, 4);
             }
 
             Hopper -= used;
@@ -190,7 +192,7 @@ namespace CoalRun.Stations
         public bool Kindle(bool held, float dt)
         {
             if (!held) { _kindle = 0; return false; }
-            if (Hopper <= 0) { _game.Say("Nothing in the hopper to light. Need coal first.", 2); return false; }
+            if (Hopper <= 0) { _game.Say(_game.Lines.speech.nothingToLight, 2); return false; }
             _kindle += dt;
             _game.Sound("kindle", .4f);
             if (_kindle < _game.Tune.lightTime) return true;

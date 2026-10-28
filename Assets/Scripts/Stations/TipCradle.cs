@@ -29,8 +29,8 @@ namespace CoalRun.Stations
         // What E would do, for the key prompt; null when it would do nothing here.
         public string Prompt => _state switch
         {
-            State.Free when Parked => "Hook cart",
-            State.Up => "Lower cart",
+            State.Free when Parked => _game.Lines.prompts.hookCart,
+            State.Up => _game.Lines.prompts.lowerCart,
             _ => null
         };
 
@@ -43,6 +43,7 @@ namespace CoalRun.Stations
         private void Start()
         {
             _game = ShiftManager.Instance;
+            lever.Text = _game.Lines.levers.tip;
             lever.Interlock = () => _state == State.Up;
         }
 
@@ -91,7 +92,7 @@ namespace CoalRun.Stations
                     _game.Sound("hook");
                     return true;
                 case State.Up when lever.InUse || Mathf.Abs(cart.Body.rotation) > 3:
-                    _game.Say("Hold on, let the cart come level first.", 2);
+                    _game.Say(_game.Lines.speech.cartNotLevel, 2);
                     return true;
                 case State.Up:
                     _state = State.Lowering;
@@ -106,7 +107,7 @@ namespace CoalRun.Stations
 
         private void FixedUpdate()
         {
-            lever.InterlockMessage = Parked ? "Gotta hook the cart on first." : "The cart needs to be at the tip cradle.";
+            lever.InterlockMessage = Parked ? _game.Lines.speech.hookFirst : _game.Lines.speech.cartToCradle;
             if (_state == State.Free) return;
             var t = _game.Tune;
             var cart = _game.Cart;

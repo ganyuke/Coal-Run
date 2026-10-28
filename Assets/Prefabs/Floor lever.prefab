@@ -877,15 +877,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FloorLever
   handle: {fileID: 5049836315622296374}
   grabRadius: 1
+  glow: {fileID: 0}
   stick: {fileID: 5525575939770533449}
   length: 1.3
   standOff: 0.3
   lane: 1
   springReturn: 1
+  notches: 0
   restValue: 0
-  farMessage: Walk up to the lever.
-  wrongLaneMessage: The lever is inside the control room.
   grab: {fileID: 1136922347044817683}
   drag: {fileID: 3723537808953035823}
   rollBack: {fileID: 8675338314831819203}
   stop: {fileID: 3603792362524235057}
+  clunk: {fileID: 0}

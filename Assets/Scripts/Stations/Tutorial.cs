@@ -107,7 +107,7 @@ namespace CoalRun.Stations
                 _talk = Mathf.Min(duration, .6f + text.Length / 20f);
             }
 
-            if (_greaseIn > 0 && (_greaseIn -= dt) <= 0) Speak("“Gotta put in a little more elbow grease.”", 8);
+            if (_greaseIn > 0 && (_greaseIn -= dt) <= 0) Speak(_game.Lines.training.helperGrease, 8);
             // The coal comes down whatever else happens, even with the operator dead.
             if (_left > 0)
             {
@@ -146,7 +146,7 @@ namespace CoalRun.Stations
                     _walking = false;
                     Current = Stage.Lever;
                     _timer = 0;
-                    Speak("“Alright newbie, just get up there and pull the lever. I’ll handle everything after this.”", 8);
+                    Speak(_game.Lines.training.helperIntro, 8);
                     break;
                 case Stage.Lever when _lever.Value >= stickAt - .05f:
                     // It sticks, and lets one lump out.
@@ -160,7 +160,7 @@ namespace CoalRun.Stations
                     break;
                 case Stage.Lever when _timer > 14 && !_nagged:
                     _nagged = true;
-                    Speak("“No, it’ll be fine. I’ve done this hundreds of times. Just do it so we can get this done and report back to those pencil-pushers upstairs.”", 9);
+                    Speak(_game.Lines.training.helperReassure, 9);
                     break;
                 case Stage.Stuck when _lever.Value > .8f:
                     Current = Stage.Avalanche;
@@ -214,7 +214,7 @@ namespace CoalRun.Stations
             _helperInjury += amount;
             _flinch = 1;
             _game.Sound("hurt", .4f, .5f);
-            if (!_saidOw) Speak("“Ow! Maybe I should’ve brought the hard hat today.”", 3);
+            if (!_saidOw) Speak(_game.Lines.training.helperOw, 3);
             _saidOw = true;
             return true;
         }
@@ -253,26 +253,27 @@ namespace CoalRun.Stations
             _game.Sound("hurt");
             _lines.Clear();
             _greaseIn = _talk = 0;
-            _game.Say("“Well, the help is all dead. That’s awesome.”", 6);
+            _game.Say(_game.Lines.training.helpDead, 6);
         }
 
         private string Text()
         {
             var p = _game.Player;
             var cart = _game.Cart.Body.position;
+            var t = _game.Lines.training;
             switch (Current)
             {
                 case Stage.Arrival: return "";
                 case Stage.Lever:
-                    return p.Lane == 1 ? "Pull the chute lever over with the mouse." : "Go up to the control room (W at the stairs) and pull the chute lever.";
-                case Stage.Stuck: return "Pull the lever again, all the way over.";
-                case Stage.Avalanche: return "Stay in the control room.";
+                    return p.Lane == 1 ? t.pullLever : t.goPullLever;
+                case Stage.Stuck: return t.pullAgain;
+                case Stage.Avalanche: return t.stayUp;
                 case Stage.Dig:
-                    return p.Lane == 1 ? "Go down and dig the cart out." : _shovelTaken ? "Dig the cart out. Stand at the coal and hold F." : "Grab the shovel by the furnace (E).";
+                    return p.Lane == 1 ? t.goDownDig : _shovelTaken ? t.dig : t.grabShovel;
             }
-            if (_game.Coal.CartBurial(_game.Cart) > .5f && cart.x > Room.Edge) return "Keep digging until the cart is free.";
-            if (cart.y < Room.Upper - .5f) return "Haul the cart onto the freight lift (hold Space and walk), then turn the crank to go up.";
-            return _game.Cart.InCradle ? "Pull the tip lever to pour into the hopper." : "Push the cart to the tip cradle and hook it on with E.";
+            if (_game.Coal.CartBurial(_game.Cart) > .5f && cart.x > Room.Edge) return t.keepDigging;
+            if (cart.y < Room.Upper - .5f) return t.haulUp;
+            return _game.Cart.InCradle ? t.tip : t.hook;
         }
     }
 }

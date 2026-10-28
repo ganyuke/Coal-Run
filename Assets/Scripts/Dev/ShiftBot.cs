@@ -268,8 +268,8 @@ namespace CoalRun.Dev
             yield return Walk(CradleStop - 1.5f);
             _c.Interact = true;
             yield return null;
-            for (float t = 0; t < 8 && _game.Cradle.Prompt != "Lower cart"; t += Time.fixedDeltaTime) yield return null;
-            if (_game.Cradle.Prompt != "Lower cart") { yield return Fail("the cradle didn't hoist the cart"); yield break; }
+            for (float t = 0; t < 8 && _game.Cradle.Prompt != _game.Lines.prompts.lowerCart; t += Time.fixedDeltaTime) yield return null;
+            if (_game.Cradle.Prompt != _game.Lines.prompts.lowerCart) { yield return Fail("the cradle didn't hoist the cart"); yield break; }
 
             Mark("burn lever");
             // The lever is only reached on a delivery, about a lap apart.

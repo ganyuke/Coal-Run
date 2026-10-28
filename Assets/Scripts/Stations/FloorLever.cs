@@ -25,11 +25,6 @@ namespace CoalRun.Stations
         [Range(0, 1)]
         [SerializeField]
         private float restValue;
-        [Tooltip("What the key prompt calls it.")]
-        [SerializeField]
-        private string prompt = "Lever";
-        [SerializeField] private string farMessage = "Gotta get closer to the lever.";
-        [SerializeField] private string wrongLaneMessage = "That lever's up in the control room.";
 
         [Header("Audio (all optional)")]
         [SerializeField]
@@ -51,13 +46,15 @@ namespace CoalRun.Stations
         public float RestValue => restValue;
         // How far over it goes by hand: less than 1 while it's stuck (see Tutorial).
         public float Limit { get; set; } = 1;
-        public string Prompt => prompt;
+        // Its name and what's said when it's out of reach (Lines.levers), handed over by the station it works.
+        public Lines.Lever Text { get; set; }
+        public string Prompt => Text?.name;
         // The nearest notch, 0 at the left end; 0 on a lever without notches.
         public int Notch => notches > 1 ? Mathf.RoundToInt(Value * (notches - 1)) : 0;
         // Set by the station the lever works: while it returns false, the lever can't be taken hold of.
         public System.Func<bool> Interlock { get; set; }
         public string InterlockMessage { get; set; } = "";
-        public override string OutOfReach => ShiftManager.Instance.Player.Lane != lane ? wrongLaneMessage : InReach(ShiftManager.Instance.Player) ? InterlockMessage : farMessage;
+        public override string OutOfReach => ShiftManager.Instance.Player.Lane != lane ? Text?.wrongFloor : InReach(ShiftManager.Instance.Player) ? InterlockMessage : Text?.tooFar;
         public override Vector2 HandlePosition => _game ? Knob : base.HandlePosition;
         // Held, the operator can walk as far as the knob goes at either end, staying on the side of it
         // they took hold from.

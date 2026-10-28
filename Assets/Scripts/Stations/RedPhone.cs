@@ -48,7 +48,7 @@ namespace CoalRun.Stations
             _timer -= Time.fixedDeltaTime;
             if (_timer > 0) return;
             _timer = cooldown + (t < 6 ? 4 : t < 9 ? 8 : 15);
-            Announce(t < 7 ? "“We can’t feel our hands. Forget the target. Just keep us alive.”" : "“It’s getting cold upstairs. Could you turn the furnace up?”");
+            Announce(t < 7 ? _game.Lines.phone.freezing : _game.Lines.phone.cold);
         }
 
         // Rings in bursts: a quick rattle, then a pause.

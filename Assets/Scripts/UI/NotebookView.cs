@@ -164,7 +164,7 @@ namespace CoalRun.UI
             _bigNow = big;
             var k = big ? 1 : headingSize / _bigHeading;
             heading.fontSize = big ? _bigHeading : headingSize;
-            if (!big) heading.text = $"DAY {ShiftManager.Instance.Day.day:00}";
+            if (!big) heading.text = string.Format(ShiftManager.Instance.Lines.sheets.day, ShiftManager.Instance.Day.day);
             var h = heading.rectTransform;
             h.sizeDelta = new Vector2(h.sizeDelta.x, _headingHeight * k);
             var top = -h.anchoredPosition.y;
@@ -220,22 +220,22 @@ namespace CoalRun.UI
         {
             _sheetFor = game.Phase;
             Heading(true);
-            heading.text = $"DAY {game.Day.day:00} · {(game.Phase == Phase.Briefing ? "BRIEFING" : "REPORT")}";
+            var t = game.Lines.sheets;
+            heading.text = $"{string.Format(t.day, game.Day.day)} · {(game.Phase == Phase.Briefing ? t.briefing : t.report)}";
             if (game.Phase == Phase.Briefing)
             {
-                sheetHeadline.text = "Keep the building warm until the blizzard passes.";
-                sheetBody.text = (string.IsNullOrEmpty(game.Day.memo) ? "" : $"<i>{game.Day.memo}</i>\n\n") +
-                    "Haul coal from the chute to the furnace. Feed it, light it, and set the burn lever: the colder it gets outside, the harder it has to burn." +
-                    $"\n\nElectrical output target\n<b>{game.Day.target:0} kWh</b>\n\nThe cart has {game.Cart.Wheels} wheel{(game.Cart.Wheels == 1 ? "" : "s")}.";
-                buttonLabel.text = "Begin the shift   [Enter]";
+                sheetHeadline.text = t.briefingHeadline;
+                sheetBody.text = (string.IsNullOrEmpty(game.Day.memo) ? "" : $"<i>{game.Day.memo}</i>\n\n") + t.briefingBody +
+                    $"\n\n{t.targetLabel}\n<b>{game.Day.target:0} kWh</b>\n\n{(game.Cart.Wheels == 1 ? t.oneWheel : string.Format(t.wheels, game.Cart.Wheels))}";
+                buttonLabel.text = t.begin;
                 return;
             }
             var complete = game.Phase == Phase.Complete;
-            sheetHeadline.text = complete ? "You kept them alive." : "No one is coming down.";
+            sheetHeadline.text = complete ? t.survived : t.lost;
             sheetBody.text =
-                (complete ? (game.Furnace.Output >= game.Day.target ? "Brass is pleased with the output." : "Brass is not pleased with the output.") + (game.HasNextDay ? " A memo is waiting for you in the morning." : " That is all the shifts there are, for now.") : "The offices froze first. There is nobody left to send a replacement.") +
-                $"\n\nElectrical output\n<b>{game.Furnace.Output:0.0} / {game.Day.target:0} kWh</b>\n\nCoal delivered  <b>{game.Furnace.Delivered:0.0}</b>\nOperators lost  <b>{game.Deaths}</b>";
-            buttonLabel.text = !complete ? "Run the shift again   [R]" : game.HasNextDay ? "Next day   [R]" : "Play again from Day 1   [R]";
+                (complete ? (game.Furnace.Output >= game.Day.target ? t.pleased : t.notPleased) + " " + (game.HasNextDay ? t.memoWaiting : t.lastShift) : t.frozeOver) +
+                $"\n\n{t.outputLabel}\n<b>{game.Furnace.Output:0.0} / {game.Day.target:0} kWh</b>\n\n{t.deliveredLabel}  <b>{game.Furnace.Delivered:0.0}</b>\n{t.lostLabel}  <b>{game.Deaths}</b>";
+            buttonLabel.text = !complete ? t.again : game.HasNextDay ? t.nextDay : t.fromDay1;
         }
 
         private Color KeyColorFor(string key)

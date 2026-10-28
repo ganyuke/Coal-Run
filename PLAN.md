@@ -87,6 +87,8 @@ Decided while you slept (overrule freely): the heave fast-tap exploit stays as i
 
 ### Smaller calls made while porting (change any of them)
 
+- **Text** (10/28, your call): every line the player reads is in `Assets/Data/Lines.asset` (`Lines.cs`, on `ShiftManager.Lines`), grouped: speech, phone, training, tasks, prompts, levers, sheets. `{0}`/`{1}` are filled in by the game. Not in it: the day memo (on the `DayConfig`), debug lines, and death causes/corpse names (never shown). Levers get their name and reach lines from the station that owns them.
+
 - **Releases:** `python3 Tools/release.py 0.2 [--release]` sets the version, builds every target with an installed module (`Assets/Editor/Builder.cs`; through the open editor, or batch mode if it's closed) into `dist/0.2/<Target>/`, zips each as `CoalRun-0.2-<Target>.zip`, and with `--release` makes GitHub release `v0.2` via `gh`. `dist/` is git-ignored. Deploying the WebGL folder is by hand. Only the Linux module is installed so far.
 
 - Room geometry is constants in `Room.cs`, which the scene was laid out from. If you move a floor in the scene by hand, update `Room.cs` too.

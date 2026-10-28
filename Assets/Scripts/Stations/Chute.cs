@@ -19,7 +19,11 @@ namespace CoalRun.Stations
         private ShiftManager _game;
         private float _accumulator;
 
-        private void Start() => _game = ShiftManager.Instance;
+        private void Start()
+        {
+            _game = ShiftManager.Instance;
+            lever.Text = _game.Lines.levers.chute;
+        }
 
         private void FixedUpdate()
         {

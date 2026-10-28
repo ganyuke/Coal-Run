@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CoalRun.Core;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -21,7 +22,7 @@ namespace CoalRun.Stations
 
         public bool InUse { get; private set; }
         public virtual Vector2 HandlePosition => handle ? handle.position : transform.position;
-        public virtual string OutOfReach => "Gotta get closer.";
+        public virtual string OutOfReach => ShiftManager.Instance.Lines.speech.tooFar;
         // While it's held, the operator can walk between these world x positions and no further. By
         // default, a little either way of where they took hold.
         public virtual Vector2 WalkRange(float grabbedAt) => new(grabbedAt - .6f, grabbedAt + .6f);

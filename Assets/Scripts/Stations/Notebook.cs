@@ -101,32 +101,33 @@ namespace CoalRun.Stations
             if (_game.Phase is not (Phase.Shift or Phase.Leaving or Phase.Replacement)) return list;
 
             var furnace = _game.Furnace;
+            var t = _game.Lines.tasks;
             var cart = _game.Cart;
             if (_game.Phase == Phase.Shift && !furnace.Lit)
-                Add("fire", furnace.Hopper > .5f ? "The fire's out. Light it (hold E at the firebox)" : "The fire's out and the hopper's empty. Get coal to the furnace", true);
+                Add("fire", furnace.Hopper > .5f ? t.fireOut : t.fireOutEmpty, true);
 
-            if (cart.Overturned) Add("cart upright", "Stand the cart back up (E)");
-            else if (cart.Wheels < _game.Day.startingWheels || cart.LooseWheels.Count > 0) Add("cart wheel", "Put the wheel back on (pick it up with E, then hold E at the cart)");
-            if (cart.Burial > .8f) Add("cart buried", "Dig the cart out (hold F at the coal)");
+            if (cart.Overturned) Add("cart upright", t.standCart);
+            else if (cart.Wheels < _game.Day.startingWheels || cart.LooseWheels.Count > 0) Add("cart wheel", t.fixWheel);
+            if (cart.Burial > .8f) Add("cart buried", t.digOut);
 
             if (_game.Phase == Phase.Shift)
             {
                 var upstairs = cart.Body.position.y > 6;
                 var full = cart.Coal >= loaded;
-                if (cart.InCradle) Add(full ? "tip" : "lower", full ? "Tip the cart into the hopper" : "Lower the cart (E)");
-                else if (!upstairs) Add(full ? "haul" : "fill", full ? "Take the cart up on the freight lift" : "Fill the cart at the chute");
-                else Add(full ? "hook" : "return", full ? "Hook the cart on at the tip cradle (E)" : "Take the empty cart back down");
+                if (cart.InCradle) Add(full ? "tip" : "lower", full ? t.tip : t.lower);
+                else if (!upstairs) Add(full ? "haul" : "fill", full ? t.haul : t.fill);
+                else Add(full ? "hook" : "return", full ? t.hook : t.returnCart);
 
                 if (furnace.Lit)
                 {
                     var held = _game.Tune.heldTemperatures[furnace.Notch];
                     var ahead = Mathf.Min(_game.Outside, _game.Day.OutsideAt(_game.Clock + lookAhead));
                     if (furnace.Notch < _game.Tune.burnRates.Length - 1 && held > ahead + .5f)
-                        Add("burn", $"Turn the burn lever up: it's heading for {ahead:0}° outside and the fire only holds {held:0}°");
+                        Add("burn", string.Format(t.burnUp, ahead, held));
                 }
             }
 
-            if (_game.Phase == Phase.Leaving) Add("leave", "The shift is over. Stand in the staff lift");
+            if (_game.Phase == Phase.Leaving) Add("leave", t.leave);
             return list;
         }
     }

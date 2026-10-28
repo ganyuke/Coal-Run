@@ -42275,10 +42275,6 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: prompt
-      value: Burn lever
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: notches
       value: 5
       objectReference: {fileID: 0}
@@ -42287,25 +42283,9 @@ PrefabInstance:
       value: 0.25
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: farMessage
-      value: Gotta get closer to the burn lever.
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: springReturn
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: wrongLaneMessage
-      value: Gotta come out of the control room first.
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: accents.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: 'accents.Array.data[0]'
-      value: 
-      objectReference: {fileID: 2004661682}
     - target: {fileID: 8561629909725014136, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: m_Name
       value: Burn lever
@@ -43635,11 +43615,6 @@ MonoBehaviour:
 --- !u!4 &987559955 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5049836315622296374, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-  m_PrefabInstance: {fileID: 2003437361}
-  m_PrefabAsset: {fileID: 0}
---- !u!212 &987559956 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 8045110347001952955, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
   m_PrefabInstance: {fileID: 2003437361}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &990971771
@@ -53681,7 +53656,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 1508299212
   m_fontColor: {r: 0.8, g: 0.82, b: 0.9, a: 0.35}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -53694,7 +53669,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -54100,11 +54075,6 @@ SpriteRenderer:
 --- !u!4 &1402535052 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5049836315622296374, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-  m_PrefabInstance: {fileID: 4350012416484048489}
-  m_PrefabAsset: {fileID: 0}
---- !u!212 &1402535053 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 8045110347001952955, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
   m_PrefabInstance: {fileID: 4350012416484048489}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1405210184
@@ -62164,6 +62134,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShiftManager
   tuning: {fileID: 11400000, guid: f427860b05c010ad9a7132cb3a6d27fc, type: 2}
   day: {fileID: 11400000, guid: d2622aafa26ba7426876ac84a923dd74, type: 2}
+  lines: {fileID: 11400000, guid: 3798fd06f742def88a43d387c9fa9270, type: 2}
   days:
   - {fileID: 11400000, guid: d2622aafa26ba7426876ac84a923dd74, type: 2}
   - {fileID: 11400000, guid: 46d9664756e2302de96ede6b33df8493, type: 2}
@@ -69119,29 +69090,9 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: prompt
-      value: Tip lever
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: restValue
       value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: farMessage
-      value: Gotta get closer to the tip lever.
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: wrongLaneMessage
-      value: Gotta come out of the control room first.
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: accents.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: 'accents.Array.data[0]'
-      value: 
-      objectReference: {fileID: 987559956}
     - target: {fileID: 8561629909725014136, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: m_Name
       value: Tip lever
@@ -69178,11 +69129,6 @@ Transform:
 --- !u!4 &2004661681 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5049836315622296374, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-  m_PrefabInstance: {fileID: 914503534}
-  m_PrefabAsset: {fileID: 0}
---- !u!212 &2004661682 stripped
-SpriteRenderer:
-  m_CorrespondingSourceObject: {fileID: 8045110347001952955, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
   m_PrefabInstance: {fileID: 914503534}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &2032490531
@@ -76466,26 +76412,6 @@ PrefabInstance:
       propertyPath: glow
       value: 
       objectReference: {fileID: 724697333}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: prompt
-      value: Chute lever
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: farMessage
-      value: Gotta get closer to the lever.
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: wrongLaneMessage
-      value: That lever's up in the control room.
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: accents.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8170152358162581300, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
-      propertyPath: 'accents.Array.data[0]'
-      value: 
-      objectReference: {fileID: 1402535053}
     - target: {fileID: 8561629909725014136, guid: 42a9dc0d2867203138f3ce16d1d785a0, type: 3}
       propertyPath: m_Name
       value: Chute lever

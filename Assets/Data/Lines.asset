@@ -1,0 +1,146 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 588cc702185f3fd6d80d41250f98c3d6, type: 3}
+  m_Name: Lines
+  m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Core.Lines
+  speech:
+    freezing: God, it's freezing in here. Gotta get the fire up.
+    shiftOver: Shift's over. Into the staff lift.
+    fireOut: Damn, the fire's out. Gotta light it again.
+    nothingToLight: Nothing in the hopper to light. Need coal first.
+    fell: Ow! That hurt.
+    wheelOff: Shit, a wheel came off!
+    cartLanding: Hold on, the cart's still landing.
+    cartBuried: The cart's buried. Gotta dig it out first.
+    tooMuchCoal: Too much coal here to hold the cart. Dig a path.
+    handsFull: My hands are full. Put the wheel down first.
+    cartNotLevel: Hold on, let the cart come level first.
+    hookFirst: Gotta hook the cart on first.
+    cartToCradle: The cart needs to be at the tip cradle.
+    bothWheels: It's already got both wheels.
+    notNow: Not now.
+    offCradleFirst: Gotta lower the cart off the cradle first.
+    standCartFirst: Gotta stand the cart up first.
+    cartMoving: The cart needs to stop moving first.
+    tooFar: Gotta get closer.
+    crankFar: Gotta get to the wheel.
+    shovelFar: Gotta get closer to the shovel.
+    clearShaft: Better get clear of the shaft.
+    underLift: The {0}'s under the lift. Can't lower it.
+    standOnLift: Gotta stand fully on the lift.
+    hangingOff: The {0}'s hanging off the side. Can't raise it.
+  phone:
+    cold: "\u201CIt\u2019s getting cold upstairs. Could you turn the furnace up?\u201D"
+    freezing: "\u201CWe can\u2019t feel our hands. Forget the target. Just keep us
+      alive.\u201D"
+    deaths:
+    - "\u201CWe heard. We\u2019re sending another guy down.\u201D"
+    - "\u201CAgain? Fine. We\u2019re sending another guy down.\u201D"
+    - "\u201CWe\u2019re sending another guy down. Please. Keep this one alive.\u201D"
+  training:
+    helperIntro: "\u201CAlright newbie, just get up there and pull the lever. I\u2019ll
+      handle everything after this.\u201D"
+    helperReassure: "\u201CNo, it\u2019ll be fine. I\u2019ve done this hundreds of
+      times. Just do it so we can get this done and report back to those pencil-pushers
+      upstairs.\u201D"
+    helperGrease: "\u201CGotta put in a little more elbow grease.\u201D"
+    helperOw: "\u201COw! Maybe I should\u2019ve brought the hard hat today.\u201D"
+    helpDead: "\u201CWell, the help is all dead. That\u2019s awesome.\u201D"
+    installerArrives: "\u201CEngineering sent me down to fix your cart. Here\u2019s
+      the other axle. We stole it from the other guy\u2019s cart. Give it a try.\u201D"
+    installerRunOver: "\u201CI figured you\u2019d run me over. Good luck down here.\u201D"
+    goPullLever: Go up to the control room (W at the stairs) and pull the chute lever.
+    pullLever: Pull the chute lever over with the mouse.
+    pullAgain: Pull the lever again, all the way over.
+    stayUp: Stay in the control room.
+    goDownDig: Go down and dig the cart out.
+    grabShovel: Grab the shovel by the furnace (E).
+    dig: Dig the cart out. Stand at the coal and hold F.
+    keepDigging: Keep digging until the cart is free.
+    haulUp: Haul the cart onto the freight lift (hold Space and walk), then turn
+      the crank to go up.
+    hook: Push the cart to the tip cradle and hook it on with E.
+    tip: Pull the tip lever to pour into the hopper.
+  tasks:
+    fireOut: The fire's out. Light it (hold E at the firebox)
+    fireOutEmpty: The fire's out and the hopper's empty. Get coal to the furnace
+    standCart: Stand the cart back up (E)
+    fixWheel: Put the wheel back on (pick it up with E, then hold E at the cart)
+    digOut: Dig the cart out (hold F at the coal)
+    fill: Fill the cart at the chute
+    haul: Take the cart up on the freight lift
+    hook: Hook the cart on at the tip cradle (E)
+    tip: Tip the cart into the hopper
+    lower: Lower the cart (E)
+    returnCart: Take the empty cart back down
+    burnUp: "Turn the burn lever up: it's heading for {0:0}\xB0 outside and the fire
+      only holds {1:0}\xB0"
+    leave: The shift is over. Stand in the staff lift
+  prompts:
+    upStairs: Up to the control room
+    downStairs: Down the stairs
+    grip: Grip cart
+    haul: Haul the cart
+    heave: Heave the skid up
+    letGo: Let go to drop it
+    rightCart: Right cart
+    hookCart: Hook cart
+    lowerCart: Lower cart
+    shovel: Shovel
+    pickShovel: Pick up the shovel
+    lightFire: Light the fire
+    pickWheel: Pick up wheel
+    fitWheel: Fit wheel
+    putWheel: Put wheel down
+    throwWheel: Throw wheel
+    pickBody: Pick up body
+    putBody: Put body down
+    throwBody: Throw body
+    crank: Crank
+  levers:
+    chute:
+      name: Chute lever
+      tooFar: Gotta get closer to the lever.
+      wrongFloor: That lever's up in the control room.
+    tip:
+      name: Tip lever
+      tooFar: Gotta get closer to the tip lever.
+      wrongFloor: Gotta come out of the control room first.
+    burn:
+      name: Burn lever
+      tooFar: Gotta get closer to the burn lever.
+      wrongFloor: Gotta come out of the control room first.
+  sheets:
+    day: DAY {0:00}
+    briefing: BRIEFING
+    report: REPORT
+    clockOver: OVER
+    briefingHeadline: Keep the building warm until the blizzard passes.
+    briefingBody: 'Haul coal from the chute to the furnace. Feed it, light it, and
+      set the burn lever: the colder it gets outside, the harder it has to burn.'
+    targetLabel: Electrical output target
+    oneWheel: The cart has 1 wheel.
+    wheels: The cart has {0} wheels.
+    begin: 'Begin the shift   [Enter]'
+    survived: You kept them alive.
+    lost: No one is coming down.
+    pleased: Brass is pleased with the output.
+    notPleased: Brass is not pleased with the output.
+    memoWaiting: A memo is waiting for you in the morning.
+    lastShift: That is all the shifts there are, for now.
+    frozeOver: The offices froze first. There is nobody left to send a replacement.
+    outputLabel: Electrical output
+    deliveredLabel: Coal delivered
+    lostLabel: Operators lost
+    again: 'Run the shift again   [R]'
+    nextDay: 'Next day   [R]'
+    fromDay1: 'Play again from Day 1   [R]'
