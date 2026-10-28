@@ -6,7 +6,7 @@ import os
 from lowpoly import *
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "..", "Assets", "Art", "Generated")
-BASE = hexc("#161a22")
+BASE = hexc("#2b3342")
 
 
 def column():
@@ -34,7 +34,7 @@ def lump(i):
         a = 2 * math.pi * k / n + rnd.uniform(-.25, .25)
         r = rnd.uniform(20, 28)
         pts.append((cx + math.cos(a) * r, cy + math.sin(a) * r))
-    fan(c, pts, mul(BASE, 1.05), seed=i, amp=.3, light=(-.7, -.8))
+    fan(c, pts, mul(BASE, 1.05), seed=i, amp=.3, light=(-.7, -.8), edge=(150, 172, 215, 230))
     # One bright facet like a freshly broken face, and a few specks.
     a, b = pts[0], pts[1]
     c.poly([(cx, cy), a, b], (130, 150, 190, 70))
