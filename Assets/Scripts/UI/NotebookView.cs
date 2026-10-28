@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using CoalRun.Core;
 using CoalRun.Stations;
 using TMPro;
@@ -55,12 +54,9 @@ namespace CoalRun.UI
         private float bottomPadding = 8;
         [SerializeField] private Color ink = new(.16f, .13f, .1f), urgentInk = new(.7f, .12f, .08f);
         [Header("Sticky notes")]
-        [Tooltip("Cloned for each key prompt, hanging under the slip.")]
+        [Tooltip("The notes hanging under the slip, top first, laid out in the scene. One a key prompt; there are never more than three.")]
         [SerializeField]
-        private RectTransform stickyTemplate;
-        [Tooltip("Space between hanging notes, and how far each is shifted left of the one above it.")]
-        [SerializeField]
-        private float stickyGap = 2, stickyShift = 3;
+        private Image[] stickies;
         [Tooltip("The colour of a note by the key it's for, so the keys you can press are told apart at a glance. Anything else is the first colour.")]
         [SerializeField]
         private KeyColor[] keyColors =
@@ -86,9 +82,6 @@ namespace CoalRun.UI
         // The cursor is on the briefing or report, so clicks belong to it and not the room.
         public static bool PointerOver { get; private set; }
 
-        private readonly List<RectTransform> _stickies = new();
-        private readonly List<TMP_Text> _stickyText = new();
-        private readonly List<Image> _stickyImage = new();
         private Notebook.Page _showing;
         private bool _shownLast, _drawnDone, _bigNow = true;
         private float _dimmed, _tickedAt = -1, _width, _bigHeading;
@@ -160,7 +153,7 @@ namespace CoalRun.UI
             book.sizeDelta = Vector2.Lerp(book.sizeDelta, size, k);
             book.anchoredPosition = Vector2.Lerp(book.anchoredPosition, at, k);
 
-            if (sheetMode) { foreach (var note in _stickies) note.gameObject.SetActive(false); return; }
+            if (sheetMode) { foreach (var note in stickies) note.gameObject.SetActive(false); return; }
             Stickies();
         }
 
@@ -250,34 +243,17 @@ namespace CoalRun.UI
             return keyColors.Length > 0 ? keyColors[0].color : Color.white;
         }
 
-        // One sticky note a prompt, hanging down from the bottom edge of the slip, each turned a little.
+        // The key prompts on the notes, in order; the notes left over are hidden.
         private void Stickies()
         {
             var prompts = player.Prompts();
-            while (_stickies.Count < prompts.Count)
-            {
-                var note = Instantiate(stickyTemplate, stickyTemplate.parent);
-                note.localRotation = Quaternion.Euler(0, 0, (_stickies.Count % 2 == 0 ? 1.2f : -1.2f) * (1 + _stickies.Count % 2));
-                _stickies.Add(note);
-                // A long label shrinks to fit its note rather than wrapping out of it.
-                var label = note.GetComponentInChildren<TMP_Text>();
-                label.enableAutoSizing = true;
-                label.fontSizeMax = label.fontSize;
-                label.fontSizeMin = label.fontSize * .6f;
-                label.textWrappingMode = TextWrappingModes.NoWrap;
-                label.overflowMode = TextOverflowModes.Ellipsis;
-                _stickyText.Add(label);
-                _stickyImage.Add(note.GetComponent<Image>());
-            }
-            for (var i = 0; i < _stickies.Count; i++)
+            for (var i = 0; i < stickies.Length; i++)
             {
                 var on = i < prompts.Count;
-                _stickies[i].gameObject.SetActive(on);
+                stickies[i].gameObject.SetActive(on);
                 if (!on) continue;
-                _stickyText[i].text = $"<b>[{prompts[i].key}]</b>  {prompts[i].label}";
-                _stickyImage[i].color = KeyColorFor(prompts[i].key);
-                var size = _stickies[i].sizeDelta;
-                _stickies[i].anchoredPosition = new Vector2(stickyTemplate.anchoredPosition.x - i * stickyShift, stickyTemplate.anchoredPosition.y - i * (size.y + stickyGap + 5));
+                stickies[i].GetComponentInChildren<TMP_Text>().text = $"<b>[{prompts[i].key}]</b>  {prompts[i].label}";
+                stickies[i].color = KeyColorFor(prompts[i].key);
             }
         }
     }
