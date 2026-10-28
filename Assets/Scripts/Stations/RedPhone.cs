@@ -40,7 +40,8 @@ namespace CoalRun.Stations
 
         private void FixedUpdate()
         {
-            if (!_game.ShiftRunning || _calling) return;
+            // Not while it's still talking: the voice's bubble hangs off the phone, so ringing would shake it.
+            if (!_game.ShiftRunning || _calling || voice && voice.Showing) return;
             var t = _game.Temperature;
             // Warm again: whatever it was calling about is fixed.
             if (t >= ringBelow) { _timer = 0; return; }
@@ -58,10 +59,12 @@ namespace CoalRun.Stations
             if (ringLight) ringLight.intensity = burst ? ringLightIntensity * (.6f + .4f * Mathf.Sin(Time.time * 40)) : 0;
         }
 
-        // Rings three times, then says its piece. A death's news cuts in over a call about the cold.
+        // Rings three times, then says its piece. A death's news cuts in over a call about the cold, hanging up on
+        // whatever it was saying first.
         public void Announce(string line)
         {
             StopAllCoroutines();
+            if (voice) voice.Hush();
             StartCoroutine(Call(line));
         }
 
