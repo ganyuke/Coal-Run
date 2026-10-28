@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace CoalRun.UI
 {
-    // The F3 developer readout: a uGUI text box in the top-right corner with the F-key shortcuts and the numbers behind
+    // The F3 developer readout: a uGUI text box in the top-left corner with the F-key shortcuts and the numbers behind
     // the game (positions, coal totals, heat). Not part of the game: F3 hides it, and a build starts with it hidden.
     public class DebugHud : MonoBehaviour
     {
