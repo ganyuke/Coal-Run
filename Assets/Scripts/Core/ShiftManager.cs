@@ -342,7 +342,7 @@ namespace CoalRun.Core
             MessageFor = duration;
             if (!speaker && (!player.Visible || Phase == Phase.Replacement)) return;
             speaker ??= player.Voice;
-            if (speaker) speaker.Speak(message, duration);
+            if (speaker) speaker.Speak(message);
         }
 
         // Repeats of the same sound inside the cooldown are dropped, so stations can call this every step.

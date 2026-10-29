@@ -7,7 +7,7 @@ namespace CoalRun.Stations
 {
     // Something that talks: what it says appears as little text above it, typed out at its own pace, its head
     // bobs while it's talking, and a few specks puff up around it. Lines wait their turn (a speaker says one at
-    // a time, with a pause between), a line repeated straight away is dropped, and speakers standing near each
+    // a time, each held after typing), a line repeated straight away is dropped, and speakers standing near each
     // other stack their text instead of writing over each other. ShiftManager.Say picks who's talking.
     public class Speaker : MonoBehaviour
     {
@@ -27,12 +27,9 @@ namespace CoalRun.Stations
         [Tooltip("Characters a second it says a line at: how fast the text is typed out, and how long the bobbing and puffing go on. Lower is slower.")]
         [SerializeField]
         private float charsPerSecond = 16;
-        [Tooltip("Seconds a line stays up after it's been said, at least (the line's own duration can be longer).")]
+        [Tooltip("Seconds the completed line stays up after typing. Total time is typing time plus this hold.")]
         [SerializeField]
         private float holdAfter = 1.8f;
-        [Tooltip("Quiet between one line and the next from the same speaker.")]
-        [SerializeField]
-        private float gap = .6f;
         [Tooltip("Lines waiting their turn; past this the oldest is dropped.")]
         [SerializeField]
         private int maxQueued = 2;
@@ -59,7 +56,7 @@ namespace CoalRun.Stations
         private static readonly List<Speaker> All = new();
         private static int _laidOutAt = -1;
 
-        private readonly Queue<(string text, float seconds)> _queue = new();
+        private readonly Queue<string> _queue = new();
         private TextMeshPro _text;
         private Vector3 _headRest, _wanted;
         private string _lastText = "";
@@ -99,12 +96,12 @@ namespace CoalRun.Stations
             if (_text) Destroy(_text.gameObject);
         }
 
-        // Said when it's this speaker's turn, for at least `seconds`.
-        public void Speak(string text, float seconds)
+        // Each line types at charsPerSecond, then stays for holdAfter.
+        public void Speak(string text)
         {
             if (text == _lastText && Time.time < _lastEnd + repeatAfter) return;
-            foreach (var queued in _queue) if (queued.text == text) return;
-            _queue.Enqueue((text, seconds));
+            if (_queue.Contains(text)) return;
+            _queue.Enqueue(text);
             while (_queue.Count > maxQueued) _queue.Dequeue();
         }
 
@@ -116,27 +113,24 @@ namespace CoalRun.Stations
             if (_text) _text.gameObject.SetActive(false);
         }
 
-        private void Begin(string text, float seconds)
+        private void Begin(string text)
         {
-            var say = text.Length / charsPerSecond;
             _text.text = text;
             _text.maxVisibleCharacters = 0;
             _text.gameObject.SetActive(true);
+            _text.ForceMeshUpdate();
+            var say = _text.textInfo.characterCount / Mathf.Max(1, charsPerSecond);
             _lineStart = Time.time;
             _talkUntil = _lineStart + say;
             _typed = 0;
-            _lineEnd = _lineStart + Mathf.Max(seconds, say + holdAfter);
+            _lineEnd = _talkUntil + Mathf.Max(0, holdAfter);
             _lastText = text;
             _lastEnd = _lineEnd;
         }
 
         private void Update()
         {
-            if (_queue.Count > 0 && Time.time >= _lineEnd + gap)
-            {
-                var (text, seconds) = _queue.Dequeue();
-                Begin(text, seconds);
-            }
+            if (_queue.Count > 0 && Time.time >= _lineEnd) Begin(_queue.Dequeue());
 
             var left = _lineEnd - Time.time;
             if (left <= 0)
@@ -145,7 +139,8 @@ namespace CoalRun.Stations
             }
             else
             {
-                var shown = Mathf.FloorToInt((Time.time - _lineStart) * charsPerSecond) + 1;
+                var shown = Mathf.Min(_text.textInfo.characterCount,
+                    Mathf.FloorToInt((Time.time - _lineStart) * Mathf.Max(1, charsPerSecond)));
                 _text.maxVisibleCharacters = shown;
                 // A blip every couple of letters while it's being typed out.
                 if (shown >= _typed + 2 && shown <= _text.textInfo.characterCount + 1)
