@@ -9,6 +9,8 @@ namespace CoalRun.Gameplay.Characters
     {
         [SerializeField] private GameObject art;
 
+        public Transform Art => art.transform;
+
         protected override Rigidbody2D OnDeath()
         {
             var body = Corpse.Topple(corpsePrefab, art, "Dead helper", transform.position, Vector2.zero, true);

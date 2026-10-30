@@ -81,7 +81,7 @@ namespace CoalRun.Gameplay.Player
 
         [SerializeField] private float armLength = .4f;
 
-        [Tooltip("Nods a beat behind the body as it walks.")] [SerializeField]
+        [Tooltip("Walking head pivot. Speech animates its Head child independently.")] [SerializeField]
         private Transform head;
 
         [Tooltip("The shoulders, in the art's space facing right (mirrored facing left): front arm, back arm.")]
@@ -163,8 +163,8 @@ namespace CoalRun.Gameplay.Player
 
         // At the foot of the stairs on the work floor, or at the control room door up top.
         private bool AtDoor => Lane == 0
-            ? Body.position is { y: < 4.3f } p && Mathf.Abs(p.x - Room.StairsFoot) < .8f
-            : Body.position.x < Room.BoothStart + 1.2f;
+            ? Body.position.y < _game.Room.Lower + 2.3f && Mathf.Abs(Body.position.x - _game.Room.StairsFoot) < .8f
+            : Body.position.x < _game.Room.BoothStart + 1.2f;
 
         private void Awake()
         {
@@ -209,7 +209,7 @@ namespace CoalRun.Gameplay.Player
             Effects(c, dt);
             Shovel(c, dt);
             if (Lane == 1)
-                Body.position = new Vector2(Mathf.Clamp(Body.position.x, Room.BoothStart + .3f, Room.Width - .55f),
+                Body.position = new Vector2(Mathf.Clamp(Body.position.x, _game.Room.BoothStart + .3f, _game.Room.Right - .55f),
                     Body.position.y);
             CheckBurial(dt);
         }
@@ -452,13 +452,13 @@ namespace CoalRun.Gameplay.Player
         {
             Climbing = true;
             _game.PlayCue("step");
-            float lower = Room.Lower + .72f, upper = Room.BoothFloor + .72f;
+            float lower = _game.Room.Lower + .72f, upper = _game.Room.BoothFloor + .72f;
             Vector2[] path =
-                { new(Room.StairsFoot, lower), new(Room.BoothStart, upper), new(Room.BoothStart + .6f, upper) };
+                { new(_game.Room.StairsFoot, lower), new(_game.Room.BoothStart, upper), new(_game.Room.BoothStart + .6f, upper) };
             if (lane == 0)
             {
                 // Coal piled at the foot of the stairs is stepped down onto, not into.
-                path[0].y = _game.Coal.GroundAt(Room.StairsFoot, lower) + .72f;
+                path[0].y = _game.Coal.GroundAt(_game.Room.StairsFoot, lower) + .72f;
                 Array.Reverse(path);
                 Lane = 0;
                 if (visual) visual.sortingOrder = frontOrder;

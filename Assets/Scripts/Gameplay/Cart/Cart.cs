@@ -513,12 +513,11 @@ namespace CoalRun.Gameplay.Cart
 
         private float FloorBelow(Vector2 p)
         {
-            return p switch
-            {
-                { x: >= .55f and <= 3.95f } when p.y >= _game.Lift.Y - .3f => _game.Lift.Y,
-                { x: >= 4 and <= Room.Edge, y: >= Room.Upper - .3f } => Room.Upper,
-                _ => Room.Lower
-            };
+            var room = _game.Room;
+            if (p.x >= room.LiftLeft + .05f && p.x <= room.LiftRight - .05f && p.y >= _game.Lift.Y - .3f)
+                return _game.Lift.Y;
+            if (p.x >= room.UpperLeft && p.x <= room.Edge && p.y >= room.Upper - .3f) return room.Upper;
+            return room.Lower;
         }
 
         private void UpdateMass()

@@ -25,15 +25,10 @@ namespace CoalRun.Gameplay.Furnace
         private void Update()
         {
             var has = furnace.Lit && furnace.Hopper > .05f;
-            var burn = Mathf.Clamp01(furnace.BurnRate / Mathf.Max(.01f, ShiftManager().Tune.burnRates[^1]));
+            var burn = Mathf.Clamp01(furnace.BurnRate / Mathf.Max(.01f, ShiftManager.Instance.Tune.burnRates[^1]));
             var perSecond = has ? Mathf.Lerp(rate.x, rate.y, burn) : 0;
             Set(chute, perSecond);
             Set(pour, perSecond);
-        }
-
-        private static ShiftManager ShiftManager()
-        {
-            return Core.ShiftManager.Instance;
         }
 
         private static void Set(ParticleSystem system, float perSecond)

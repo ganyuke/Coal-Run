@@ -51,7 +51,8 @@ namespace CoalRun.Gameplay.Coal
         {
             var q = Mathf.Min(bunker, amount);
             bunker -= q;
-            _game.Coal.Emit(Room.Chute, 6.7f, q, vx, 0, spread);
+            var mouth = _game.Room.ChuteMouth;
+            _game.Coal.Emit(mouth.x, mouth.y, q, vx, 0, spread);
         }
     }
 }

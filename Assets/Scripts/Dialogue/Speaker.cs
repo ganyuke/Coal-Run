@@ -35,7 +35,6 @@ namespace CoalRun.Dialogue
         private Transform anchor;
 
         [SerializeField] private SpeechLayout speechLayout;
-        [SerializeField] private float width = 6;
         [SerializeField] private float fadeTime = .5f;
 
         private Color _originalTextColor;
@@ -63,15 +62,18 @@ namespace CoalRun.Dialogue
         private float _bobStrength;
 
         [Header("Speech particles")]
-        [Tooltip("World-space particles shared by speech puffs and cold breath. Optional.")]
+        [Tooltip("World-space speech particles. Appearance is configured on the particle system.")]
+        [UnityEngine.Serialization.FormerlySerializedAs("puffs")]
         [SerializeField]
-        private ParticleSystem puffs;
+        private ParticleSystem speechPuffs;
 
         [SerializeField] private float puffRate = 10;
 
         private float _pendingPuffs;
 
         [Header("Cold breath")]
+        [SerializeField] private ParticleSystem coldBreath;
+
         [Tooltip("Show breath below this temperature in Celsius. Set to 0 to disable.")]
         [SerializeField]
         private float breathBelow;
@@ -82,7 +84,7 @@ namespace CoalRun.Dialogue
         public TextMeshPro Text => text;
         
         public Vector3 AnchorPosition => (anchor ? anchor : transform).position;
-        public float TextWidth => Mathf.Min(width, text.preferredWidth);
+        public float TextWidth => Mathf.Min(text.rectTransform.rect.width, text.preferredWidth);
 
         public float LineStartedAt { get; private set; }
 
@@ -91,6 +93,7 @@ namespace CoalRun.Dialogue
 
         // check where line is visible after talking
         public bool Showing => Time.time < _lineEndsAt;
+        public bool IsBusy => Showing || _pendingLines.Count > 0;
 
         // Unity lifecycle
 
@@ -229,37 +232,23 @@ namespace CoalRun.Dialogue
         private void UpdateColdBreath()
         {
             if (human && human.IsDead) return;
-            if (puffs && breathBelow > 0 && ShiftManager.Instance.Temperature < breathBelow &&
+            if (coldBreath && breathBelow > 0 && ShiftManager.Instance.Temperature < breathBelow &&
                 Time.time >= _nextBreathAt)
             {
                 _nextBreathAt = Time.time + Mathf.Lerp(1.4f, 3f,
                     Mathf.InverseLerp(-10, breathBelow, ShiftManager.Instance.Temperature));
-                var mouthPosition = (head ? head.position : transform.position) + Vector3.up * .2f;
-                puffs.Emit(new ParticleSystem.EmitParams
-                {
-                    position = mouthPosition,
-                    velocity = new Vector2(Random.Range(-.25f, .25f), Random.Range(.35f, .6f)),
-                    startSize = Random.Range(.2f, .3f),
-                    startColor = new Color(.88f, .94f, 1, .8f),
-                    rotation = Random.Range(0f, 90f),
-                    startLifetime = Random.Range(1f, 1.4f)
-                }, 1);
+                coldBreath.Emit(1);
             }
         }
 
         private void UpdateSpeechPuffs()
         {
-            if (!puffs || !Talking) return;
+            if (!speechPuffs || !Talking) return;
             _pendingPuffs += puffRate * Time.deltaTime;
-            var mouthPosition = (head ? head.position : transform.position) + Vector3.up * .3f;
-            for (; _pendingPuffs >= 1; _pendingPuffs--)
-                puffs.Emit(new ParticleSystem.EmitParams
-                {
-                    position = mouthPosition + (Vector3)(Random.insideUnitCircle * .15f),
-                    velocity = new Vector2(Random.Range(-.7f, .7f), Random.Range(.9f, 1.8f)),
-                    startSize = Random.Range(.05f, .1f),
-                    startLifetime = Random.Range(.5f, .8f)
-                }, 1);
+            var count = Mathf.FloorToInt(_pendingPuffs);
+            if (count == 0) return;
+            _pendingPuffs -= count;
+            speechPuffs.Emit(count);
         }
     }
 }

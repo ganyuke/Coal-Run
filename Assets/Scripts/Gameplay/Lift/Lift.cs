@@ -66,13 +66,13 @@ namespace CoalRun.Gameplay.Lift
             float floor = Floor(out var under), ceiling = Ceiling(out var hangingOff);
             switch (requested)
             {
-                case < 0 when floor > Room.Lower + .01f && Y - floor < .05f:
+                case < 0 when floor > _game.Room.Lower + .01f && Y - floor < .05f:
                     _game.Say(
                         under == "operator"
                             ? _game.Lines.speech.clearShaft
                             : string.Format(_game.Lines.speech.underLift, under));
                     break;
-                case > 0 when ceiling < Room.Upper - .01f && ceiling - Y < .05f:
+                case > 0 when ceiling < _game.Room.Upper - .01f && ceiling - Y < .05f:
                     _game.Say(
                         hangingOff == "operator"
                             ? _game.Lines.speech.standOnLift
@@ -93,7 +93,7 @@ namespace CoalRun.Gameplay.Lift
 
             // The fastest speed from which the platform can still brake to a stop in the distance left.
             // It only brakes for the ends of the shaft: something in the way is hit at full speed.
-            var distance = requested > 0 ? Room.Upper - Y : Y - Room.Lower;
+            var distance = requested > 0 ? _game.Room.Upper - Y : Y - _game.Room.Lower;
             var brake = t.liftAcceleration * dt / 2;
             var limit = Mathf.Min(t.liftMaxSpeed,
                 Mathf.Max(0, Mathf.Sqrt(2 * t.liftAcceleration * Mathf.Max(0, distance) + brake * brake) - brake));
@@ -104,7 +104,7 @@ namespace CoalRun.Gameplay.Lift
             if (spun) Speed = Mathf.Clamp(requested, -t.liftMaxSpeed, t.liftMaxSpeed);
             else Speed += Mathf.Clamp(target - Speed, -t.liftAcceleration * dt, t.liftAcceleration * dt);
             // Coming down into coal in the shaft, it bogs down at once, then slower as the coal packs flat.
-            if (Speed < 0 && Y + Speed * dt < Room.Lower + _game.Coal.ShaftPeak())
+            if (Speed < 0 && Y + Speed * dt < _game.Room.Lower + _game.Coal.ShaftPeak())
                 Speed = Mathf.Max(Speed, -t.liftSquashSpeed * Mathf.Clamp01((Y - floor) / .5f) - .05f);
             var next = Y + Speed * dt;
             if (next > ceiling)
@@ -121,7 +121,7 @@ namespace CoalRun.Gameplay.Lift
 
             Speed = (next - Y) / dt;
             // Down in its pit, the platform's top is flush with the floor, so the coal under it has Y - Lower of room.
-            _game.Coal.Squash(next - Room.Lower);
+            _game.Coal.Squash(next - _game.Room.Lower);
 
             if (_driver) _driver.Turn(-Speed * dt / 1.4f * Mathf.Rad2Deg);
             if (Mathf.Abs(Speed) > .02f) _game.PlayCue("crank", .1f, Mathf.Abs(Speed));
@@ -131,7 +131,7 @@ namespace CoalRun.Gameplay.Lift
                 foreach (var (rider, _) in Riders())
                 {
                     var p = rider.position;
-                    if (Mathf.Abs(p.x - Room.LiftX) < 1.55f && Mathf.Abs(p.y - Y - .65f) < .25f)
+                    if (Mathf.Abs(p.x - _game.Room.LiftX) < _game.Room.LiftWidth / 2 - .2f && Mathf.Abs(p.y - Y - .65f) < .25f)
                         rider.linearVelocity = new Vector2(rider.linearVelocity.x, Speed);
                 }
 
@@ -172,7 +172,7 @@ namespace CoalRun.Gameplay.Lift
             foreach (var (rider, _) in Riders())
             {
                 var p = rider.position;
-                if (Mathf.Abs(p.x - Room.LiftX) < 1.6f && Mathf.Abs(p.y - Y) < 2) mass += rider.mass;
+                if (Mathf.Abs(p.x - _game.Room.LiftX) < _game.Room.LiftWidth / 2 - .15f && Mathf.Abs(p.y - Y) < 2) mass += rider.mass;
             }
 
             return mass + _game.Coal.LiftCoal * _game.Tune.coalMass;
@@ -181,7 +181,7 @@ namespace CoalRun.Gameplay.Lift
         // The lowest the platform may go without coming down on the cart, the operator, or a part.
         private float Floor(out string blocker)
         {
-            var floor = Room.Lower;
+            var floor = _game.Room.Lower;
             blocker = "";
             foreach (var (rider, kind) in Riders())
             {
@@ -190,14 +190,14 @@ namespace CoalRun.Gameplay.Lift
                 var p = rider.position;
                 // The platform's underside, .3 below its top, touching the top of the cart or the operator's head.
                 var clear = p.y + top + .32f;
-                if (!(p.x + half > .5f && p.x - half < 4 && p.y < Y - .25f && clear > floor)) continue;
+                if (!(p.x + half > _game.Room.LiftLeft && p.x - half < _game.Room.LiftRight && p.y < Y - .25f && clear > floor)) continue;
                 floor = clear;
                 blocker = kind;
             }
 
             // Coal in the shaft can be squashed flat, but no further. A thin layer is just shoved out.
-            var layer = Room.Lower + _game.Coal.ShaftLayer();
-            if (layer > Room.Lower + .1f && layer > floor)
+            var layer = _game.Room.Lower + _game.Coal.ShaftLayer();
+            if (layer > _game.Room.Lower + .1f && layer > floor)
             {
                 floor = layer;
                 blocker = "coal";
@@ -211,14 +211,14 @@ namespace CoalRun.Gameplay.Lift
         // lower floor as it rises.
         private float Ceiling(out string blocker)
         {
-            var ceiling = Room.Upper;
+            var ceiling = _game.Room.Upper;
             blocker = "";
             foreach (var (rider, kind) in Riders())
             {
                 var b = BodyBounds(rider);
-                if (!(b.max.x > 4.1f && b.min.x < 3.9f && b.min.y > Y - .4f && b.max.y < Room.Upper - .05f)) continue;
+                if (!(b.max.x > _game.Room.LiftRight + .1f && b.min.x < _game.Room.LiftRight - .1f && b.min.y > Y - .4f && b.max.y < _game.Room.Upper - .05f)) continue;
                 // The upper floor's slab is .4 thick; the overhang stops just under it.
-                var limit = Y + Room.Upper - .42f - b.max.y;
+                var limit = Y + _game.Room.Upper - .42f - b.max.y;
                 if (limit >= ceiling) continue;
                 ceiling = limit;
                 blocker = kind;

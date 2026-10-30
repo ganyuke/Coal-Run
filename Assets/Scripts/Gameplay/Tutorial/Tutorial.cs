@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using CoalRun.Core;
 using CoalRun.Dialogue;
 using CoalRun.Gameplay.Characters;
@@ -66,10 +65,6 @@ namespace CoalRun.Gameplay.Tutorial
         [SerializeField]
         private float avalancheThrow = 3.2f;
 
-        // His lines wait their turn: seconds left to read the current one, and the next ones up. The stuck
-        // lever's line waits `_greaseIn`, so a lump on his head gets its "Ow" in first.
-        private readonly Queue<(string text, float duration)> _lines = new();
-
         private ShiftManager _game;
 
         private SortingGroup _helperGroup;
@@ -85,7 +80,7 @@ namespace CoalRun.Gameplay.Tutorial
 
         // Where the helper stands, and whether he's walking there.
         private Vector3 _spot;
-        private float _talk, _greaseIn;
+        private float _greaseIn;
         private float _timer, _left, _accumulator, _deliveredBefore;
         private bool _walking;
 
@@ -99,7 +94,7 @@ namespace CoalRun.Gameplay.Tutorial
         // Until the avalanche is over, the chute lever is the only thing that works.
         public bool Restricts => _game.InTraining && Current < Stage.Dig;
         public bool CanDig => !_game.InTraining || _shovelTaken;
-        public float WalkFactor => _game.InTraining && (_walking || _talk > 0) ? listeningWalk : 1;
+        public float WalkFactor => _game.InTraining && (_walking || (helperVoice && helperVoice.IsBusy)) ? listeningWalk : 1;
 
         private void Start()
         {
@@ -119,7 +114,7 @@ namespace CoalRun.Gameplay.Tutorial
             // Riding down in the staff lift with the operator, behind its door until it opens.
             _spot = helper.transform.position;
             helper.transform.position = new Vector3(29.9f, _spot.y, _spot.z);
-            _helperGroup = helper.GetComponentInChildren<SortingGroup>();
+            _helperGroup = helper.Art.GetComponent<SortingGroup>();
             _helperOrder = _helperGroup.sortingOrder;
             _helperGroup.sortingOrder = liftOrder;
         }
@@ -129,10 +124,10 @@ namespace CoalRun.Gameplay.Tutorial
         {
             if (!helper || !helper.gameObject.activeSelf) return;
             _flinch = Mathf.Max(0, _flinch - Time.deltaTime * 3);
-            var art = helper.transform.GetChild(0);
+            var art = helper.Art;
             // A bob in his step while he walks over.
             art.localPosition = new Vector3(0, _walking ? Mathf.Abs(Mathf.Sin(Time.time * 9)) * .06f : 0, 0);
-            var lean = Mathf.Sign(helper.transform.position.x - Room.Chute) *
+            var lean = Mathf.Sign(helper.transform.position.x - _game.Room.Chute) *
                        (_flinch * 14 + Mathf.Min(3, _helperInjury) * 4);
             art.localRotation = Quaternion.Euler(0, 0, -lean + Mathf.Sin(Time.time * 40) * 4 * _flinch);
         }
@@ -141,15 +136,7 @@ namespace CoalRun.Gameplay.Tutorial
         {
             if (Current == Stage.Done) return;
             var dt = Time.fixedDeltaTime;
-            _talk -= dt;
-            if (_talk <= 0 && _lines.Count > 0)
-            {
-                var (text, duration) = _lines.Dequeue();
-                _game.Say(text, helperVoice);
-                _talk = Mathf.Min(duration, .6f + text.Length / 20f);
-            }
-
-            if (_greaseIn > 0 && (_greaseIn -= dt) <= 0) Speak(_game.Lines.training.helperGrease, 8);
+            if (_greaseIn > 0 && (_greaseIn -= dt) <= 0) _game.Say(_game.Lines.training.helperGrease, helperVoice);
             // The coal comes down whatever else happens, even with the operator dead.
             if (_left > 0)
             {
@@ -161,7 +148,7 @@ namespace CoalRun.Gameplay.Tutorial
                     var lump = Mathf.Min(.5f, _accumulator);
                     // Aimed anywhere between straight down onto the cart and onto the helper's head.
                     _game.Chute.Dispense(lump,
-                        Mathf.Sign(helper.transform.position.x - Room.Chute) * Random.Range(0, avalancheThrow));
+                        Mathf.Sign(helper.transform.position.x - _game.Room.Chute) * Random.Range(0, avalancheThrow));
                     _accumulator -= lump;
                 }
 
@@ -193,7 +180,7 @@ namespace CoalRun.Gameplay.Tutorial
                     _walking = false;
                     Current = Stage.Lever;
                     _timer = 0;
-                    Speak(_game.Lines.training.helperIntro, 8);
+                    _game.Say(_game.Lines.training.helperIntro, helperVoice);
                     break;
                 case Stage.Lever when _lever.Value >= stickAt - .05f:
                     // It sticks, and lets one lump out.
@@ -201,19 +188,19 @@ namespace CoalRun.Gameplay.Tutorial
                     _lever.Limit = 1;
                     machines.Release();
                     // Right onto his head, clear of the cart.
-                    _game.Chute.Dispense(.5f, (helper.transform.position.x - Room.Chute) / .6f, 0);
+                    _game.Chute.Dispense(.5f, (helper.transform.position.x - _game.Room.Chute) / .6f, 0);
                     _game.PlayCue("clunk");
                     _greaseIn = 1;
                     break;
                 case Stage.Lever when _timer > 14 && !_nagged:
                     _nagged = true;
-                    Speak(_game.Lines.training.helperReassure, 9);
+                    _game.Say(_game.Lines.training.helperReassure, helperVoice);
                     break;
                 case Stage.Stuck when _lever.Value > .8f:
                     Current = Stage.Avalanche;
                     _left = avalanche;
                     _timer = 0;
-                    helper.GetComponentInChildren<SortingGroup>().sortingOrder = buriedOrder;
+                    helper.Art.GetComponent<SortingGroup>().sortingOrder = buriedOrder;
                     _game.PlayCue("crash");
                     break;
                 // He always dies, even when the coal happens to fall around him.
@@ -224,8 +211,8 @@ namespace CoalRun.Gameplay.Tutorial
                     _deliveredBefore = _game.Furnace.Delivered;
                     break;
                 // Shoveling is the lesson, but a cart hauled out some other way mustn't stall the training.
-                case Stage.Dig when _game.Player.Scooped >= 1.5f || _game.Cart.Body.position.x < Room.Edge ||
-                                    _game.Cart.Body.position.y > Room.Upper:
+                case Stage.Dig when _game.Player.Scooped >= 1.5f || _game.Cart.Body.position.x < _game.Room.Edge ||
+                                    _game.Cart.Body.position.y > _game.Room.Upper:
                     Current = Stage.Deliver;
                     break;
             }
@@ -252,7 +239,7 @@ namespace CoalRun.Gameplay.Tutorial
             if (helper) helper.gameObject.SetActive(false);
             if (shovel) shovel.SetActive(false);
             _shovelTaken = true;
-            _lines.Clear();
+            if (helperVoice) helperVoice.Forget();
             _game.Cart.Park(false);
             _lever.Limit = 1;
             _game.FinishTraining();
@@ -267,14 +254,9 @@ namespace CoalRun.Gameplay.Tutorial
             _helperInjury += amount;
             _flinch = 1;
             _game.PlayCue("hurt", .4f, .5f);
-            if (!_saidOw) Speak(_game.Lines.training.helperOw, 3);
+            if (!_saidOw) _game.Say(_game.Lines.training.helperOw, helperVoice);
             _saidOw = true;
             return true;
-        }
-
-        private void Speak(string text, float duration)
-        {
-            _lines.Enqueue((text, duration));
         }
 
         public bool ShovelInReach(PlayerController player)
@@ -294,8 +276,8 @@ namespace CoalRun.Gameplay.Tutorial
         {
             if (helper.IsDead) return;
             _game.Bodies.Add(helper.Kill());
-            _lines.Clear();
-            _greaseIn = _talk = 0;
+            if (helperVoice) helperVoice.Forget();
+            _greaseIn = 0;
             _game.Say(_game.Lines.training.helpDead);
         }
 
@@ -315,8 +297,8 @@ namespace CoalRun.Gameplay.Tutorial
                     return p.Lane == 1 ? t.goDownDig : _shovelTaken ? t.dig : t.grabShovel;
             }
 
-            if (_game.Coal.CartBurial(_game.Cart) > .5f && cart.x > Room.Edge) return t.keepDigging;
-            if (cart.y < Room.Upper - .5f) return t.haulUp;
+            if (_game.Coal.CartBurial(_game.Cart) > .5f && cart.x > _game.Room.Edge) return t.keepDigging;
+            if (cart.y < _game.Room.Upper - .5f) return t.haulUp;
             return _game.Cart.InCradle ? t.tip : t.hook;
         }
     }

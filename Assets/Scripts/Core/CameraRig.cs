@@ -24,8 +24,9 @@ namespace CoalRun.Core
             // Never showing past the room: the near edge of the view stays inside every wall, floor and ceiling,
             // so a zoom on someone by a wall sits them off-centre rather than showing the dark outside.
             var half = size * cam.aspect;
-            var x = Mathf.Clamp(at.x, Mathf.Min(half, Room.Width / 2), Mathf.Max(Room.Width - half, Room.Width / 2));
-            var y = Mathf.Clamp(at.y, Mathf.Min(size, Room.Height / 2), Mathf.Max(Room.Height - size, Room.Height / 2));
+            var bounds = ShiftManager.Instance.Room.Bounds;
+            var x = Mathf.Clamp(at.x, Mathf.Min(bounds.min.x + half, bounds.center.x), Mathf.Max(bounds.max.x - half, bounds.center.x));
+            var y = Mathf.Clamp(at.y, Mathf.Min(bounds.min.y + size, bounds.center.y), Mathf.Max(bounds.max.y - size, bounds.center.y));
             yield return Move(new Vector3(x, y, _home.z), size, time);
         }
 

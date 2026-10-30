@@ -15,6 +15,7 @@ namespace CoalRun.Gameplay.Characters
         private GameObject installer;
 
         [SerializeField] private Speaker voice;
+        [SerializeField] private GameObject art;
 
         [Tooltip("The cart has to be moving at least this fast into him to count.")] [SerializeField]
         private float hitSpeed = 1.2f;
@@ -47,8 +48,8 @@ namespace CoalRun.Gameplay.Characters
             if (_left)
             {
                 installer.transform.position = Vector3.MoveTowards(installer.transform.position,
-                    new Vector3(Room.StaffLiftCenter, at.y, 0), exitSpeed * Time.fixedDeltaTime);
-                if (Mathf.Abs(installer.transform.position.x - Room.StaffLiftCenter) < .1f) installer.SetActive(false);
+                    new Vector3(_game.Room.StaffLiftCenter, at.y, 0), exitSpeed * Time.fixedDeltaTime);
+                if (Mathf.Abs(installer.transform.position.x - _game.Room.StaffLiftCenter) < .1f) installer.SetActive(false);
                 return;
             }
 
@@ -81,7 +82,6 @@ namespace CoalRun.Gameplay.Characters
         protected override Rigidbody2D OnDeath()
         {
             var at = (Vector2)installer.transform.position;
-            var art = installer.transform.GetChild(0).gameObject;
             var body = Corpse.Topple(corpsePrefab, art, "Dead installer", at, new Vector2(_game.Cart.Body.linearVelocity.x, 2.5f));
             installer.SetActive(false);
             _game.PlayCue("hurt");

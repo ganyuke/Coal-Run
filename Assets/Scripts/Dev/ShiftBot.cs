@@ -34,7 +34,9 @@ namespace CoalRun.Dev
         private const BindingFlags Private = BindingFlags.NonPublic | BindingFlags.Instance;
 
         // Cart positions the route stops at: on the freight lift's platform, over the tip cradle, under the chute.
-        private const float LiftStop = 2.7f, CradleStop = 15.4f, ChuteStop = Room.Chute;
+        private float LiftStop => _game.Room.LiftX + .45f;
+        private float CradleStop => _game.Cradle.transform.position.x - 1.6f;
+        private float ChuteStop => _game.Room.Chute;
 
         // A cart buried deeper than this can't be hauled at all (it doesn't move past 1.2); shallower, it's slow work, and a
         // lurch (a kick along the way) gets it through a heap at the lift's edge, so it is hauled rather than put back by hand.
@@ -258,15 +260,15 @@ namespace CoalRun.Dev
             var p = cart.Body.position;
             var lift = _game.Lift;
             var onLift = p.x < 4.3f && Mathf.Abs(p.y - (lift.Y + .7f)) < .3f;
-            var lower = !onLift && Mathf.Abs(p.y - (Room.Lower + .7f)) < .4f;
-            var upper = !onLift && Mathf.Abs(p.y - (Room.Upper + .7f)) < .4f;
+            var lower = !onLift && Mathf.Abs(p.y - (_game.Room.Lower + .7f)) < .4f;
+            var upper = !onLift && Mathf.Abs(p.y - (_game.Room.Upper + .7f)) < .4f;
             var loaded = cart.Coal > LoadedAbove;
 
             if (_endgame && !cart.InCradle)
             {
                 // Nothing more to haul: go down on the freight lift and wait by the staff lift for the whistle.
                 Mark("down to clock out");
-                if (_game.Player.Position.y > Room.Lower + 3) yield return Crank(-1);
+                if (_game.Player.Position.y > _game.Room.Lower + 3) yield return Crank(-1);
                 else yield return Walk(30.4f);
                 yield return Wait(.5f);
                 yield break;
@@ -297,8 +299,8 @@ namespace CoalRun.Dev
 
             if (onLift)
             {
-                var top = lift.Y > Room.Upper - .05f;
-                var bottom = lift.Y < Room.Lower + .05f;
+                var top = lift.Y > _game.Room.Upper - .05f;
+                var bottom = lift.Y < _game.Room.Lower + .05f;
                 if (loaded && !top) yield return Crank(1);
                 else if (!loaded && !bottom) yield return Crank(-1);
                 else if (top) yield return Deliver();
@@ -306,7 +308,7 @@ namespace CoalRun.Dev
             }
             else if (upper)
             {
-                yield return loaded ? Deliver() : ToLift(Room.Upper);
+                yield return loaded ? Deliver() : ToLift(_game.Room.Upper);
             }
             else if (!loaded)
             {
@@ -314,7 +316,7 @@ namespace CoalRun.Dev
             }
             else
             {
-                yield return ToLift(Room.Lower);
+                yield return ToLift(_game.Room.Lower);
             }
         }
 
@@ -356,7 +358,7 @@ namespace CoalRun.Dev
 
             Mark("to the stairs");
             _looseAtFill = _game.Coal.Loose;
-            yield return Walk(Room.StairsFoot);
+            yield return Walk(_game.Room.StairsFoot);
             _c.Lane = 1;
             yield return null;
             while (_game.Player.Climbing) yield return null;
@@ -590,13 +592,13 @@ namespace CoalRun.Dev
 
         private IEnumerator SweepCradle()
         {
-            return Sweep(Room.Upper, SweepFrom, Room.HopperStart, new Vector2(CradleStop, Room.Upper), 1, "cradle",
+            return Sweep(_game.Room.Upper, SweepFrom, _game.Room.HopperStart, new Vector2(CradleStop, _game.Room.Upper), 1, "cradle",
                 SweepMin);
         }
 
         private IEnumerator SweepChute()
         {
-            return Sweep(Room.Lower, ChuteStop - 1.6f, ChuteStop + 4, new Vector2(ChuteStop, Room.Lower), 0, "chute",
+            return Sweep(_game.Room.Lower, ChuteStop - 1.6f, ChuteStop + 4, new Vector2(ChuteStop, _game.Room.Lower), 0, "chute",
                 .12f);
         }
 
@@ -642,7 +644,7 @@ namespace CoalRun.Dev
             Mark(direction > 0 ? "crank up" : "crank down");
             // The platform's own wheel, at its left end. The cart stops right of it.
             yield return Walk(1.5f);
-            var end = direction > 0 ? Room.Upper : Room.Lower;
+            var end = direction > 0 ? _game.Room.Upper : _game.Room.Lower;
             // Spun like the mouse spins it (clockwise is up): the cursor circles a fixed point, which gets
             // the platform to its top speed. The W/S keys are geared to under half of that.
             if (_wheel.CanOperate(_game.Player))
@@ -901,12 +903,12 @@ namespace CoalRun.Dev
             if (cart.InCradle) yield break; // Can't pull it off the chains by hand; Lower will be tried again.
             while (cart.LooseWheels.Count > 0) cart.RemoveWheel(cart.LooseWheels[0]);
             if (cart.Wheels == 0) cart.SetWheels(_game.Day.startingWheels);
-            cart.Body.position = new Vector2(ChuteStop, Room.Lower + .7f);
+            cart.Body.position = new Vector2(ChuteStop, _game.Room.Lower + .7f);
             cart.Body.rotation = 0;
             cart.Body.linearVelocity = Vector2.zero;
             cart.Body.angularVelocity = 0;
             cart.transform.SetPositionAndRotation(cart.Body.position, Quaternion.identity);
-            _game.Player.Respawn(new Vector2(ChuteStop + 1.4f, Room.Lower + .72f));
+            _game.Player.Respawn(new Vector2(ChuteStop + 1.4f, _game.Room.Lower + .72f));
             yield return Wait(.5f);
         }
 

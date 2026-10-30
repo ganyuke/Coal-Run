@@ -42,13 +42,13 @@ MonoBehaviour:
   phone:
     cold: '"Would you kindly turn up the furnace? We''re all rather uncomfortable
       right now."'
-    freezing: '"Please... please handle this... please keep us alive, even just a
-      little longer."'
-    frozen: "\u201CIt\u2019s below zero up here. We can see our breath. Please, whatever
-      it takes.\u201D"
+    freezing: '"We can see our breath up here. What is going on down there? Handle
+      this. Now."'
+    frozen: "\u201CPlease... please do something about the cold. Keep us alive, even
+      just a little longer.\u201D"
     warmed: "\u201CThanks for doing your job. It\u2019s nice and cozy up here. We\u2019ll
       be sure to pitch in to buy a blanket for you.\u201D"
-    burned: "\u201COur power just spiked. We don\u2019t want to know why. Do it again.\u201D"
+    burned: '"The lights just got a lot brighter. Nice work... but what did you do?"'
     deaths:
     - "\"We heard there was an... incident. We\u2019re sending another guy down.\""
     - "\"Again? Fine. We\u2019re sending another guy down.\""

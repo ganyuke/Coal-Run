@@ -34,6 +34,12 @@ namespace CoalRun.Gameplay.Machinery
         {
             var mouse = Mouse.current;
             var game = ShiftManager.Instance;
+            if (PauseMenu.Paused)
+            {
+                Release();
+                Hover = null;
+                return;
+            }
             if (mouse == null) return;
             Vector2 p = cam.ScreenToWorldPoint(mouse.position.ReadValue());
             // Hands full of wheel: a click throws it instead (see PlayerController).

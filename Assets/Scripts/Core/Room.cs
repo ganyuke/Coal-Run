@@ -1,26 +1,47 @@
-using CoalRun.Gameplay.Coal;
+using UnityEngine;
 namespace CoalRun.Core
 {
-    // Room geometry in world units (1 unit is about a metre), copied from the JS prototype's ROOM.
-    // The scene was laid out from these, and the code uses them for floors, reach and coal surfaces.
-    // Moving a floor or station by hand in the scene means changing it here too.
-    public static class Room
+    // Scene geometry used by movement, coal, the lift and the camera.
+    public class Room : MonoBehaviour
     {
-        public const float Width = 32, Height = 18;
-        public const float Lower = 2, Upper = 9.5f;
+        [Header("Room and floors")]
+        [SerializeField] private SpriteRenderer backdrop;
+        [SerializeField] private BoxCollider2D lowerFloor, upperFloor, controlRoomFloor;
+        [SerializeField] private BoxCollider2D liftPlatform;
 
-        public const float Edge = 22, Chute = 26, Tip = 17;
+        [Header("Station geometry")]
+        [SerializeField] private SpriteRenderer hopperGrate;
+        [SerializeField] private Transform chuteMouth;
+        [SerializeField] private Transform returnBoundary;
 
-        // The grate in the upper floor over the furnace hopper.
-        public const float HopperStart = 16.1f, HopperEnd = 18.1f;
-        public const float LiftX = 2.25f, LiftWidth = 3.5f;
+        [Header("Movement destinations")]
+        [SerializeField] private Transform arrival;
+        [SerializeField] private Transform staffLiftInside, staffLiftCenter, stairsFoot;
 
-        public const float EntranceStart = 29.2f, EntranceRoof = 6.3f;
-
-        // Inside the staff lift car, past its door.
-        public const float StaffLiftInside = 30.2f, StaffLiftCenter = 30.45f;
-
-        // The control room sits on a slab over the staff lift, up a flight of stairs from the work floor.
-        public const float BoothStart = 27.4f, BoothFloor = 6.6f, StairsFoot = 23.5f;
+        public Bounds Bounds => backdrop.bounds;
+        public float Left => Bounds.min.x;
+        public float Right => Bounds.max.x;
+        public float Top => Bounds.max.y;
+        public float Lower => lowerFloor.bounds.max.y;
+        public float Upper => upperFloor.bounds.max.y;
+        public float LowerLeft => lowerFloor.bounds.min.x;
+        public float LowerRight => lowerFloor.bounds.max.x;
+        public float UpperLeft => upperFloor.bounds.min.x;
+        public float Edge => upperFloor.bounds.max.x;
+        public float LiftX => liftPlatform.bounds.center.x;
+        public float LiftWidth => liftPlatform.bounds.size.x;
+        public float LiftLeft => liftPlatform.bounds.min.x;
+        public float LiftRight => liftPlatform.bounds.max.x;
+        public float HopperStart => hopperGrate.bounds.min.x;
+        public float HopperEnd => hopperGrate.bounds.max.x;
+        public Vector2 ChuteMouth => chuteMouth.position;
+        public float Chute => chuteMouth.position.x;
+        public float EntranceStart => returnBoundary.position.x;
+        public Vector2 Arrival => new(arrival.position.x, Lower + .72f);
+        public float StaffLiftInside => staffLiftInside.position.x;
+        public float StaffLiftCenter => staffLiftCenter.position.x;
+        public float StairsFoot => stairsFoot.position.x;
+        public float BoothStart => controlRoomFloor.bounds.min.x;
+        public float BoothFloor => controlRoomFloor.bounds.max.y;
     }
 }

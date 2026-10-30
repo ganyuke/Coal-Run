@@ -44,7 +44,7 @@ namespace CoalRun.UI
         private TMP_Text sheetStats;
 
         [Tooltip("Clicked to begin the shift or run it again.")] [SerializeField]
-        private RectTransform button;
+        private Button button;
 
         [Tooltip(
             "Black behind the book: it dims the room under a briefing or report, and is the fade out of the staff lift.")]
@@ -176,8 +176,6 @@ namespace CoalRun.UI
             {
                 var screen = mouse.position.ReadValue();
                 PointerOver = RectTransformUtility.RectangleContainsScreenPoint(book, screen);
-                if (PointerOver && mouse.leftButton.wasPressedThisFrame &&
-                    RectTransformUtility.RectangleContainsScreenPoint(button, screen)) Press(game);
             }
 
             var k = 1 - Mathf.Exp(-slideSpeed * Time.unscaledDeltaTime);
@@ -246,8 +244,9 @@ namespace CoalRun.UI
         }
 
         // Begin the shift, or run it again: what the stamped button does, like Enter and R.
-        private static void Press(ShiftManager game)
+        public void Press()
         {
+            var game = ShiftManager.Instance;
             if (game.Phase == Phase.Briefing) game.BeginShift();
             else if (game.Ended) game.Continue();
         }

@@ -81,10 +81,10 @@ namespace CoalRun.Gameplay.Coal
             _game = ShiftManager.Instance;
             Surfaces = new[]
             {
-                MakeSurface(SurfaceId.Lower, .4f, 31.6f, transform, Room.Lower),
-                MakeSurface(SurfaceId.Upper, 4, Room.Edge, transform, Room.Upper),
+                MakeSurface(SurfaceId.Lower, _game.Room.LowerLeft + .05f, _game.Room.LowerRight - .1f, transform, _game.Room.Lower),
+                MakeSurface(SurfaceId.Upper, _game.Room.UpperLeft, _game.Room.Edge, transform, _game.Room.Upper),
                 // Rides on the lift: the platform's top surface is .15 above its body.
-                MakeSurface(SurfaceId.Lift, .55f, 3.95f, liftPlatform, .15f)
+                MakeSurface(SurfaceId.Lift, _game.Room.LiftLeft + .05f, _game.Room.LiftRight - .05f, liftPlatform, .15f)
             };
             // Coal in the shaft is drawn behind the platform, which comes down onto it and sinks into it a little.
             for (var i = 0; i < Surfaces[0].Columns.Length; i++)
@@ -140,18 +140,18 @@ namespace CoalRun.Gameplay.Coal
         public Surface SurfaceAt(float x, float y)
         {
             var liftY = _game.Lift.Y;
-            return x switch
-            {
-                >= .55f and <= 3.95f when y >= liftY - .3f && y <= liftY + 2.5f => Surfaces[2],
-                >= 4 and <= Room.Edge when y >= Room.Upper - .3f => Surfaces[1],
-                _ => Surfaces[0]
-            };
+            var room = _game.Room;
+            if (x >= room.LiftLeft + .05f && x <= room.LiftRight - .05f && y >= liftY - .3f && y <= liftY + 2.5f)
+                return Surfaces[2];
+            if (x >= room.UpperLeft && x <= room.Edge && y >= room.Upper - .3f) return Surfaces[1];
+            return Surfaces[0];
         }
 
-        // What something dropped at (x, y) lands on: over the shaft, the platform if it's below.
+        // Over the shaft, falling coal lands on the platform below it.
         private Surface SurfaceBelow(float x, float y)
         {
-            return x is >= .55f and <= 3.95f && y >= _game.Lift.Y - .3f ? Surfaces[2] : SurfaceAt(x, y);
+            return x >= _game.Room.LiftLeft + .05f && x <= _game.Room.LiftRight - .05f && y >= _game.Lift.Y - .3f
+                ? Surfaces[2] : SurfaceAt(x, y);
         }
 
         public int Index(Surface s, float x)
@@ -211,7 +211,7 @@ namespace CoalRun.Gameplay.Coal
         public void AddToPile(Surface s, float x, float amount)
         {
             // The covered staff entrance returns coal to the bunker, keeping the doorway clear and the total intact.
-            if (s.Id == SurfaceId.Lower && x >= Room.EntranceStart)
+            if (s.Id == SurfaceId.Lower && x >= _game.Room.EntranceStart)
             {
                 _game.Chute.Bunker += amount;
                 return;
@@ -309,16 +309,16 @@ namespace CoalRun.Gameplay.Coal
             Mark(b, j);
         }
 
-        private static bool OnHopperGrate(Surface s, float x)
+        private bool OnHopperGrate(Surface s, float x)
         {
-            return s.Id == SurfaceId.Upper && x is >= Room.HopperStart and <= Room.HopperEnd;
+            return s.Id == SurfaceId.Upper && x >= _game.Room.HopperStart && x <= _game.Room.HopperEnd;
         }
 
         // Coal heaped on the hopper grate drops through as the hopper burns down and makes room.
         private void DrainHopperGrate()
         {
             var s = Surfaces[1];
-            for (var i = Index(s, Room.HopperStart); i <= Index(s, Room.HopperEnd); i++)
+            for (var i = Index(s, _game.Room.HopperStart); i <= Index(s, _game.Room.HopperEnd); i++)
             {
                 var room = _game.Tune.hopperCapacity - _game.Furnace.Hopper;
                 if (room <= 0) return;
@@ -395,7 +395,7 @@ namespace CoalRun.Gameplay.Coal
                 }
 
                 lump ??= NewLump();
-                var p = new Vector2(Mathf.Clamp(x + (Random.value - .5f) * .9f * spread, .6f, 31.4f), y);
+                var p = new Vector2(Mathf.Clamp(x + (Random.value - .5f) * .9f * spread, _game.Room.LowerLeft + .25f, _game.Room.LowerRight - .3f), y);
                 lump.Amount = q;
                 lump.Rest = 0;
                 lump.HitPlayer = lump.HitHelper = false;
@@ -435,23 +435,23 @@ namespace CoalRun.Gameplay.Coal
                 if (!lump.Active) continue;
                 active++;
                 Vector2 p = lump.Body.position, v = lump.Body.linearVelocity;
-                switch (p)
+                // The return grate sends landed coal back to the bunker.
+                if (p.x >= _game.Room.EntranceStart && p.y <= _game.Room.Lower + .2f)
                 {
-                    // The floor by the staff lift and the control room door is a grate that sends coal back
-                    // to the bunker. Lumps land on it before they go, so a throw there looks like a throw.
-                    case { x: >= Room.EntranceStart, y: <= Room.Lower + .2f }:
-                        _game.Chute.Bunker += lump.Amount;
-                        Retire(lump);
-                        continue;
-                    // Likewise the hopper grate, while the hopper has room.
-                    case
+                    _game.Chute.Bunker += lump.Amount;
+                    Retire(lump);
+                    continue;
+                }
+
+                if (p.x >= _game.Room.HopperStart && p.x <= _game.Room.HopperEnd &&
+                    p.y <= _game.Room.Upper + .2f && p.y >= _game.Room.Upper - .3f)
+                {
+                    lump.Amount -= _game.Furnace.Feed(lump.Amount);
+                    if (lump.Amount <= 0)
                     {
-                        x: >= Room.HopperStart and <= Room.HopperEnd, y: <= Room.Upper + .2f and >= Room.Upper - .3f
-                    }:
-                        lump.Amount -= _game.Furnace.Feed(lump.Amount);
-                        if (lump.Amount > 0) break;
                         Retire(lump);
                         continue;
+                    }
                 }
 
                 // A lump falling onto the operator's head and shoulders hurts.
@@ -499,7 +499,7 @@ namespace CoalRun.Gameplay.Coal
 
                 if (v.magnitude < 1.2f && p.y <= ground + .28f) lump.Rest += dt;
                 else lump.Rest = 0;
-                if (lump.Rest <= .15f && p.y >= Room.Lower - .4f) continue;
+                if (lump.Rest <= .15f && p.y >= _game.Room.Lower - .4f) continue;
                 AddToPile(s, p.x, lump.Amount);
                 Retire(lump);
             }
@@ -513,7 +513,7 @@ namespace CoalRun.Gameplay.Coal
             var edge = platform.Heights.Length - 1;
             // A platform resting on the floor picks up whatever coal lay in the shaft, and its open side
             // joins the floor.
-            var resting = _game.Lift.Y <= Room.Lower + .02f;
+            var resting = _game.Lift.Y <= _game.Room.Lower + .02f;
             if (resting)
             {
                 for (var i = 0; i < lowerFloor.Heights.Length; i++)
@@ -529,7 +529,7 @@ namespace CoalRun.Gameplay.Coal
             }
 
             // The platform up level with the upper floor joins it.
-            var level = Mathf.Abs(_game.Lift.Y - Room.Upper) < .15f;
+            var level = Mathf.Abs(_game.Lift.Y - _game.Room.Upper) < .15f;
             if (level) Slump(platform, edge, upperFloor, 0);
             foreach (var s in Surfaces)
             {
@@ -539,7 +539,7 @@ namespace CoalRun.Gameplay.Coal
                 if (s.Id == SurfaceId.Lower)
                     for (var i = 0; i < s.Heights.Length; i++)
                     {
-                        if (s.Start + i * _game.Tune.columnWidth < Room.EntranceStart - 1e-6f || s.Heights[i] <= 0)
+                        if (s.Start + i * _game.Tune.columnWidth < _game.Room.EntranceStart - 1e-6f || s.Heights[i] <= 0)
                             continue;
                         _game.Chute.Bunker += ToCoal(s.Heights[i]);
                         s.Heights[i] = 0;

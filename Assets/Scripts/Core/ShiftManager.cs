@@ -43,7 +43,7 @@ namespace CoalRun.Core
         private static int _dayIndex;
 
         // Out of the staff lift.
-        private static readonly Vector2 ArrivalSpot = new(30.5f, Room.Lower + .72f);
+        private Vector2 ArrivalSpot => room.Arrival;
 
         [Header("Configuration")]
         [SerializeField] private Tuning tuning;
@@ -57,6 +57,7 @@ namespace CoalRun.Core
         private DayConfig[] days;
 
         [Header("Player and stations")]
+        [SerializeField] private Room room;
         [SerializeField] private InputReader input;
         [SerializeField] private PlayerController player;
         [SerializeField] private Cart cart;
@@ -94,6 +95,7 @@ namespace CoalRun.Core
 
         public static ShiftManager Instance { get; private set; }
 
+        public Room Room => room;
         public Tuning Tune => tuning;
         public Lines Lines => lines;
         public DayConfig Day => days is { Length: > 0 } ? days[Mathf.Clamp(_dayIndex, 0, days.Length - 1)] : day;
@@ -345,7 +347,7 @@ namespace CoalRun.Core
         {
             var p = player.Position;
             // Standing in the car, not just running through it.
-            var inside = player.Lane == 0 && p.y < Room.Lower + 2.3f && p.x > Room.StaffLiftInside &&
+            var inside = player.Lane == 0 && p.y < room.Lower + 2.3f && p.x > room.StaffLiftInside &&
                          Mathf.Abs(player.Body.linearVelocity.x) < .5f;
             _inLiftFor = inside ? _inLiftFor + dt : 0;
             if (_inLiftFor >= tuning.liftStandTime) StartCoroutine(Depart());
@@ -355,7 +357,7 @@ namespace CoalRun.Core
         private IEnumerator Depart()
         {
             Departing = true;
-            player.Stand(Room.StaffLiftCenter);
+            player.Stand(room.StaffLiftCenter);
             if (staffLift) yield return staffLift.CloseDoor();
             for (var k = 0f; k < 1; k += Time.deltaTime / tuning.fadeTime)
             {
@@ -426,23 +428,23 @@ namespace CoalRun.Core
             if (Lost(cart.Body.position))
             {
                 player.ReleaseGrip();
-                Put(cart.Body, Room.Lower + .72f);
+                Put(cart.Body, room.Lower + .72f);
             }
 
             foreach (var wheel in cart.LooseWheels)
                 if (Lost(wheel.position))
-                    Put(wheel, Room.Lower + .35f);
+                    Put(wheel, room.Lower + .35f);
             foreach (var body in Bodies)
                 if (Lost(body.position))
-                    Put(body, Room.Lower + .3f);
+                    Put(body, room.Lower + .3f);
             if (!player.Body.simulated || !Lost(player.Body.position)) return;
             player.ReleaseGrip();
-            Put(player.Body, Room.Lower + .72f);
+            Put(player.Body, room.Lower + .72f);
             return;
 
-            static bool Lost(Vector2 p)
+            bool Lost(Vector2 p)
             {
-                return p is not { x: > 0 and < Room.Width, y: > Room.Lower - 1.5f and < Room.Height + 4 };
+                return p.x <= room.Left || p.x >= room.Right || p.y <= room.Lower - 1.5f || p.y >= room.Top + 4;
             }
 
             static void Put(Rigidbody2D b, float y)

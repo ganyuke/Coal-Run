@@ -103,7 +103,7 @@ namespace CoalRun.Gameplay.Lift
             var top = pulley ? pulley.position.y : 0;
             // One cable over the pulley: the platform end shortens as it rises, the counterweight's lengthens.
             if (counterweight)
-                counterweight.position = new Vector3(counterweight.position.x, weightTop - (y - Room.Lower),
+                counterweight.position = new Vector3(counterweight.position.x, weightTop - (y - _game.Room.Lower),
                     counterweight.position.z);
             if (pulley) pulley.localRotation = Quaternion.Euler(0, 0, -y / pulleyRadius * Mathf.Rad2Deg);
             if (platformCable) Hang(platformCable, top, y + frameHeight);
@@ -130,7 +130,7 @@ namespace CoalRun.Gameplay.Lift
             var jolt = Mathf.Abs(speed - _lastSpeed) - _game.Tune.liftAcceleration * dt;
             // Coming down on coal in the shaft, it squashes it flat: dust puffs out from under.
             var peak = _game.Coal.ShaftPeak();
-            var squashing = _lastSpeed < -.05f && peak > .05f && y < Room.Lower + peak + .05f;
+            var squashing = _lastSpeed < -.05f && peak > .05f && y < _game.Room.Lower + peak + .05f;
             if (jolt > joltAt)
             {
                 Sparks(y, 4 + jolt * 4, speed);
@@ -146,8 +146,8 @@ namespace CoalRun.Gameplay.Lift
             _lastSpeed = speed;
 
             // Arriving at the top or the bottom throws a big burst off the shoes, more the faster the trip was.
-            var atTop = y >= Room.Upper - .03f;
-            var atEnd = atTop || y <= Room.Lower + .03f;
+            var atTop = y >= _game.Room.Upper - .03f;
+            var atEnd = atTop || y <= _game.Room.Lower + .03f;
             if (!atEnd)
             {
                 _peak = Mathf.Max(_peak, Mathf.Abs(speed));
@@ -174,7 +174,7 @@ namespace CoalRun.Gameplay.Lift
             {
                 _dustDebt--;
                 var side = Random.value < .5f ? -1 : 1;
-                Emit(dust, new Vector2(Room.LiftX + side * (Room.LiftWidth / 2 - .05f), y - .1f),
+                Emit(dust, new Vector2(_game.Room.LiftX + side * (_game.Room.LiftWidth / 2 - .05f), y - .1f),
                     new Vector2(side * Random.Range(0, .3f), speed * .5f), Random.Range(.03f, .06f), 1.2f);
             }
         }
@@ -190,7 +190,7 @@ namespace CoalRun.Gameplay.Lift
             var size = Mathf.Lerp(endSparkSize.x, endSparkSize.y, k);
             foreach (var shoe in shoes)
             {
-                var at = new Vector2(Room.LiftX + shoe.x, y + shoe.y);
+                var at = new Vector2(_game.Room.LiftX + shoe.x, y + shoe.y);
                 var inward = -Mathf.Sign(shoe.x);
                 for (var i = 0; i < count; i++)
                     Emit(sparks, at,
@@ -206,7 +206,7 @@ namespace CoalRun.Gameplay.Lift
             if (!sparks) return;
             foreach (var shoe in shoes)
             {
-                var at = new Vector2(Room.LiftX + shoe.x, y + shoe.y);
+                var at = new Vector2(_game.Room.LiftX + shoe.x, y + shoe.y);
                 var inward = -Mathf.Sign(shoe.x);
                 for (var i = 0; i < count; i++)
                     Emit(sparks, at,
@@ -222,7 +222,7 @@ namespace CoalRun.Gameplay.Lift
             for (var i = 0; i < count; i++)
             {
                 var side = Random.value < .5f ? -1 : 1;
-                Emit(dust, new Vector2(Room.LiftX + side * Random.Range(.8f, Room.LiftWidth / 2), y),
+                Emit(dust, new Vector2(_game.Room.LiftX + side * Random.Range(.8f, _game.Room.LiftWidth / 2), y),
                     new Vector2(side * Random.Range(.4f, 1.6f), Random.Range(.2f, 1)), Random.Range(.12f, .25f),
                     Random.Range(.8f, 1.4f));
             }
@@ -245,7 +245,7 @@ namespace CoalRun.Gameplay.Lift
         {
             for (var i = 0; i < landingLamps.Length; i++)
             {
-                var at = Mathf.Abs(y - (i == 1 ? Room.Upper : Room.Lower)) < .1f;
+                var at = Mathf.Abs(y - (i == 1 ? _game.Room.Upper : _game.Room.Lower)) < .1f;
                 // A relay clicks over as the lamp comes on.
                 if (at && landingLamps[i].color != here && Time.timeSinceLevelLoad > .5f) _game.PlayCue("relay", .3f);
                 landingLamps[i].color = at ? here : unlit;

@@ -52,7 +52,7 @@ namespace CoalRun.Gameplay.Cart
                 var cart = _game.Cart;
                 var p = cart.Body.position;
                 return Mathf.Abs(p.x - transform.position.x) < _game.Tune.cradleReach &&
-                       Mathf.Abs(p.y - (Room.Upper + .7f)) < .8f &&
+                       Mathf.Abs(p.y - (_game.Room.Upper + .7f)) < .8f &&
                        Mathf.Abs(cart.Body.linearVelocity.x) < 2 && !cart.Overturned && !cart.Busy;
             }
         }
@@ -93,7 +93,7 @@ namespace CoalRun.Gameplay.Cart
 
             // Wound up, the chains hold the cart level `hoistHeight` off the floor. Lowering pays them out a
             // little past where it stands, so it's resting on its wheels before they come off.
-            var standing = Room.Upper + .7f + Hook(1).y;
+            var standing = _game.Room.Upper + .7f + Hook(1).y;
             var held = transform.position.y + beamHeight - standing - (_state == State.Lowering ? -.1f : t.hoistHeight);
             var push = (lever.Value - lever.RestValue) * 2;
             var arrived = true;
