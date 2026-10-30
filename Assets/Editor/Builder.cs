@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
-using UnityEditor;
+using System;
 using UnityEditor.Build.Reporting;
+using UnityEditor;
+using UnityEngine;
 
 namespace CoalRun.Editor
 {
@@ -25,9 +27,11 @@ namespace CoalRun.Editor
             PlayerSettings.bundleVersion = version;
             AssetDatabase.SaveAssets();
             var scenes = new List<string>();
-            foreach (var s in EditorBuildSettings.scenes) if (s.enabled) scenes.Add(s.path);
+            foreach (var s in EditorBuildSettings.scenes)
+                if (s.enabled)
+                    scenes.Add(s.path);
 
-            if (scenes.Count == 0) throw new System.InvalidOperationException("No enabled build scenes.");
+            if (scenes.Count == 0) throw new InvalidOperationException("No enabled build scenes.");
             var dir = output ?? Path.Combine("dist", version);
             Directory.CreateDirectory(dir);
             // Building for another platform switches the editor to it; put it back after.
@@ -37,14 +41,15 @@ namespace CoalRun.Editor
             var ok = true;
             foreach (var (target, group, name, file) in Targets)
             {
-                if (targets != null && System.Array.IndexOf(targets, name) < 0) continue;
+                if (targets != null && Array.IndexOf(targets, name) < 0) continue;
                 if (Directory.Exists(Path.Combine(dir, name)))
-                    throw new System.InvalidOperationException("Target output already exists: " + Path.Combine(dir, name));
+                    throw new InvalidOperationException("Target output already exists: " + Path.Combine(dir, name));
                 if (!BuildPipeline.IsBuildTargetSupported(group, target))
                 {
                     lines.Add($"{name} skipped: its build module isn't installed");
                     continue;
                 }
+
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
                 {
                     scenes = scenes.ToArray(),
@@ -58,12 +63,15 @@ namespace CoalRun.Editor
                 ok &= passed;
                 var clips = 0;
                 foreach (var asset in report.packedAssets)
-                    foreach (var entry in asset.contents)
-                        if (entry.type == typeof(UnityEngine.AudioClip)) clips++;
-                lines.Add($"{name} {(passed ? "Succeeded" : "Failed")} {summary.totalSize / 1048576f:0.0} MB in {summary.totalTime.TotalSeconds:0} s; {summary.totalErrors} errors; {clips} audio clips");
+                foreach (var entry in asset.contents)
+                    if (entry.type == typeof(AudioClip))
+                        clips++;
+                lines.Add(
+                    $"{name} {(passed ? "Succeeded" : "Failed")} {summary.totalSize / 1048576f:0.0} MB in {summary.totalTime.TotalSeconds:0} s; {summary.totalErrors} errors; {clips} audio clips");
             }
+
             // A batch Editor is about to exit; restoring its target only triggers another import.
-            if (!UnityEngine.Application.isBatchMode && EditorUserBuildSettings.activeBuildTarget != was)
+            if (!Application.isBatchMode && EditorUserBuildSettings.activeBuildTarget != was)
                 EditorUserBuildSettings.SwitchActiveBuildTarget(wasGroup, was);
             File.WriteAllLines(Path.Combine(dir, "build.txt"), lines);
             return ok;
@@ -74,19 +82,19 @@ namespace CoalRun.Editor
         public static void BuildFromCommandLine()
         {
             var args = System.Environment.GetCommandLineArgs();
-            var i = System.Array.IndexOf(args, "-releaseVersion");
+            var i = Array.IndexOf(args, "-releaseVersion");
             var version = i >= 0 && i + 1 < args.Length ? args[i + 1] : PlayerSettings.bundleVersion;
-            i = System.Array.IndexOf(args, "-buildOutput");
+            i = Array.IndexOf(args, "-buildOutput");
             var output = i >= 0 && i + 1 < args.Length ? args[i + 1] : null;
-            i = System.Array.IndexOf(args, "-releaseTargets");
+            i = Array.IndexOf(args, "-releaseTargets");
             var targets = i >= 0 && i + 1 < args.Length ? args[i + 1].Split(',') : null;
             try
             {
                 EditorApplication.Exit(Build(version, output, targets) ? 0 : 1);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
-                UnityEngine.Debug.LogException(e);
+                Debug.LogException(e);
                 EditorApplication.Exit(1);
             }
         }

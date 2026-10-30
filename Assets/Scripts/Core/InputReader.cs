@@ -1,3 +1,5 @@
+using System;
+using CoalRun.UI;
 using UnityEngine.InputSystem;
 using UnityEngine;
 
@@ -6,21 +8,21 @@ namespace CoalRun.Core
     // One physics step's worth of keyboard input. Same shape as the prototype's Controls.
     public struct Controls
     {
-        public float Move;      // -1 left, 1 right
-        public bool Grip;       // Space held
-        public bool Shovel;     // F held
-        public bool Interact;   // E pressed this step
+        public float Move; // -1 left, 1 right
+        public bool Grip; // Space held
+        public bool Shovel; // F held
+        public bool Interact; // E pressed this step
         public bool InteractHeld; // E held
-        public int CrankKey;    // W/S held: 1 up, -1 down
-        public int Lane;        // W/S pressed this step: 1 up the stairs to the control room, -1 down
-        public bool Heave;      // Shift held
-        public int Dash;        // A/D double-tapped this step: 1 right, -1 left
-        public int Tap;         // A/D pressed this step, double or not
-        public bool Restart;    // R pressed this step
-        public bool Begin;      // Enter pressed this step
-        public bool Click;      // Left mouse button pressed this step
-        public int DebugKey;    // F2, F4–F10 pressed this step (2, 4–10), else 0. See ShiftManager.DebugCommand.
-        public Vector2 Aim;     // The cursor, in world space
+        public int CrankKey; // W/S held: 1 up, -1 down
+        public int Lane; // W/S pressed this step: 1 up the stairs to the control room, -1 down
+        public bool Heave; // Shift held
+        public int Dash; // A/D double-tapped this step: 1 right, -1 left
+        public int Tap; // A/D pressed this step, double or not
+        public bool Restart; // R pressed this step
+        public bool Begin; // Enter pressed this step
+        public bool Click; // Left mouse button pressed this step
+        public int DebugKey; // F2, F4–F10 pressed this step (2, 4–10), else 0. See ShiftManager.DebugCommand.
+        public Vector2 Aim; // The cursor, in world space
     }
 
     // Every key binding lives here. Presses are caught in Update and handed out once in the next
@@ -29,19 +31,18 @@ namespace CoalRun.Core
     public class InputReader : MonoBehaviour
     {
         [SerializeField] private Camera cam;
-        [Tooltip("Longest gap between the two taps of a double tap, in seconds.")]
-        [SerializeField]
+
+        [Tooltip("Longest gap between the two taps of a double tap, in seconds.")] [SerializeField]
         private float doubleTap = .25f;
 
-        public Controls Current { get; private set; }
-        // Esc and Q, for the pause card: fired from Update, so they still arrive while the game is stopped.
-        public event System.Action Pause, Quit;
+        private int _debugPressed;
 
         private bool _interactPressed, _restartPressed, _beginPressed, _clickPressed;
-        private int _debugPressed;
         private int _lanePressed, _dashPressed, _tapPressed;
-        private bool _wasLeft, _wasRight;
         private float _lastLeft = -1, _lastRight = -1;
+        private bool _wasLeft, _wasRight;
+
+        public Controls Current { get; private set; }
 
         private void Update()
         {
@@ -53,15 +54,27 @@ namespace CoalRun.Core
             if (Time.timeScale == 0) return;
             // Taps are found from isPressed rather than wasPressedThisFrame, which never fires while the
             // editor window is unfocused (see CLAUDE.md), so the dash can be tested from the CLI.
-            bool left = k.aKey.isPressed || k.leftArrowKey.isPressed, right = k.dKey.isPressed || k.rightArrowKey.isPressed;
-            if (left && !_wasLeft) { _tapPressed = -1; _dashPressed = Tap(ref _lastLeft) ? -1 : _dashPressed; }
-            if (right && !_wasRight) { _tapPressed = 1; _dashPressed = Tap(ref _lastRight) ? 1 : _dashPressed; }
+            bool left = k.aKey.isPressed || k.leftArrowKey.isPressed,
+                right = k.dKey.isPressed || k.rightArrowKey.isPressed;
+            if (left && !_wasLeft)
+            {
+                _tapPressed = -1;
+                _dashPressed = Tap(ref _lastLeft) ? -1 : _dashPressed;
+            }
+
+            if (right && !_wasRight)
+            {
+                _tapPressed = 1;
+                _dashPressed = Tap(ref _lastRight) ? 1 : _dashPressed;
+            }
+
             _wasLeft = left;
             _wasRight = right;
             if (k.eKey.wasPressedThisFrame) _interactPressed = true;
             if (k.rKey.wasPressedThisFrame) _restartPressed = true;
             if (k.enterKey.wasPressedThisFrame || k.numpadEnterKey.wasPressedThisFrame) _beginPressed = true;
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && !UI.NotebookView.PointerOver) _clickPressed = true;
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && !NotebookView.PointerOver)
+                _clickPressed = true;
             if (k.f2Key.wasPressedThisFrame) _debugPressed = 2;
             if (k.f4Key.wasPressedThisFrame) _debugPressed = 4;
             if (k.f5Key.wasPressedThisFrame) _debugPressed = 5;
@@ -77,8 +90,14 @@ namespace CoalRun.Core
         private void FixedUpdate()
         {
             var k = Keyboard.current;
-            if (k == null) { Current = default; return; }
-            bool left = k.aKey.isPressed || k.leftArrowKey.isPressed, right = k.dKey.isPressed || k.rightArrowKey.isPressed;
+            if (k == null)
+            {
+                Current = default;
+                return;
+            }
+
+            bool left = k.aKey.isPressed || k.leftArrowKey.isPressed,
+                right = k.dKey.isPressed || k.rightArrowKey.isPressed;
             bool up = k.wKey.isPressed || k.upArrowKey.isPressed, down = k.sKey.isPressed || k.downArrowKey.isPressed;
             Current = new Controls
             {
@@ -102,6 +121,9 @@ namespace CoalRun.Core
             _debugPressed = 0;
             _lanePressed = _dashPressed = _tapPressed = 0;
         }
+
+        // Esc and Q, for the pause card: fired from Update, so they still arrive while the game is stopped.
+        public event Action Pause, Quit;
 
         // True on the second tap of a double tap.
         private bool Tap(ref float last)

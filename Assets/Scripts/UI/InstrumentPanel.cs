@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using CoalRun.Core;
 using TMPro;
-using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using UnityEngine;
 
 namespace CoalRun.UI
 {
@@ -19,49 +19,66 @@ namespace CoalRun.UI
         [Tooltip("The temperatures at the bottom and top of the shared axis, and the local heights they sit at.")]
         [SerializeField]
         private Vector2 temperatureRange = new(-40, 25);
+
         [SerializeField] private Vector2 heightRange = new(-1.05f, 1.05f);
-        [Tooltip("The chart's area, local: x, y of its lower left, then width and height. Time runs across, the whole shift.")]
+
+        [Tooltip(
+            "The chart's area, local: x, y of its lower left, then width and height. Time runs across, the whole shift.")]
         [SerializeField]
         private Rect chart = new(-1.55f, -1.1f, 3.8f, 2.2f);
-        [Header("Thermometer")]
-        [SerializeField] private float tubeX = -2.28f;
+
+        [Header("Thermometer")] [SerializeField]
+        private float tubeX = -2.28f;
+
         [SerializeField] private float bulbY = -1.18f;
         [SerializeField] private float mercuryWidth = .12f;
         [SerializeField] private SpriteRenderer mercury, bulb;
+
         [Tooltip("Little triangles at the tube: the outside temperature (right) and what the fire holds (left).")]
         [SerializeField]
         private SpriteRenderer outsideMarker, holdMarker;
-        [Header("Chart")]
-        [SerializeField] private LineRenderer forecast, past, nowLine, holdsLine, insideLine;
+
+        [Header("Chart")] [SerializeField] private LineRenderer forecast, past, nowLine, holdsLine, insideLine;
+
         [SerializeField] private int samples = 60;
+
         [Tooltip("Seconds between the points of the line that records the building's own temperature.")]
         [SerializeField]
         private float recordEvery = 3;
-        [Tooltip("Dots across the whole holds line while the fire is out.")]
-        [SerializeField]
+
+        [Tooltip("Dots across the whole holds line while the fire is out.")] [SerializeField]
         private int dots = 26;
-        [Header("Readout")]
-        [SerializeField] private TMP_Text clockText;
+
+        [Header("Readout")] [SerializeField] private TMP_Text clockText;
+
         [Header("Cold lamp")]
         [Tooltip("The red cage light's bulb, white in the art and tinted here, and the light it throws.")]
         [SerializeField]
         private SpriteRenderer coldBulb;
+
         [SerializeField] private Light2D coldGlow;
         [SerializeField] private Color bulbOff = new(.3f, .1f, .1f), bulbOn = new(1, .15f, .1f);
         [SerializeField] private float glowIntensity = 1.2f;
-        [Tooltip("Seconds for the bulb to come up or die down.")]
-        [SerializeField]
+
+        [Tooltip("Seconds for the bulb to come up or die down.")] [SerializeField]
         private float warmUp = .15f;
-        [Header("Colours")]
-        [SerializeField] private Color icy = new(.55f, .82f, 1), cool = new(.82f, .96f, 1), mild = new(1, .9f, .45f), warm = new(1, .55f, .25f);
-        [SerializeField] private Color outsideColor = new(.62f, .83f, 1), holdColor = new(1, .54f, .22f), dimOutside = new(.3f, .42f, .52f);
+
+        [Header("Colours")] [SerializeField] private Color icy = new(.55f, .82f, 1),
+            cool = new(.82f, .96f, 1),
+            mild = new(1, .9f, .45f),
+            warm = new(1, .55f, .25f);
+
+        [SerializeField] private Color outsideColor = new(.62f, .83f, 1),
+            holdColor = new(1, .54f, .22f),
+            dimOutside = new(.3f, .42f, .52f);
+
+        private readonly List<Vector3> _record = new();
+        private float _cold;
 
         private ShiftManager _game;
-        private Vector3[] _points;
-        private readonly List<Vector3> _record = new();
-        private float _nextRecord;
         private Material _holdsMaterial;
-        private float _cold;
+        private float _nextRecord;
+        private Vector3[] _points;
 
         private void Start()
         {
@@ -73,30 +90,17 @@ namespace CoalRun.UI
                 var time = _game.Tune.shiftLength * i / samples;
                 _points[i] = Point(time, day.OutsideAt(time));
             }
+
             forecast.positionCount = _points.Length;
             forecast.SetPositions(_points);
             // The holds line is solid while the fire's lit, dotted when it's out: one dot texture, tiled along the line.
-            var dash = new Texture2D(2, 1, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Repeat };
+            var dash = new Texture2D(2, 1, TextureFormat.RGBA32, false)
+                { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Repeat };
             dash.SetPixels(new[] { Color.white, Color.clear });
             dash.Apply();
             _holdsMaterial = holdsLine.material;
             _holdsMaterial.mainTexture = dash;
             holdsLine.textureMode = LineTextureMode.Tile;
-        }
-
-        private float HeightOf(float temperature) =>
-            Mathf.Lerp(heightRange.x, heightRange.y, Mathf.InverseLerp(temperatureRange.x, temperatureRange.y, temperature));
-
-        private Vector3 Point(float time, float temperature) =>
-            new(chart.xMin + Mathf.Clamp01(time / _game.Tune.shiftLength) * chart.width, Mathf.Clamp(HeightOf(temperature), chart.yMin + .02f, chart.yMax - .02f), 0);
-
-        // Blue and icy at and below freezing, pale up to comfortable, then yellow and orange: how warm it feels.
-        private Color Heat(float temperature)
-        {
-            if (temperature <= 0) return icy;
-            if (temperature < 8) return Color.Lerp(icy, cool, temperature / 8);
-            if (temperature < 14) return Color.Lerp(cool, mild, (temperature - 8) / 6);
-            return Color.Lerp(mild, warm, Mathf.Clamp01((temperature - 14) / 8));
         }
 
         private void Update()
@@ -115,7 +119,9 @@ namespace CoalRun.UI
             mercury.transform.localPosition = new Vector3(tubeX, bulbY + height / 2, 0);
             var heat = Heat(inside);
             mercury.color = bulb.color = heat;
-            clockText.text = _game.Ended || time >= length ? _game.Lines.sheets.clockOver : $"{(int)time / 60}:{(int)time % 60:00}";
+            clockText.text = _game.Ended || time >= length
+                ? _game.Lines.sheets.clockOver
+                : $"{(int)time / 60}:{(int)time % 60:00}";
 
             // Markers beside the tube: outside on the right, what the fire holds on the left (faint when it's out).
             outsideMarker.transform.localPosition = new Vector3(tubeX + .2f, HeightOf(outside), 0);
@@ -150,10 +156,32 @@ namespace CoalRun.UI
                 _nextRecord = time + recordEvery;
                 _record.Add(Point(time, inside));
             }
+
             insideLine.positionCount = _record.Count + 1;
             for (var i = 0; i < _record.Count; i++) insideLine.SetPosition(i, _record[i]);
             insideLine.SetPosition(_record.Count, Point(time, inside));
             insideLine.startColor = insideLine.endColor = heat;
+        }
+
+        private float HeightOf(float temperature)
+        {
+            return Mathf.Lerp(heightRange.x, heightRange.y,
+                Mathf.InverseLerp(temperatureRange.x, temperatureRange.y, temperature));
+        }
+
+        private Vector3 Point(float time, float temperature)
+        {
+            return new Vector3(chart.xMin + Mathf.Clamp01(time / _game.Tune.shiftLength) * chart.width,
+                Mathf.Clamp(HeightOf(temperature), chart.yMin + .02f, chart.yMax - .02f), 0);
+        }
+
+        // Blue and icy at and below freezing, pale up to comfortable, then yellow and orange: how warm it feels.
+        private Color Heat(float temperature)
+        {
+            if (temperature <= 0) return icy;
+            if (temperature < 8) return Color.Lerp(icy, cool, temperature / 8);
+            if (temperature < 14) return Color.Lerp(cool, mild, (temperature - 8) / 6);
+            return Color.Lerp(mild, warm, Mathf.Clamp01((temperature - 14) / 8));
         }
     }
 }

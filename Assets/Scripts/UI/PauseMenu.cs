@@ -1,7 +1,8 @@
 using CoalRun.Core;
 using TMPro;
-using UnityEngine;
+using UnityEditor;
 using UnityEngine.InputSystem;
+using UnityEngine;
 
 namespace CoalRun.UI
 {
@@ -11,13 +12,15 @@ namespace CoalRun.UI
     public class PauseMenu : MonoBehaviour
     {
         [SerializeField] private InputReader input;
-        [Tooltip("The whole card, hidden until paused.")]
-        [SerializeField]
+
+        [Tooltip("The whole card, hidden until paused.")] [SerializeField]
         private GameObject card;
+
         [SerializeField] private TMP_Text title, controls;
-        [Tooltip("The two stamped buttons, copies of the report's: clicking them is Esc and Q.")]
-        [SerializeField]
+
+        [Tooltip("The two stamped buttons, copies of the report's: clicking them is Esc and Q.")] [SerializeField]
         private RectTransform resumeButton, quitButton;
+
         [SerializeField] private TMP_Text resumeLabel, quitLabel;
 
         public static bool Paused { get; private set; }
@@ -39,6 +42,7 @@ namespace CoalRun.UI
                 input.Pause -= Toggle;
                 input.Quit -= Quit;
             }
+
             if (Paused) Carry();
         }
 
@@ -58,12 +62,18 @@ namespace CoalRun.UI
             if (!Paused || mouse == null || !mouse.leftButton.wasPressedThisFrame) return;
             var at = mouse.position.ReadValue();
             if (RectTransformUtility.RectangleContainsScreenPoint(resumeButton, at)) Carry();
-            else if (quitButton.gameObject.activeSelf && RectTransformUtility.RectangleContainsScreenPoint(quitButton, at)) Quit();
+            else if (quitButton.gameObject.activeSelf &&
+                     RectTransformUtility.RectangleContainsScreenPoint(quitButton, at)) Quit();
         }
 
         private void Toggle()
         {
-            if (Paused) { Carry(); return; }
+            if (Paused)
+            {
+                Carry();
+                return;
+            }
+
             var say = ShiftManager.Instance.Lines.pause;
             title.text = say.title;
             controls.text = say.controls;
@@ -90,7 +100,7 @@ namespace CoalRun.UI
         {
             if (!Paused || Application.platform == RuntimePlatform.WebGLPlayer) return;
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
+            EditorApplication.isPlaying = false;
 #else
             Application.Quit();
 #endif

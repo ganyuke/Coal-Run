@@ -1,6 +1,6 @@
 using TMPro;
-using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine;
 
 namespace CoalRun.UI
 {
@@ -9,12 +9,14 @@ namespace CoalRun.UI
     {
         [SerializeField] private RectTransform rect;
         [SerializeField] private TMP_Text label;
-        [Tooltip("Turned on when the line is ticked.")]
-        [SerializeField]
+
+        [Tooltip("Turned on when the line is ticked.")] [SerializeField]
         private GameObject tick;
+
         [SerializeField] private Image box;
 
         public RectTransform Rect => rect;
+
         // How tall what it says wants to be at the width it has.
         public float TextHeight => label.GetPreferredValues(label.text, label.rectTransform.rect.width, 0).y;
 

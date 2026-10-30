@@ -1,3 +1,4 @@
+using CoalRun.Gameplay.Cart;
 using UnityEngine;
 
 namespace CoalRun.Core
@@ -27,14 +28,24 @@ namespace CoalRun.Core
         {
             int[] all = { Terrain, Player, Cart, Coal, Part, Pile };
             foreach (var a in all)
-                foreach (var b in all) Physics2D.IgnoreLayerCollision(a, b, true);
-            Collide(Terrain, Player); Collide(Terrain, Cart); Collide(Terrain, Coal); Collide(Terrain, Part);
-            Collide(Player, Cart); Collide(Player, Part); Collide(Player, Pile);
+            foreach (var b in all)
+                Physics2D.IgnoreLayerCollision(a, b, true);
+            Collide(Terrain, Player);
+            Collide(Terrain, Cart);
+            Collide(Terrain, Coal);
+            Collide(Terrain, Part);
+            Collide(Player, Cart);
+            Collide(Player, Part);
+            Collide(Player, Pile);
             Collide(Cart, Part);
-            Collide(Coal, Pile); Collide(Part, Pile);
+            Collide(Coal, Pile);
+            Collide(Part, Pile);
             return;
 
-            void Collide(int a, int b) => Physics2D.IgnoreLayerCollision(a, b, false);
+            void Collide(int a, int b)
+            {
+                Physics2D.IgnoreLayerCollision(a, b, false);
+            }
         }
     }
 }

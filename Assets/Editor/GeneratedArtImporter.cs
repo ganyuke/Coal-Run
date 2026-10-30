@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -18,9 +19,12 @@ namespace CoalRun.Editor
             var at = assetPath.LastIndexOf('@');
             if (at >= 0)
             {
-                var digits = System.IO.Path.GetFileNameWithoutExtension(assetPath)[(System.IO.Path.GetFileNameWithoutExtension(assetPath).LastIndexOf('@') + 1)..];
+                var digits =
+                    Path.GetFileNameWithoutExtension(assetPath)[
+                        (Path.GetFileNameWithoutExtension(assetPath).LastIndexOf('@') + 1)..];
                 if (float.TryParse(digits, out var parsed)) ppu = parsed;
             }
+
             importer.textureType = TextureImporterType.Sprite;
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.spritePixelsPerUnit = ppu;
@@ -30,7 +34,7 @@ namespace CoalRun.Editor
             importer.textureCompression = TextureImporterCompression.Uncompressed;
             importer.maxTextureSize = 4096;
             importer.wrapMode = TextureWrapMode.Clamp;
-            if (!System.IO.Path.GetFileNameWithoutExtension(assetPath).EndsWith("_tile")) return;
+            if (!Path.GetFileNameWithoutExtension(assetPath).EndsWith("_tile")) return;
             var settings = new TextureImporterSettings();
             importer.ReadTextureSettings(settings);
             settings.spriteMeshType = SpriteMeshType.FullRect;

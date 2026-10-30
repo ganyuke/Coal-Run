@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using CoalRun.Audio;
 using UnityEditor;
@@ -9,18 +10,6 @@ namespace CoalRun.Editor
     // Builds the AudioDirector's cue and bed lists from the clips in Assets/Audio, so the mix is one table in one place.
     public static class AudioSetup
     {
-        private static AudioClip[] Clips(string prefix)
-        {
-            var list = new List<AudioClip>();
-            foreach (var guid in AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/Audio" }))
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var file = System.IO.Path.GetFileNameWithoutExtension(path);
-                if (file.StartsWith(prefix)) list.Add(AssetDatabase.LoadAssetAtPath<AudioClip>(path));
-            }
-            return list.OrderBy(c => c.name).ToArray();
-        }
-
         // name, clip prefix, volume, pitch low, pitch high, amountScale, sustain, pitchFromAmount
         private static readonly (string, string, float, float, float, float, bool, bool)[] Cues =
         {
@@ -61,7 +50,7 @@ namespace CoalRun.Editor
             ("rattle", "storm_rattle", .45f, .9f, 1.12f, 1, false, false),
             ("knock", "storm_knock", .7f, .85f, 1.1f, 1, false, false),
             ("relay", "relay", .5f, .95f, 1.05f, 0, false, false),
-            ("alarm", "alarm", .4f, 1f, 1f, 0, false, false),
+            ("alarm", "alarm", .4f, 1f, 1f, 0, false, false)
         };
 
         // name, clip prefix, volume
@@ -73,15 +62,30 @@ namespace CoalRun.Editor
             ("lift", "lift_groan_loop", .5f),
             ("drone", "drone_loop", .5f),
             ("heartbeat", "heartbeat_loop", .8f),
-            ("shiver", "shiver_loop", .55f),
+            ("shiver", "shiver_loop", .55f)
         };
+
+        private static AudioClip[] Clips(string prefix)
+        {
+            var list = new List<AudioClip>();
+            foreach (var guid in AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/Audio" }))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var file = Path.GetFileNameWithoutExtension(path);
+                if (file.StartsWith(prefix)) list.Add(AssetDatabase.LoadAssetAtPath<AudioClip>(path));
+            }
+
+            return list.OrderBy(c => c.name).ToArray();
+        }
 
         // Rebuilds the director from the two tables above. It replaces the whole Audio object, so a level changed by hand
         // in the Inspector is lost: change the table here instead (the master volume and voice count go back to their defaults).
         [MenuItem("Coal Run/Rebuild audio table")]
         private static void BuildFromMenu()
         {
-            if (!EditorUtility.DisplayDialog("Rebuild audio table", "This replaces Systems/Audio with the cues and beds in AudioSetup.cs. Levels set by hand in the Inspector are lost.", "Rebuild", "Cancel")) return;
+            if (!EditorUtility.DisplayDialog("Rebuild audio table",
+                    "This replaces Systems/Audio with the cues and beds in AudioSetup.cs. Levels set by hand in the Inspector are lost.",
+                    "Rebuild", "Cancel")) return;
             Debug.Log(Build());
         }
 
@@ -112,6 +116,7 @@ namespace CoalRun.Editor
                 e.FindPropertyRelative("sustain").boolValue = sustain;
                 e.FindPropertyRelative("pitchFromAmount").boolValue = fromAmount;
             }
+
             var beds = so.FindProperty("beds");
             beds.arraySize = Beds.Length;
             for (var i = 0; i < Beds.Length; i++)
@@ -124,6 +129,7 @@ namespace CoalRun.Editor
                 e.FindPropertyRelative("clip").objectReferenceValue = clips.Length > 0 ? clips[0] : null;
                 e.FindPropertyRelative("volume").floatValue = volume;
             }
+
             so.ApplyModifiedProperties();
             var cam = Camera.main;
             if (!cam.GetComponent<AudioListener>()) cam.gameObject.AddComponent<AudioListener>();

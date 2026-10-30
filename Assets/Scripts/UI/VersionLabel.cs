@@ -8,6 +8,9 @@ namespace CoalRun.UI
     [RequireComponent(typeof(TMP_Text))]
     public class VersionLabel : MonoBehaviour
     {
-        private void Start() => GetComponent<TMP_Text>().text = "v" + Application.version;
+        private void Start()
+        {
+            GetComponent<TMP_Text>().text = "v" + Application.version;
+        }
     }
 }

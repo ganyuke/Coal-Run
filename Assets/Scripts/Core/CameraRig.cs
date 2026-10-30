@@ -30,7 +30,10 @@ namespace CoalRun.Core
         }
 
         // Back to how it started.
-        public IEnumerator Home(float time) => Move(_home, _homeSize, time);
+        public IEnumerator Home(float time)
+        {
+            return Move(_home, _homeSize, time);
+        }
 
         private IEnumerator Move(Vector3 position, float size, float time)
         {
@@ -43,6 +46,7 @@ namespace CoalRun.Core
                 cam.orthographicSize = Mathf.Lerp(fromSize, size, e);
                 yield return null;
             }
+
             transform.position = position;
             cam.orthographicSize = size;
         }
