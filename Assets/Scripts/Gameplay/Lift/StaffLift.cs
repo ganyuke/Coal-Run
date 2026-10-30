@@ -1,12 +1,13 @@
 using System.Collections;
 using CoalRun.Core;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Lift
 {
     // The staff lift at the right end of the lower floor, the only way in or out. Replacement operators
     // step out of it, and the operator steps into it to leave. Its door slides aside into the frame.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class StaffLift : MonoBehaviour
     {
         [Tooltip("Scaled down toward its right edge to open.")] [SerializeField]

@@ -1,11 +1,11 @@
-using System.Collections;
 using System;
+using System.Collections;
 using CoalRun.Core;
 using CoalRun.Dialogue;
 using CoalRun.Gameplay.Characters;
 using CoalRun.Gameplay.Machinery;
-using UnityEngine.Rendering;
 using UnityEngine;
+using UnityEngine.Rendering;
 using Random = UnityEngine.Random;
 
 namespace CoalRun.Gameplay.Player
@@ -16,17 +16,17 @@ namespace CoalRun.Gameplay.Player
     [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
     public partial class PlayerController : Human
     {
-        // hide and show the shoveling debug rectangle
-        public bool ShowDebug { get; set; }
-        
         // Centre to centre when the operator's hands are on the bin's rim (cart half width 1 + operator .24).
         private const float Touching = 1.26f;
-        [Header("Input and machinery")]
-        [SerializeField] private InputReader input;
+
+        [Header("Input and machinery")] [SerializeField]
+        private InputReader input;
+
         [SerializeField] private MachineInput machines;
 
         [Header("Appearance and speech")]
-        [Tooltip("Sorting group on the body art, pushed behind the glass in the control room.")] [SerializeField]
+        [Tooltip("Sorting group on the body art, pushed behind the glass in the control room.")]
+        [SerializeField]
         private SortingGroup visual;
 
         [SerializeField] private int frontOrder = 20, backOrder = 4;
@@ -38,12 +38,12 @@ namespace CoalRun.Gameplay.Player
         [SerializeField]
         private int liftOrder = -17;
 
-        [Header("Carrying")]
-        [Tooltip("The wheel in the operator's hands, shown while carrying one.")] [SerializeField]
+        [Header("Carrying")] [Tooltip("The wheel in the operator's hands, shown while carrying one.")] [SerializeField]
         private Transform heldWheel;
 
         [Header("Lighting the furnace")]
-        [Tooltip("Flint and steel, shown while striking at the firebox to light it.")] [SerializeField]
+        [Tooltip("Flint and steel, shown while striking at the firebox to light it.")]
+        [SerializeField]
         private Transform striker;
 
         [Tooltip("Sparks thrown off each strike, toward the firebox.")] [SerializeField]
@@ -112,17 +112,21 @@ namespace CoalRun.Gameplay.Player
         // Shared components and movement state.
         private BoxCollider2D _box;
         private ShiftManager _game;
-
-        // Holding a machine while walking.
-        private Machine _held;
         private float _grabbedAt, _lastX;
 
         // Holding the cart; slack closes after taking hold from a distance.
         private bool _gripBlocked;
-        private float _slack;
+
+        // Holding a machine while walking.
+        private Machine _held;
 
         // Landing and coal dust.
         private float _lastFall, _footDust, _stuckDust;
+
+        private float _slack;
+
+        // hide and show the shoveling debug rectangle
+        public bool ShowDebug { get; set; }
 
         public Rigidbody2D Body { get; private set; }
 

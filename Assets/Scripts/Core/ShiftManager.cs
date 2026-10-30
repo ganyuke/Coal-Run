@@ -1,6 +1,6 @@
-using System.Collections.Generic;
-using System.Collections;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using CoalRun.Data;
 using CoalRun.Dev;
 using CoalRun.Dialogue;
@@ -12,8 +12,8 @@ using CoalRun.Gameplay.Lift;
 using CoalRun.Gameplay.Player;
 using CoalRun.Gameplay.Tutorial;
 using CoalRun.UI;
-using UnityEngine.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace CoalRun.Core
 {
@@ -45,8 +45,9 @@ namespace CoalRun.Core
         // Out of the staff lift.
         private static readonly Vector2 ArrivalSpot = new(30.5f, Room.Lower + .72f);
 
-        [Header("Configuration")]
-        [SerializeField] private Tuning tuning;
+        [Header("Configuration")] [SerializeField]
+        private Tuning tuning;
+
         [SerializeField] private DayConfig day;
 
         [Tooltip("Every line of text the player reads.")] [SerializeField]
@@ -56,8 +57,9 @@ namespace CoalRun.Core
         [SerializeField]
         private DayConfig[] days;
 
-        [Header("Player and stations")]
-        [SerializeField] private InputReader input;
+        [Header("Player and stations")] [SerializeField]
+        private InputReader input;
+
         [SerializeField] private PlayerController player;
         [SerializeField] private Cart cart;
         [SerializeField] private Lift lift;
@@ -73,23 +75,25 @@ namespace CoalRun.Core
         [SerializeField]
         private LiftShaft liftShaft;
 
-        [Header("Progress and presentation")]
-        [SerializeField] private Tutorial tutorial;
+        [Header("Progress and presentation")] [SerializeField]
+        private Tutorial tutorial;
+
         [SerializeField] private Notebook notebook;
         [SerializeField] private CameraRig cameraRig;
 
         [Header("Arrival")]
-        [Tooltip("Seconds from Play until the first operator steps out of the staff lift.")] [SerializeField]
+        [Tooltip("Seconds from Play until the first operator steps out of the staff lift.")]
+        [SerializeField]
         private float firstArrival = 1.2f;
 
         // Audio cooldowns.
         private readonly Dictionary<string, float> _soundTimers = new();
 
-        // Clocking out.
-        private float _inLiftFor;
-
         // Worker arrival: the door and the phase to return to afterward.
         private bool _doorOpened;
+
+        // Clocking out.
+        private float _inLiftFor;
         private Phase _resume;
 
         public static ShiftManager Instance { get; private set; }
@@ -167,19 +171,6 @@ namespace CoalRun.Core
         public float TotalCoal =>
             chute.Bunker + cart.Coal + player.Hands + coal.Loose + furnace.Hopper + furnace.Burned;
 
-        // name, loudness
-        public event Action<string, float> OnSound;
-        public event Action<Phase> OnPhase;
-
-        // Unity lifecycle
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetTraining()
-        {
-            _trained = false;
-            _dayIndex = 0;
-        }
-
         private void Awake()
         {
             Instance = this;
@@ -210,6 +201,19 @@ namespace CoalRun.Core
             if (Ended && input.Current.Restart) Continue();
             if (Phase == Phase.Briefing && input.Current.Begin) BeginShift();
             RecoverLost();
+        }
+
+        // name, loudness
+        public event Action<string, float> OnSound;
+        public event Action<Phase> OnPhase;
+
+        // Unity lifecycle
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetTraining()
+        {
+            _trained = false;
+            _dayIndex = 0;
         }
 
         // Shift phases and day progression

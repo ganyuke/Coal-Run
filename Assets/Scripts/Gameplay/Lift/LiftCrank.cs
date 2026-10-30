@@ -2,13 +2,14 @@ using CoalRun.Core;
 using CoalRun.Gameplay.Machinery;
 using CoalRun.Gameplay.Player;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Lift
 {
     // A lift wheel, worked like an osu! spinner. Spin is read from how the cursor's path turns, so
     // circles count wherever and however big they are drawn, and the wheel can ride away on the
     // platform without breaking the gesture. Clockwise is up.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class LiftCrank : Machine
     {
         [Tooltip("Turned by however far the lift moves while this crank drives it.")] [SerializeField]

@@ -1,7 +1,8 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using CoalRun.Core;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.UI
 {
@@ -11,7 +12,7 @@ namespace CoalRun.UI
     // removed or un-ticked: a need that comes back is written down again as a new page, so the notebook reads
     // as a log. The one that's open is the oldest unticked page, unless the fire's out, which takes over.
     // The training's objective lines are pages too.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class Notebook : MonoBehaviour
     {
         [Tooltip("Seconds between looking at the room for something new to write down.")] [SerializeField]

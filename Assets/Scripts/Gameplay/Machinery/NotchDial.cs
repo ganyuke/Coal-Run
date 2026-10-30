@@ -1,11 +1,12 @@
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Machinery
 {
     // The fan behind a notched lever: a coloured tile per notch, with snowflakes beyond it for how much
     // cold that notch holds off. The lever's current notch is lit; the rest are dimmed, so the dial reads
     // without numbers.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class NotchDial : MonoBehaviour
     {
         [SerializeField] private FloorLever lever;

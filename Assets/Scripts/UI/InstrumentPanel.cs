@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using CoalRun.Core;
 using TMPro;
-using UnityEngine.Rendering.Universal;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace CoalRun.UI
 {

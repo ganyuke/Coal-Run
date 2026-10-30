@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Data
 {
@@ -17,7 +18,7 @@ namespace CoalRun.Data
 
     // What changes from one shift to the next. One asset per day in Assets/Data.
     [CreateAssetMenu(menuName = "Coal Run/Day")]
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Core")]
+    [MovedFrom("CoalRun.Core")]
     public class DayConfig : ScriptableObject
     {
         public int day = 1;

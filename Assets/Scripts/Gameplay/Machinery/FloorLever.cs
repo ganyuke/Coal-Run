@@ -3,6 +3,7 @@ using CoalRun.Core;
 using CoalRun.Data;
 using CoalRun.Gameplay.Player;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Machinery
 {
@@ -10,7 +11,7 @@ namespace CoalRun.Gameplay.Machinery
     // Value goes 0 (tilted left) to 1 (tilted right). A spring-return lever rolls back to its rest
     // value (the left end, or upright) on its own once let go; one without a spring stays where it was left,
     // or with notches, rolls into the nearest one.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class FloorLever : Machine
     {
         [Tooltip("Rotated about its own position, the base of the lever.")] [SerializeField]

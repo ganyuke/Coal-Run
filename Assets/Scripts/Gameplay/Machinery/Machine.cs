@@ -1,14 +1,15 @@
 using System.Collections.Generic;
 using CoalRun.Core;
 using CoalRun.Gameplay.Player;
-using UnityEngine.Rendering.Universal;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Machinery
 {
     // Anything worked with the mouse: hold the button on its handle and drag. MachineInput picks
     // which one the cursor is on; subclasses turn the drag into lever travel, spin, or tilt.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public abstract class Machine : MonoBehaviour
     {
         // Every enabled machine, so MachineInput doesn't have to search the scene.

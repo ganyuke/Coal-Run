@@ -2,12 +2,13 @@ using CoalRun.Core;
 using CoalRun.Gameplay.Machinery;
 using CoalRun.Gameplay.Player;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Tutorial
 {
     // The shovel leaning on the furnace in the training: click it to take it, like E. It only exists as a
     // machine while it's lying there (inactive once taken), so MachineInput never sees it otherwise.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class ShovelPickup : Machine
     {
         public override string OutOfReach => ShiftManager.Instance.Lines.speech.shovelFar;

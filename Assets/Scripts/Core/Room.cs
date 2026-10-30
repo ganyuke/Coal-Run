@@ -1,4 +1,3 @@
-using CoalRun.Gameplay.Coal;
 namespace CoalRun.Core
 {
     // Room geometry in world units (1 unit is about a metre), copied from the JS prototype's ROOM.

@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using CoalRun.Core;
 using UnityEngine;
 using Random = UnityEngine.Random;

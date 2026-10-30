@@ -1,16 +1,18 @@
 using CoalRun.Core;
-using UnityEngine.Rendering;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Characters
 {
     // generator for the corpses created when players die. copies out the art, then dims and topples the body.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public static class Corpse
     {
         // Takes over `art` (a worker's SortingGroup root) and returns the body it now lies on. A buried one
         // sinks through coal piles to the floor, so the coal goes on covering it instead of lifting it out.
-        public static Rigidbody2D Topple(Rigidbody2D prefab, GameObject art, string name, Vector2 at, Vector2 velocity, bool buried = false)
+        public static Rigidbody2D Topple(Rigidbody2D prefab, GameObject art, string name, Vector2 at, Vector2 velocity,
+            bool buried = false)
         {
             // Already leaning past its balance point, so over it goes, either way.
             var side = Random.value < .5f ? -1 : 1;

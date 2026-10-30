@@ -1,12 +1,13 @@
 using CoalRun.Core;
-using UnityEngine.Rendering.Universal;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Environment
 {
     // The warning lamp over the staff lift: dark normally, pulsing red while the building is at or below
     // freezing. The only sign of the freeze grace running out besides the operator slowing down.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class FreezeLamp : MonoBehaviour
     {
         [SerializeField] private SpriteRenderer lamp;

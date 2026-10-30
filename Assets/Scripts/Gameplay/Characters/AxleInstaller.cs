@@ -1,13 +1,14 @@
 using CoalRun.Core;
 using CoalRun.Dialogue;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Characters
 {
     // Day 2's beat: engineering's installer stands in front of the cart, in the way it has to be hauled, and hands over the
     // other axle (the cart already has both wheels). Push the cart into him and he is the first thing the new axle runs over;
     // haul it round him and he sees himself out by the staff lift. Every installer dies, so most players will find out which.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class AxleInstaller : Human
     {
         [Tooltip("The installer, a clone of the training helper. Hidden unless the day has an installer.")]
@@ -82,7 +83,8 @@ namespace CoalRun.Gameplay.Characters
         {
             var at = (Vector2)installer.transform.position;
             var art = installer.transform.GetChild(0).gameObject;
-            var body = Corpse.Topple(corpsePrefab, art, "Dead installer", at, new Vector2(_game.Cart.Body.linearVelocity.x, 2.5f));
+            var body = Corpse.Topple(corpsePrefab, art, "Dead installer", at,
+                new Vector2(_game.Cart.Body.linearVelocity.x, 2.5f));
             installer.SetActive(false);
             _game.PlayCue("hurt");
             _game.Say(_game.Lines.training.installerHit);

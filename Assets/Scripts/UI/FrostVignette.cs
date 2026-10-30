@@ -1,6 +1,6 @@
 using CoalRun.Core;
-using UnityEngine.UI;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace CoalRun.UI
 {
@@ -68,6 +68,5 @@ namespace CoalRun.UI
         {
             if (phase == Phase.Frozen) _flashLeft = flashTime;
         }
-
     }
 }

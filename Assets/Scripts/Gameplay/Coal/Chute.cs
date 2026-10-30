@@ -1,13 +1,14 @@
 using CoalRun.Core;
 using CoalRun.Gameplay.Machinery;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Coal
 {
     // The coal chute, worked by a floor lever in the control room. Push the lever right with the
     // mouse: the further over, the faster coal pours. Let go and it rolls back shut, still pouring
     // on the way. The bunker above holds the coal that hasn't been dispensed yet.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class Chute : MonoBehaviour
     {
         [SerializeField] private FloorLever lever;

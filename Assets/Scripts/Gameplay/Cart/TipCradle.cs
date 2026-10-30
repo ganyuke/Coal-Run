@@ -1,6 +1,7 @@
 using CoalRun.Core;
 using CoalRun.Gameplay.Machinery;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Cart
 {
@@ -11,7 +12,7 @@ namespace CoalRun.Gameplay.Cart
     // it lands on the grate and drops into the hopper; pulled left it goes on the floor. Let go and the
     // lever rolls back upright, winding the chain back in. E again with the cart level lowers it and
     // unhooks it. The chains are real ropes: only they and gravity hold and turn the cart.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class TipCradle : MonoBehaviour
     {
         [SerializeField] private FloorLever lever;

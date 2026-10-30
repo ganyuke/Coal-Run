@@ -1,13 +1,14 @@
 using System;
-using UnityEngine.Serialization;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
+using UnityEngine.Serialization;
 
 namespace CoalRun.Data
 {
     // Every line of text the player reads, in one place. Edit Assets/Data/Lines.asset in the Inspector.
     // {0} and {1} are filled in by the game (a number, or the thing in the way); keep them in when rewording.
     [CreateAssetMenu(menuName = "Coal Run/Lines")]
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Core")]
+    [MovedFrom("CoalRun.Core")]
     public class Lines : ScriptableObject
     {
         public Speech speech = new();

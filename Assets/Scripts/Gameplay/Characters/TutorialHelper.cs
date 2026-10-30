@@ -1,10 +1,11 @@
 using CoalRun.Core;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Characters
 {
     // specialized helper for killing the tutorial helper
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class TutorialHelper : Human
     {
         [SerializeField] private GameObject art;

@@ -1,13 +1,14 @@
 using System.Collections;
 using CoalRun.Core;
-using UnityEngine.Rendering.Universal;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Dialogue
 {
     // controls the dialogue for the red phone by the elevator
     // one ring for standard dialogue, two rings for respawns
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class RedPhone : MonoBehaviour
     {
         [SerializeField] private float ringBelow = 13;

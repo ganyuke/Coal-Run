@@ -1,12 +1,13 @@
 using CoalRun.Core;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Furnace
 {
     // Coal falling from the hopper down its chute and into the back of the firebox while the fire is burning it: a
     // trickle at the lowest notch, a steady stream at a hard burn, nothing while the fire is out. Only a picture (see
     // Furnace).
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class HopperFeed : MonoBehaviour
     {
         [SerializeField] private Furnace furnace;

@@ -1,14 +1,15 @@
 using CoalRun.Core;
 using CoalRun.Gameplay.Machinery;
 using CoalRun.Gameplay.Player;
-using UnityEngine.Rendering.Universal;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Furnace
 {
     // The furnace, fed from the hopper under the tip cradle. It burns coal from the hopper at the rate set
     // by the burn lever's notch, and the burning makes the building's heat (ShiftManager) and electricity.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class Furnace : MonoBehaviour
     {
         [Tooltip("Scaled vertically with the hopper's coal, from its bottom edge.")] [SerializeField]

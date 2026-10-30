@@ -1,8 +1,9 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using CoalRun.Core;
 using CoalRun.Gameplay.Player;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Lift
 {
@@ -13,7 +14,7 @@ namespace CoalRun.Gameplay.Lift
     // of actually pushing into them (that would squeeze bodies through floors). Coal in the shaft it
     // squashes flat as it comes down, slowly, and stops on the flattened layer.
     [RequireComponent(typeof(Rigidbody2D))]
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class Lift : MonoBehaviour
     {
         [SerializeField] private InputReader input;

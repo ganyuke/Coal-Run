@@ -1,14 +1,15 @@
 using CoalRun.Core;
 using CoalRun.Gameplay.Player;
 using CoalRun.UI;
-using UnityEngine.InputSystem;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Machinery
 {
     // The mouse side of the machinery: on press, takes the machine under the cursor if the operator
     // can reach it; while held, feeds it the cursor; on release or when it goes out of reach, lets go.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class MachineInput : MonoBehaviour
     {
         [SerializeField] private PlayerController player;
@@ -75,7 +76,7 @@ namespace CoalRun.Gameplay.Machinery
             Active = null;
         }
 
-        private static Machine Pick(Vector2 p, CoalRun.Gameplay.Tutorial.Tutorial tutorial)
+        private static Machine Pick(Vector2 p, Tutorial.Tutorial tutorial)
         {
             Machine best = null;
             var bestDistance = float.PositiveInfinity;

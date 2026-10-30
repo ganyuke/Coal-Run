@@ -1,5 +1,4 @@
 using CoalRun.Core;
-using CoalRun.Gameplay.Machinery;
 using UnityEngine;
 
 namespace CoalRun.Gameplay.Player

@@ -4,8 +4,9 @@ using CoalRun.Dialogue;
 using CoalRun.Gameplay.Characters;
 using CoalRun.Gameplay.Machinery;
 using CoalRun.Gameplay.Player;
-using UnityEngine.Rendering;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Tutorial
 {
@@ -13,7 +14,7 @@ namespace CoalRun.Gameplay.Tutorial
     // operator up to pull the chute lever, which sticks partway; forced through, the backed-up coal lets
     // go all at once, buries the cart and kills him. Digging the cart out and getting 3 coal into the
     // hopper teaches the job, then the briefing comes up. Stages and wording as in the JS.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class Tutorial : MonoBehaviour
     {
         public enum Stage

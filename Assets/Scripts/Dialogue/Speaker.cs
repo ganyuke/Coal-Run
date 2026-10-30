@@ -3,12 +3,13 @@ using CoalRun.Core;
 using CoalRun.Gameplay.Characters;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 using Random = UnityEngine.Random;
 
 namespace CoalRun.Dialogue
 {
     // handle a character talking with a nifty little bob animation and speech puffs
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class Speaker : MonoBehaviour
     {
         [Header("Owner")]
@@ -24,10 +25,6 @@ namespace CoalRun.Dialogue
         [Tooltip("Cooldown for repeat lines after line ends.")] [SerializeField]
         private float repeatAfter = 6;
 
-        private readonly Queue<string> _pendingLines = new();
-        private string _previousDialogue = "";
-        private float _previousLineEndsAt;
-
         [Header("Text and layout")] [SerializeField]
         private TextMeshPro text;
 
@@ -38,29 +35,19 @@ namespace CoalRun.Dialogue
         [SerializeField] private float width = 6;
         [SerializeField] private float fadeTime = .5f;
 
-        private Color _originalTextColor;
-
         [Header("Typing and hold")] [Tooltip("Characters revealed each second. Lower is slower.")] [SerializeField]
         private float charsPerSecond = 16;
 
         [Tooltip("Seconds the completed line stays visible after typing.")] [SerializeField]
         private float holdAfter = 1.8f;
 
-        private float _typingEndsAt;
-        private float _lineEndsAt;
-
         [Header("Voice blips")] [Tooltip("Pitch of the sound played as letters appear.")] [SerializeField]
         private float voicePitch = 1;
-
-        private int _lastBlipCharacter;
 
         [Header("Head bob")] [Tooltip("Part animated up and down while typing.")] [SerializeField]
         private Transform head;
 
         [SerializeField] private float bob = .07f, bobRate = 13;
-
-        private Vector3 _headRestPosition;
-        private float _bobStrength;
 
         [Header("Speech particles")]
         [Tooltip("World-space particles shared by speech puffs and cold breath. Optional.")]
@@ -69,18 +56,32 @@ namespace CoalRun.Dialogue
 
         [SerializeField] private float puffRate = 10;
 
-        private float _pendingPuffs;
-
         [Header("Cold breath")]
         [Tooltip("Show breath below this temperature in Celsius. Set to 0 to disable.")]
         [SerializeField]
         private float breathBelow;
 
+        private readonly Queue<string> _pendingLines = new();
+        private float _bobStrength;
+
+        private Vector3 _headRestPosition;
+
+        private int _lastBlipCharacter;
+        private float _lineEndsAt;
+
         private float _nextBreathAt;
+
+        private Color _originalTextColor;
+
+        private float _pendingPuffs;
+        private string _previousDialogue = "";
+        private float _previousLineEndsAt;
+
+        private float _typingEndsAt;
 
         // i want to still use the inspector and you can't really do that with private setter
         public TextMeshPro Text => text;
-        
+
         public Vector3 AnchorPosition => (anchor ? anchor : transform).position;
         public float TextWidth => Mathf.Min(width, text.preferredWidth);
 
@@ -203,7 +204,7 @@ namespace CoalRun.Dialogue
             color.a *= fadeTime > 0 ? Mathf.Clamp01(secondsLeft / fadeTime) : 1;
             return color;
         }
-        
+
         private void UpdateTypewriter()
         {
             var visibleCharacters = GetVisibleCharacterCount();

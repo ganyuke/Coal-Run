@@ -1,6 +1,7 @@
 using CoalRun.Core;
-using UnityEngine.Rendering.Universal;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Lift
 {
@@ -9,7 +10,7 @@ namespace CoalRun.Gameplay.Lift
     // cable goes the opposite way over a turning pulley; a caged work lamp swings when it jolts; coal
     // dust trickles off the platform's edges, puffing up when it comes down on coal; and the lamp by each
     // landing's number glows red with the lift there. Only looks: nothing here touches the lift.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class LiftShaft : MonoBehaviour
     {
         [SerializeField] private Lift lift;

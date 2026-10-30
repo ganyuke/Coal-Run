@@ -1,8 +1,8 @@
 using CoalRun.Core;
 using TMPro;
 using UnityEditor;
-using UnityEngine.InputSystem;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CoalRun.UI
 {

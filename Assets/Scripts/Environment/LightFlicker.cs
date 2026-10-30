@@ -1,10 +1,11 @@
-using UnityEngine.Rendering.Universal;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Environment
 {
     // A light that wavers: a lamp on a loose cord, a bulb on a bad circuit. Perlin noise, so it breathes rather than strobes.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class LightFlicker : MonoBehaviour
     {
         [SerializeField] private Light2D lamp;

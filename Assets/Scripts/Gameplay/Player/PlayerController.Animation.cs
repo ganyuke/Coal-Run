@@ -1,4 +1,3 @@
-using CoalRun.Gameplay.Lift;
 using UnityEngine;
 
 namespace CoalRun.Gameplay.Player
@@ -6,13 +5,12 @@ namespace CoalRun.Gameplay.Player
     // The per-frame look of the operator: the walk bob, held wheel, flint and steel. (Part of PlayerController.)
     public partial class PlayerController
     {
-        private bool _striking;
-        private float _lastStrike;
-
         private Vector3 _headRest;
+        private float _lastStrike;
 
         private float _pace, _stride, _lean, _poseLean;
         private float _poseCrouch = 1;
+        private bool _striking;
 
         private void Update()
         {

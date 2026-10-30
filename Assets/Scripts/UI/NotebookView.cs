@@ -1,11 +1,11 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using CoalRun.Core;
 using CoalRun.Gameplay.Player;
 using TMPro;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using UnityEngine;
 
 namespace CoalRun.UI
 {

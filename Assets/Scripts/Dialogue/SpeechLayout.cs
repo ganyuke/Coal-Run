@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Dialogue
 {
     // centralized system to lay out overlapping dialogue
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Core")]
+    [MovedFrom("CoalRun.Core")]
     public class SpeechLayout : MonoBehaviour
     {
         [Tooltip("Space between stacked speech texts, in world units.")] [SerializeField]
@@ -26,7 +27,7 @@ namespace CoalRun.Dialogue
             for (var speakerIndex = 0; speakerIndex < _visibleSpeakers.Count; speakerIndex++)
             {
                 var speaker = _visibleSpeakers[speakerIndex];
-                
+
                 // apply transformation to stack and readjust position of dialogue
                 var position = CalculatePositionOnScreen(speaker, _camera);
                 speaker.Text.transform.position = CalculateStackedPosition(position, speakerIndex);
@@ -61,7 +62,8 @@ namespace CoalRun.Dialogue
             var screenRight = camera.ViewportToWorldPoint(new Vector3(1, 0, -camera.transform.position.z)).x;
 
             // clamp text so it doesn't spill off the side of the screen
-            position.x = Mathf.Clamp(position.x, screenLeft + halfWidth, Mathf.Max(screenLeft + halfWidth, screenRight - halfWidth));
+            position.x = Mathf.Clamp(position.x, screenLeft + halfWidth,
+                Mathf.Max(screenLeft + halfWidth, screenRight - halfWidth));
             return position;
         }
 
@@ -86,7 +88,8 @@ namespace CoalRun.Dialogue
 
                     // math to check if boxes are touching or overlap in both the horizontal and vertical direction
                     var overlapsHorizontally =
-                        Mathf.Abs(position.x - earlierTextPosition.x) < (textWidth + earlierSpeaker.TextWidth) / 2 + .1f;
+                        Mathf.Abs(position.x - earlierTextPosition.x) <
+                        (textWidth + earlierSpeaker.TextWidth) / 2 + .1f;
                     var overlapsVertically = position.y < earlierTextPosition.y + earlierTextHeight + stackGap &&
                                              position.y + textHeight + stackGap > earlierTextPosition.y;
                     if (!overlapsHorizontally || !overlapsVertically) continue;

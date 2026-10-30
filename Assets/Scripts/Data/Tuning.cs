@@ -1,11 +1,12 @@
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Data
 {
     // Physics and rate numbers shared by every day. Starting values are the JS prototype's TUNE.
     // Edit Assets/Data/Tuning.asset in the Inspector; changes made during Play mode stick.
     [CreateAssetMenu(menuName = "Coal Run/Tuning")]
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Core")]
+    [MovedFrom("CoalRun.Core")]
     public class Tuning : ScriptableObject
     {
         [Header("World")] public float step = 1f / 60;

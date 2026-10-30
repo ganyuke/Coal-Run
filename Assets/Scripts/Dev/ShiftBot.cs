@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -9,15 +9,15 @@ using CoalRun.Gameplay.Cart;
 using CoalRun.Gameplay.Lift;
 using CoalRun.Gameplay.Machinery;
 using CoalRun.Gameplay.Player;
-using UnityEngine.InputSystem;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CoalRun.Dev
 {
     // thanks claude for this one
     // now i can playtest foreverrr
     // but it's kinda dumb and doesn't understand when to shovel coal
-    
+
     // A competent player for balance testing, after the JS prototype's route test ("survives a full
     // ten-minute shift"): fill the cart at the chute from the control room, haul it onto the freight lift,
     // crank up, set the burn lever from the forecast, tip the cart into the hopper, and back down. It plays

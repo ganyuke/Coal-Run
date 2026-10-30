@@ -1,7 +1,7 @@
 using System;
 using CoalRun.UI;
-using UnityEngine.InputSystem;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CoalRun.Core
 {

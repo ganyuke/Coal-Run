@@ -1,6 +1,7 @@
 using CoalRun.Core;
-using UnityEngine.Rendering.Universal;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Environment
 {
@@ -8,7 +9,7 @@ namespace CoalRun.Environment
     // shift's mildest stretch and 1 at its worst, with gusts on top, drives the snow past the window (a slow drift of
     // flakes when it's calm, sideways streaks at its worst), how much grey daylight gets in, how blue the room goes,
     // and the wind, rattles and knocks you hear.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class Storm : MonoBehaviour
     {
         [SerializeField] private ParticleSystem snow;

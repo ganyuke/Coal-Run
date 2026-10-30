@@ -1,10 +1,11 @@
 using System;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Characters
 {
     // template class to hold the death event for entities
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public abstract class Human : MonoBehaviour
     {
         [SerializeField] protected Rigidbody2D corpsePrefab;

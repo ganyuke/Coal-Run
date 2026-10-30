@@ -1,8 +1,7 @@
-using System.Collections;
 using System;
+using System.Collections;
 using CoalRun.Core;
 using CoalRun.Gameplay.Characters;
-using CoalRun.Gameplay.Machinery;
 using UnityEngine;
 
 namespace CoalRun.Gameplay.Player

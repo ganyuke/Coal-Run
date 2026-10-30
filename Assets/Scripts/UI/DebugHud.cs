@@ -2,8 +2,8 @@ using CoalRun.Core;
 using CoalRun.Gameplay.Machinery;
 using CoalRun.Gameplay.Player;
 using TMPro;
-using UnityEngine.InputSystem;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace CoalRun.UI
 {
@@ -14,20 +14,13 @@ namespace CoalRun.UI
         [SerializeField] private MachineInput machines;
         [SerializeField] private TMP_Text readout;
 
-        [Tooltip("Seconds between redraws of the text.")]
-        [SerializeField]
+        [Tooltip("Seconds between redraws of the text.")] [SerializeField]
         private float refresh = .2f;
 
         private float _next;
 
         private bool _visible;
 
-        private void UpdateDebugVisibility()
-        {
-            readout.gameObject.SetActive(_visible);
-            player.ShowDebug = _visible;
-        }
-        
         private void Start()
         {
             _visible = Application.isEditor; // show by default in editor
@@ -43,12 +36,12 @@ namespace CoalRun.UI
             }
 
             if (!_visible || Time.unscaledTime < _next) return;
-            
+
             _next = Time.unscaledTime + refresh;
-            
+
             var game = ShiftManager.Instance;
             if (!game) return;
-            
+
             var cart = game.Cart;
             readout.text =
                 "[F3] show/hide [F2] knock wheel off [F4] cart load 0/6/10/12 [F5] clean up coal [F6] teleport cart [F7] replay training [F8] skip training [F9] bot mode [F10] skip to last 30 s\n" +
@@ -63,6 +56,12 @@ namespace CoalRun.UI
                 $"Coal error {game.TotalCoal - game.InitialCoal:0.0000}\n" +
                 $"Machine {(machines.Active ? machines.Active.name : "-")}  hover {(machines.Hover ? machines.Hover.name : "-")}\n" +
                 $"{1f / Mathf.Max(Time.smoothDeltaTime, 1e-4f):0} fps";
+        }
+
+        private void UpdateDebugVisibility()
+        {
+            readout.gameObject.SetActive(_visible);
+            player.ShowDebug = _visible;
         }
     }
 }

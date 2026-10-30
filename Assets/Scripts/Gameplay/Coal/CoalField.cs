@@ -1,7 +1,8 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using CoalRun.Core;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 using Random = UnityEngine.Random;
 
 namespace CoalRun.Gameplay.Coal
@@ -10,7 +11,7 @@ namespace CoalRun.Gameplay.Coal
     // once they come to rest, are absorbed into a pile. Each floor (and the lift platform) stores its
     // piles as a row of column heights. Piles slump when too steep, are solid to the operator and to
     // lumps through one CustomCollider2D per floor, and are drawn as one stretched sprite per column.
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class CoalField : MonoBehaviour
     {
         public enum SurfaceId
@@ -198,7 +199,7 @@ namespace CoalRun.Gameplay.Coal
         }
 
         // How deep the cart's bin sits in coal.
-        public float CartBurial(CoalRun.Gameplay.Cart.Cart cart)
+        public float CartBurial(Cart.Cart cart)
         {
             var p = cart.Body.position;
             var s = SurfaceAt(p.x, p.y);
@@ -411,7 +412,8 @@ namespace CoalRun.Gameplay.Coal
         {
             var body = Instantiate(lumpPrefab, transform);
             if (lumpVariants is { Length: > 0 })
-                body.GetComponentInChildren<SpriteRenderer>().sprite = lumpVariants[Random.Range(0, lumpVariants.Length)];
+                body.GetComponentInChildren<SpriteRenderer>().sprite =
+                    lumpVariants[Random.Range(0, lumpVariants.Length)];
             var lump = new Lump { Body = body };
             _lumps.Add(lump);
             return lump;

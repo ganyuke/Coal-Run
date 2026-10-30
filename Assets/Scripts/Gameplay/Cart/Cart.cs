@@ -1,15 +1,15 @@
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
 using CoalRun.Core;
-using CoalRun.Gameplay.Lift;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Cart
 {
     // The cart. Wheel and skid colliders switch with its wheel count; mass follows the coal load.
     // GroundFriction supplies the resistance of rolling wheels and a dragging skid.
     [RequireComponent(typeof(Rigidbody2D))]
-    [UnityEngine.Scripting.APIUpdating.MovedFrom("CoalRun.Stations")]
+    [MovedFrom("CoalRun.Stations")]
     public class Cart : MonoBehaviour
     {
         [SerializeField] private GameObject frontWheel, backWheel, skid;
@@ -36,12 +36,13 @@ namespace CoalRun.Gameplay.Cart
         [SerializeField]
         private Rigidbody2D wheelPrefab;
 
-        private readonly List<Collider2D> _colliders = new();
+        [Header("Physics colliders")] [SerializeField]
+        private PolygonCollider2D binCollider;
 
-        [Header("Physics colliders")]
-        [SerializeField] private PolygonCollider2D binCollider;
         [SerializeField] private CircleCollider2D frontWheelCollider, backWheelCollider;
         [SerializeField] private BoxCollider2D skidCollider;
+
+        private readonly List<Collider2D> _colliders = new();
 
         private ShiftManager _game;
 
