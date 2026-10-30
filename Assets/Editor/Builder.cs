@@ -98,5 +98,17 @@ namespace CoalRun.Editor
                 EditorApplication.Exit(1);
             }
         }
+
+        // Unity -batchmode -quit -projectPath . -executeMethod CoalRun.Editor.Builder.VerifyCompile
+        public static void VerifyCompile()
+        {
+            if (EditorUtility.scriptCompilationFailed)
+            {
+                Debug.LogError("Script compilation failed.");
+                EditorApplication.Exit(1);
+            }
+
+            EditorApplication.Exit(0);
+        }
     }
 }

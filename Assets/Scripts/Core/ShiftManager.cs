@@ -185,6 +185,8 @@ namespace CoalRun.Core
         private void Awake()
         {
             Instance = this;
+            if (!room) room = FindFirstObjectByType<Room>();
+            room?.Bind();
             Phase = Day.training && !_trained ? Phase.Tutorial : Phase.Briefing;
             Time.fixedDeltaTime = tuning.step;
             Physics2D.gravity = new Vector2(0, tuning.gravity);

@@ -172,10 +172,6 @@ namespace CoalRun.Gameplay.Player
             _box = GetComponent<BoxCollider2D>();
             if (head) _headRest = head.localPosition;
             if (bodyArt) _armedBody = bodyArt.sprite;
-        }
-
-        private void Start()
-        {
             _game = ShiftManager.Instance;
         }
 

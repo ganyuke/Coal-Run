@@ -99,6 +99,7 @@ namespace CoalRun.Dialogue
 
         private void Awake()
         {
+            if (!text) return;
             _originalTextColor = text.color;
             text.gameObject.SetActive(false);
             if (head) _headRestPosition = head.localPosition;

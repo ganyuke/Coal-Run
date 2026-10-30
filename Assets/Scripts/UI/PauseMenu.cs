@@ -1,7 +1,10 @@
 using CoalRun.Core;
 using TMPro;
-using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace CoalRun.UI
 {
@@ -18,7 +21,7 @@ namespace CoalRun.UI
         [SerializeField] private TMP_Text title, controls;
 
         [Tooltip("The two stamped buttons, copies of the report's: clicking them is Esc and Q.")] [SerializeField]
-        private Button resumeButton, quitButton;
+        private RectTransform resumeButton, quitButton;
 
         [SerializeField] private TMP_Text resumeLabel, quitLabel;
 
@@ -42,7 +45,7 @@ namespace CoalRun.UI
                 input.Quit -= Quit;
             }
 
-            if (Paused) Resume();
+            if (Paused) Carry();
         }
 
 #if !UNITY_EDITOR
@@ -54,11 +57,22 @@ namespace CoalRun.UI
         }
 #endif
 
+        // No EventSystem here (the notebook checks the mouse itself too): a click inside a button does what its key does.
+        private void Update()
+        {
+            var mouse = Mouse.current;
+            if (!Paused || mouse == null || !mouse.leftButton.wasPressedThisFrame) return;
+            var at = mouse.position.ReadValue();
+            if (RectTransformUtility.RectangleContainsScreenPoint(resumeButton, at)) Carry();
+            else if (quitButton.gameObject.activeSelf &&
+                     RectTransformUtility.RectangleContainsScreenPoint(quitButton, at)) Quit();
+        }
+
         private void Toggle()
         {
             if (Paused)
             {
-                Resume();
+                Carry();
                 return;
             }
 
@@ -76,7 +90,7 @@ namespace CoalRun.UI
             card.SetActive(true);
         }
 
-        public void Resume()
+        private void Carry()
         {
             Time.timeScale = _speed;
             AudioListener.pause = false;
@@ -84,11 +98,11 @@ namespace CoalRun.UI
             if (card) card.SetActive(false);
         }
 
-        public void Quit()
+        private void Quit()
         {
             if (!Paused || Application.platform == RuntimePlatform.WebGLPlayer) return;
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
+            EditorApplication.isPlaying = false;
 #else
             Application.Quit();
 #endif

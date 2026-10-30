@@ -25505,6 +25505,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1148866469}
+  - component: {fileID: 1148866470}
   m_Layer: 0
   m_Name: Room
   m_TagString: Untagged
@@ -25529,6 +25530,30 @@ Transform:
   - {fileID: 1106409196}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1148866470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1148866468}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f8d26753522c7507f9c4f5c1fe176962, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CoalRun.Core.Room
+  backdrop: {fileID: 1558858411}
+  lowerFloor: {fileID: 1106409204}
+  upperFloor: {fileID: 1106409203}
+  controlRoomFloor: {fileID: 493163890}
+  liftPlatform: {fileID: 1233678084}
+  hopperGrate: {fileID: 1421153942}
+  chuteMouth: {fileID: 304428492281169644}
+  returnBoundary: {fileID: 2080906238}
+  arrival: {fileID: 1096090703}
+  staffLiftInside: {fileID: 825623889}
+  staffLiftCenter: {fileID: 825623889}
+  stairsFoot: {fileID: 183174052}
 --- !u!1 &1149851813
 GameObject:
   m_ObjectHideFlags: 0
@@ -26345,6 +26370,7 @@ GameObject:
   - component: {fileID: 1229495383}
   - component: {fileID: 1229495385}
   - component: {fileID: 1229495384}
+  - component: {fileID: 1229495386}
   m_Layer: 0
   m_Name: Stamp button
   m_TagString: Untagged
@@ -26411,6 +26437,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1229495382}
   m_CullTransparentMesh: 1
+--- !u!114 &1229495386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1229495382}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
+  m_Navigation:
+    m_Mode: 3
+    m_WrapAround: 0
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_SelectedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_SelectedTrigger: Selected
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 1229495384}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1233678081
 GameObject:
   m_ObjectHideFlags: 0
@@ -37000,6 +37070,7 @@ MonoBehaviour:
   days:
   - {fileID: 11400000, guid: d2622aafa26ba7426876ac84a923dd74, type: 2}
   - {fileID: 11400000, guid: 46d9664756e2302de96ede6b33df8493, type: 2}
+  room: {fileID: 1148866470}
   input: {fileID: 1727399067}
   player: {fileID: 1137301203}
   cart: {fileID: 1021323406}
@@ -38137,7 +38208,6 @@ MonoBehaviour:
   text: {fileID: 1691959070}
   anchor: {fileID: 71787283}
   speechLayout: {fileID: 2119000002}
-  width: 6
   fadeTime: 0.5
   charsPerSecond: 14
   holdAfter: 1.8
@@ -38145,8 +38215,9 @@ MonoBehaviour:
   head: {fileID: 1882790905}
   bob: 0.05
   bobRate: 13
-  puffs: {fileID: 542436900}
+  speechPuffs: {fileID: 542436900}
   puffRate: 10
+  coldBreath: {fileID: 0}
   breathBelow: 0
 --- !u!1 &1889384120
 GameObject:
