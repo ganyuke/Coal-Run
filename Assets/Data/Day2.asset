@@ -18,24 +18,24 @@ MonoBehaviour:
     again. It is colder tomorrow. Brass wants more.
   installer: 1
   startingWheels: 2
-  startingHopper: 15
+  startingHopper: 5
   target: 190
   forecast:
   - time: 0
     temperature: -10
-  - time: 140
+  - time: 95
     temperature: -10
-  - time: 220
+  - time: 175
     temperature: -20
-  - time: 290
+  - time: 245
     temperature: -32
-  - time: 335
+  - time: 290
     temperature: -44
-  - time: 400
+  - time: 415
     temperature: -44
-  - time: 455
+  - time: 470
     temperature: -20
-  - time: 520
+  - time: 535
     temperature: -10
   - time: 600
     temperature: -10
