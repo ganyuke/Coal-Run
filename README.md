@@ -2,6 +2,12 @@
 
 Coal Run is a Unity 6 game that puts you in the boots of a boilerworker in the dead of winter. You've been condemed to the basement of your office building to man the furnace as a blizzard sets in. You must keep the furnace fed for as long as possible, lest you freeze to death.
 
+Repository: [ganyuke/Coal-Run](https://github.com/ganyuke/Coal-Run)
+
+View the repository for the most up-to-date version of Coal Run and its README.
+
+Open the [GitHub Releases](https://github.com/ganyuke/Coal-Run/releases) tab to download Coal Run for Linux and Windows. You can also play Coal Run in the browser at [coalrun.pages.dev](coalrun.pages.dev).
+
 ## Original one pager document
 
 ### Overview
@@ -49,7 +55,7 @@ Mouse and keyboard.
 
 ### Changes from existing content
 
-MVP project (v0.6) was cut down to only two days, with the second wheel concept added to the second day (perhaps the days should be flipped considering how intense day 1 is 🤔).
+MVP project was cut down to only two days, with the second wheel concept added to the second day (perhaps the days should be flipped considering how intense day 1 is 🤔).
 
 Several controls were changed, including the burn rate leveer which was changed to use the same floor lever as the rest of the levers in the game (tip lever and chute lever). Clicking the cart to drag was changed to holding space and using movement controls.
 
@@ -82,4 +88,3 @@ The project as a whole was built heavily by a mix of Claude Opus 5.5, Claude Son
 The original map design was devised by a fleshbag in Excalidraw then rendered into SVG by GPT 6 Astra. A mix of GPT 6 Astra and later Claude Opus 5.5 turned the skeleton map design and gameplay into a flawed JavaScript prototype. Claude Opus 5.5 was used to port the JavaScript prototype (retaining mostly the map design and object coordinates) into Unity through Unity CLI.
 
 Implementation was done almost entirely by Claude under the supervision of a fleshbag. See [SESSION-LOG.md](/SESSION-LOG.md) for a Claude-santized overview of the Claude conversations involving implementation.See [PLAN.md](/PLAN.md) for indirect directives given to Claude by the fleshbag.
-
