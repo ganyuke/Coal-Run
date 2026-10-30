@@ -10,6 +10,12 @@ using Random = UnityEngine.Random;
 
 namespace CoalRun.Gameplay.Player
 {
+    /**
+     * This namespace contains solely the PlayerController class and it's a nightmare. It's a 1,500 line nightmare
+     * that controls so many things at once. I had it broken up by feature so it's a little easier to find what you
+     * need but it's still a crap ton of lines.
+     */
+    
     // The operator. Walks with forces rather than by setting velocity, so the body still gets shoved
     // around by the cart and the lift. Gripping the cart is a soft spring between the two bodies.
     // Lane 0 is the work floor; lane 1 is the control room up the stairs, where only terrain collides.

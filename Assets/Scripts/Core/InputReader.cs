@@ -5,6 +5,12 @@ using UnityEngine.InputSystem;
 
 namespace CoalRun.Core
 {
+    /**
+     * usually tutorials like to use the legacy key input but modern Input System package always cool
+     * to use. like you're in the future. the stuff here is hardcoded to keys though because my input choices
+     * are obviously the best from the start!
+     */
+    
     // One physics step's worth of keyboard input. Same shape as the prototype's Controls.
     public struct Controls
     {

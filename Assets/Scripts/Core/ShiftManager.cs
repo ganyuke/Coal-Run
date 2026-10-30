@@ -17,32 +17,33 @@ using UnityEngine.SceneManagement;
 
 namespace CoalRun.Core
 {
-    // Leaving: the clock has run out and the operator is on their way to the staff lift to clock out.
+    /**
+     * This file is kinda the nightmare file (alongside PlayerController) because it manages so much of the game.
+     * Maybe not the best split of responsibilities here but it gets the job done.
+     */
+
     public enum Phase
     {
-        Tutorial,
-        Briefing,
-        Shift,
-        Leaving,
-        Replacement,
-        Complete,
-        Frozen
+        Tutorial, // self explanatory
+        Briefing, // notebook showing daily briefing
+        Shift, // normal gameplay
+        Leaving,  // period between shift end and elevator opens
+        Replacement, // period between respawning
+        Complete, // day finished screen
+        Frozen // death cutscene
     }
 
-    // The hub. Holds the state every station shares (phase, clock, the day's settings) and the
-    // references stations use to find each other. UI and audio listen to its events instead of
-    // stations calling them directly.
-    [DefaultExecutionOrder(-50)]
+    // the god class holding the shared state for every station (e.g. game's current phase, game clock,
+    // tuning specific to that day e.g. cold). UI and audio are hooked into this with C# events.
+    // That way we get less coupling. Woo-hoo! No couples!
+    [DefaultExecutionOrder(-50)] // crank this back so it can initialize the state object before the rest of the components
     public class ShiftManager : MonoBehaviour
     {
-        // The training plays once a session: a restart goes straight to the briefing. Static, so it
-        // survives the scene reload; cleared on entering Play mode, since domain reload may be off.
-        private static bool _trained;
+        // both vars here are static to persist it between scenes
+        private static bool _trained; // tracks tutorial completion so it can be skipped for re-attempts.
+        private static int _dayIndex; // track which day we are currently on
 
-        // Which shift we are on. Static like _trained, for the same reason.
-        private static int _dayIndex;
-
-        // Out of the staff lift.
+        // set the point that the player should be standing when they get out of the elevator
         private static readonly Vector2 ArrivalSpot = new(30.5f, Room.Lower + .72f);
 
         [Header("Configuration")] [SerializeField]
@@ -89,11 +90,13 @@ namespace CoalRun.Core
         // Audio cooldowns.
         private readonly Dictionary<string, float> _soundTimers = new();
 
-        // Worker arrival: the door and the phase to return to afterward.
+        // Whether the arriving operator's lift door has opened.
         private bool _doorOpened;
 
         // Clocking out.
         private float _inLiftFor;
+
+        // Phase to restore after an operator arrives.
         private Phase _resume;
 
         public static ShiftManager Instance { get; private set; }
@@ -124,7 +127,8 @@ namespace CoalRun.Core
         // The room is live: the training or the shift, including the leaving and a replacement on the way.
         public bool Playing => Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving or Phase.Replacement;
 
-        // The same, minus the training: the furnace burns, the building cools, and what happens counts.
+        // Enables furnace consumption and scoring during the shift, leaving, and replacement phases.
+        // Building temperature and the clock advance only while ShiftRunning is true.
         public bool InShift => Phase is Phase.Shift or Phase.Leaving or Phase.Replacement;
 
         public bool CanAct => !Departing && Phase is Phase.Tutorial or Phase.Shift or Phase.Leaving;
@@ -141,35 +145,41 @@ namespace CoalRun.Core
         // The shift's clock and the building's heat run on while a replacement is on the way.
         public bool ShiftRunning => Phase == Phase.Shift || (Phase == Phase.Replacement && _resume == Phase.Shift);
 
-        // Operators lost this shift, and the seconds until the next one steps out of the staff lift.
+        // Operators lost this shift.
         public int Deaths { get; private set; }
 
         // How the last one died, for the report.
         public string LastDeath { get; private set; } = "";
 
+        // Seconds until the arriving operator steps out of the staff lift.
         public float ReplacementIn { get; private set; }
 
-        // Dead operators, left where they fell for the rest of the shift.
+        // Tracks corpses for recovery if physics pushes them outside the room.
         public List<Rigidbody2D> Bodies { get; } = new();
 
+        // Total physics time since scene startup, including training and briefing.
         public float Elapsed { get; private set; }
 
-        // Seconds into the shift, the temperature outside from the day's forecast, and inside the building.
+        // Seconds elapsed on the timed shift.
         public float Clock { get; private set; }
+
+        // Outside temperature sampled from the day's forecast.
         public float Outside { get; private set; }
 
+        // Current temperature inside the building.
         public float Temperature { get; private set; }
 
-        // How far through the freeze grace the operator is, 0 to 1 (1 is frozen). Kept hidden: they only
-        // feel it in their legs, and the lamp over the staff lift is lit while it's freezing.
+        // Freeze-grace progress, from 0 to 1. Reaching 1 ends the shift; warming up reduces it.
         public float Chill { get; private set; }
         public bool Freezing => Temperature <= tuning.freeze;
 
         public float InitialCoal { get; private set; }
 
-        // Every unit of coal is always in exactly one place, so this should never change.
+        // Includes burned coal so consumption preserves the total used for the conservation check.
         public float TotalCoal =>
             chute.Bunker + cart.Coal + player.Hands + coal.Loose + furnace.Hopper + furnace.Burned;
+
+        // Unity lifecycle
 
         private void Awake()
         {
@@ -185,6 +195,7 @@ namespace CoalRun.Core
             InitialCoal = TotalCoal;
             Temperature = tuning.comfortable;
             Outside = Day.OutsideAt(0);
+
             // The training opens with the new operator (and the helper, see Tutorial) riding down the staff
             // lift, the same way a replacement arrives.
             if (Phase == Phase.Tutorial) SendOperator(firstArrival);
@@ -194,21 +205,23 @@ namespace CoalRun.Core
         {
             var dt = Time.fixedDeltaTime;
             Elapsed += dt;
+
             if (input.Current.DebugKey != 0) DebugCommand(input.Current.DebugKey);
+
             if (ShiftRunning) StepHeat(dt);
             if (Phase == Phase.Replacement) StepReplacement(dt);
             if (Phase == Phase.Leaving && !Departing) StepLeaving(dt);
             if (Ended && input.Current.Restart) Continue();
             if (Phase == Phase.Briefing && input.Current.Begin) BeginShift();
+
             RecoverLost();
         }
 
-        // name, loudness
+        // Sound cue name and intensity.
         public event Action<string, float> OnSound;
         public event Action<Phase> OnPhase;
 
-        // Unity lifecycle
-
+        // Reset static session progress when entering Play mode, even with domain reload disabled.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetTraining()
         {
@@ -221,6 +234,7 @@ namespace CoalRun.Core
         public void FinishTraining()
         {
             _trained = true;
+
             // Skipped (F8) before they've even stepped out of the lift.
             if (Phase == Phase.Replacement) Arrive();
             SetPhase(Phase.Briefing);
@@ -230,25 +244,28 @@ namespace CoalRun.Core
         public void BeginShift()
         {
             if (Phase != Phase.Briefing) return;
+
             Clock = 0;
             Deaths = 0;
             Temperature = tuning.comfortable;
             SetPhase(Phase.Shift);
         }
 
-        // Once the shift has ended the world keeps running, but nobody can act, the clock stops and the
-        // furnace stops burning. While leaving, the clock is stopped and the building can't freeze any more.
+        // Notify listeners of a phase change and play its sound cue.
+        // Clock, heat, fuel consumption, and player actions use their own phase guards.
         private void SetPhase(Phase phase)
         {
             Phase = phase;
-            // The door stands open for the operator to leave by.
+
+            // for the leaving phase specifically, need the elevator to open for the player to enter
             if (phase == Phase.Leaving && staffLift) staffLift.Open();
+
             OnPhase?.Invoke(phase);
             PlayCue(phase.ToString().ToLowerInvariant());
         }
 
-        // Reloading the scene puts every station back as it was.
-        public void Restart()
+        // thanks to this, we don't need to manually reset every station
+        private void Restart()
         {
             SceneManager.LoadScene(gameObject.scene.path);
         }
@@ -269,16 +286,19 @@ namespace CoalRun.Core
             Temperature += degrees;
         }
 
-        // The building warms by what the furnace burns and loses heat to the outside in proportion to the
-        // difference, so it changes slowly: run under demand and it cools gradually. Burning a notch's rate
-        // holds it at `comfortable` against that notch's held temperature. The furnace runs after the hub,
-        // so this is the last step's burn.
+        // building warms by furnace burn rate and cools (due to outside temp) in proportion to difference in
+        // temperature. latter means that running under demanded temp will cool room gradually.
+        // burning a notch's rate holds it at `comfortable` against that notch's held temperature.
+        // tehnically the furnace runs after this script, so this is the previous step's burn.
         private void StepHeat(float dt)
         {
             Clock += dt;
             Outside = Day.OutsideAt(Clock);
             Temperature += (furnace.BurnRate - tuning.heatLoss * (Temperature - Outside)) / tuning.heatCapacity * dt;
+            
+            // trigger red phone dialogue when freezing has started
             if (Freezing && Chill == 0) Say(lines.speech.freezing);
+            
             Chill = Mathf.Clamp01(Chill + (Freezing ? dt : -dt) / tuning.freezeGrace);
             if (Chill >= 1)
             {
@@ -294,20 +314,27 @@ namespace CoalRun.Core
             }
         }
 
-        // Death and replacement workers
+        /**
+         * DEATH AND REPLACEMENT HANDLING
+         */
 
-        // Accidents kill only the operator. Brass sends a replacement down the staff lift, and the furnace
-        // keeps burning while they ride down: a death costs time and nothing else.
+        // Replace the operator without resetting the room, equipment, or fuel.
+        // During a timed shift, the clock and building heat continue while the replacement arrives.
         public void Die(string reason)
         {
             if (!CanAct) return;
+
             Deaths++;
             LastDeath = reason;
             Bodies.Add(player.Kill());
             SendOperator(tuning.replacementDelay);
-            // Brass rings down to say another man is on his way, rather than anyone saying why this one died.
+
+            // red phone complains to you about you constantly dying
+            // number of deaths change which line you get. very fun!
             var deaths = lines.phone.deaths;
-            phone.Announce(deaths[Mathf.Min(Deaths, deaths.Length) - 1], 2);
+            var deathLineIdx = Mathf.Min(Deaths, deaths.Length) - 1;
+            phone.Announce(deaths[deathLineIdx], 2);
+            
             PlayCue("hurt");
         }
 
@@ -325,6 +352,7 @@ namespace CoalRun.Core
         private void StepReplacement(float dt)
         {
             ReplacementIn -= dt;
+
             // The door opens just before they step out.
             if (!_doorOpened && ReplacementIn <= .5f)
             {
@@ -333,6 +361,7 @@ namespace CoalRun.Core
             }
 
             if (ReplacementIn > 0) return;
+
             Arrive();
             SetPhase(_resume);
         }
@@ -341,26 +370,36 @@ namespace CoalRun.Core
         {
             player.Respawn(ArrivalSpot);
         }
-
-        // Clocking out and end-of-shift presentation
-
+        
+        /**
+         * LEAVING PHASE - for clocking out when the day's over!
+         */
+        
         // The shift is over and the staff lift's door stands open. Standing still inside it for a moment ends the shift.
         private void StepLeaving(float dt)
         {
             var p = player.Position;
-            // Standing in the car, not just running through it.
-            var inside = player.Lane == 0 && p.y < Room.Lower + 2.3f && p.x > Room.StaffLiftInside &&
-                         Mathf.Abs(player.Body.linearVelocity.x) < .5f;
+
+            // check that the player is actually (1) in the elevator and (2) ain't running around
+            // like they gotta be IN the elevator, stopped, waiting for the door to close
+            var onWorkFloor = player.Lane == 0 && p.y < Room.Lower + 2.3f;
+            var inLift = p.x > Room.StaffLiftInside;
+            var nearlyStopped = Mathf.Abs(player.Body.linearVelocity.x) < .5f;
+
+            var inside = onWorkFloor && inLift && nearlyStopped;
+            
             _inLiftFor = inside ? _inLiftFor + dt : 0;
             if (_inLiftFor >= tuning.liftStandTime) StartCoroutine(Depart());
         }
 
-        // Locked in place, the door closes, and the screen goes black.
+        // takes away the player's control so we can play the depart cutscene without them just walking out
+        // as soon as the elevator closes
         private IEnumerator Depart()
         {
             Departing = true;
             player.Stand(Room.StaffLiftCenter);
             if (staffLift) yield return staffLift.CloseDoor();
+
             for (var k = 0f; k < 1; k += Time.deltaTime / tuning.fadeTime)
             {
                 Fade = k;
@@ -370,23 +409,34 @@ namespace CoalRun.Core
             Fade = 1;
             SetPhase(Phase.Complete);
             ReportReady = true;
-            // The door has closed and the shift is over: nobody acts in Complete anyway, and while this stayed set the
-            // report page was hidden (NotebookView) over a black screen.
+
+            // notebook doesn't show if departing is true so we need to mark this as false
             Departing = false;
         }
 
-        // The cold gets them: the camera comes in on the operator, they keel over, it pulls back out, the screen goes
-        // black, and then the report comes up.
+        // cutscnee that plays when the player dies from the cold:
+        // zoom in on player, kill em and knock em over, pull back, fade to black and report thrown up
+        // very cool!
         private IEnumerator FreezeEnd()
         {
             var at = player.Position + Vector2.up * .5f;
             if (cameraRig) yield return cameraRig.FocusOn(at, tuning.freezeZoom, tuning.freezeZoomIn);
             yield return new WaitForSeconds(tuning.freezeHold);
-            // Nobody to keel over if they were already dead and the next one hadn't come down yet.
-            if (player.Visible) Bodies.Add(player.Kill());
+
+            // kill the player if they are still in the map, alive
+            // because you can't really kill someone whose dead
+            // unless you are a zombie maybe?
+            if (player.Visible)
+            {
+                var body = player.Kill();
+                Bodies.Add(body);
+            }
+            
             PlayCue("hurt");
             yield return new WaitForSeconds(tuning.freezeKeel);
+            
             if (cameraRig) yield return cameraRig.Home(tuning.freezeZoomOut);
+            
             for (var k = 0f; k < 1; k += Time.deltaTime / tuning.fadeTime)
             {
                 Fade = k;
@@ -397,22 +447,32 @@ namespace CoalRun.Core
             ReportReady = true;
         }
 
-        // Dialogue, audio and shared particles
+        /**
+         * DIALOGUE, AUDIO, SHARED PARTICLES
+         */
 
-        // Said by `speaker`, as little text above them. By default it's the operator's, and dropped while there's no
-        // operator on the floor (dead, or the replacement still riding down in the staff lift): nobody saw it happen.
+        // messenger for making speakers say dialogue out loud (the little sppech bubble things)
         public void Say(string message, Speaker speaker = null)
         {
+            // sometimes a replacement will come down and say stuff like "the wheel came off" line
+            // even though they never saw it so if that happens, just drop the line to fix that bug
             if (!speaker && (!player.Visible || Phase == Phase.Replacement)) return;
+
+            // assume the speaker is the player operator if speaker is not specified
             speaker ??= player.Voice;
+            
             if (speaker) speaker.Speak(message);
         }
 
-        // Repeats of the same sound inside the cooldown are dropped, so stations can call this every step.
         public void PlayCue(string sound, float cooldown = .12f, float amount = 1)
         {
+            // drop repeated calls of the same sound so station callers can be dumb and call it on every step
             if (_soundTimers.TryGetValue(sound, out var until) && until > Elapsed) return;
+
             _soundTimers[sound] = Elapsed + cooldown;
+            
+            // it's kinda annoying that Invoke is expensive because PlayCue is used in a lot of places
+            // and the expensive marking bubles up :(
             OnSound?.Invoke(sound, amount);
         }
 
@@ -422,9 +482,11 @@ namespace CoalRun.Core
             if (liftShaft) liftShaft.Dust(at, velocity, size, life);
         }
 
-        // Recovery and development shortcuts
+        /**
+         * DEBUG & RECOVERY STUFF FOR CLAUDE TO STOP DOING THINGS THE HARD WAY
+         */
 
-        // Nothing can leave the room. Anything physics squeezes through a wall or floor is put back on the lower floor.
+        // teleport things that somehow fall out of the map's boundaries back into the map
         private void RecoverLost()
         {
             if (Lost(cart.Body.position))
@@ -436,9 +498,11 @@ namespace CoalRun.Core
             foreach (var wheel in cart.LooseWheels)
                 if (Lost(wheel.position))
                     Put(wheel, Room.Lower + .35f);
+            
             foreach (var body in Bodies)
                 if (Lost(body.position))
                     Put(body, Room.Lower + .3f);
+            
             if (!player.Body.simulated || !Lost(player.Body.position)) return;
             player.ReleaseGrip();
             Put(player.Body, Room.Lower + .72f);
@@ -459,8 +523,7 @@ namespace CoalRun.Core
             }
         }
 
-        // Testing shortcuts, by F key. Public so the editor CLI can call them too. Coal is moved to and from
-        // the bunker, so the total stays intact.
+        // debug commands controlled by function keys. claude should be able to use these through the unity CLI
         public void DebugCommand(int key)
         {
             switch (key)
@@ -476,34 +539,29 @@ namespace CoalRun.Core
                     cart.SetWheels(2);
                     Say("Debug: both wheels back on.");
                     break;
+
                 case 4: // Load empty → 6 → full → overfilled → empty.
                     var load = cart.Coal < 5.9f ? 6 :
                         cart.Coal < tuning.cartCapacity - .1f ? tuning.cartCapacity :
                         cart.Coal < tuning.overfillCapacity - .1f ? tuning.overfillCapacity : 0;
+                    
+                    // keep the coal bunker capacity intact, unlike what the treasury does with the USD.
+                    // idk why i don't make bunker capacity infinite. original design was finite,
+                    // but it's not really relevant anymore. maybe i should fix that later.
                     chute.Bunker += cart.Coal - load;
+                    
                     cart.Coal = load;
                     Say($"Debug: cart holds {load:0}.");
                     break;
-                case 5: // Loose coal back to the bunker.
+
+                case 5: // clean up all the loose coal currently present on the map and put it back into the bunker.
                     Coal.ReturnAll();
                     Say("Debug: loose coal cleaned up.");
                     break;
-                case 7: // The training again, from the top.
-                    _trained = false;
-                    Restart();
-                    break;
-                case 8: // Past the training and the briefing, into the shift.
-                    tutorial.Skip();
-                    BeginShift();
-                    break;
-                case 10: // The clock jumps to the last 30 seconds of the shift.
-                    if (ShiftRunning) Clock = Mathf.Max(Clock, tuning.shiftLength - 30);
-                    break;
-                case 9: // The bot plays the shift (balance testing); F9 again stops it.
-                    ShiftBot.Run(this);
-                    break;
-                case 6: // The cart, upright and still, beside the operator on their floor.
+                
+                case 6: // teleport the cart to the player.
                     var p = player.Position;
+
                     float side = player.Facing, floor = Coal.SurfaceAt(p.x, p.y).Y;
                     cart.Body.position = new Vector2(Mathf.Clamp(p.x + side * 1.6f, 1.45f, 30.55f), floor + .7f);
                     cart.Body.rotation = 0;
@@ -511,6 +569,24 @@ namespace CoalRun.Core
                     cart.Body.angularVelocity = 0;
                     cart.transform.SetPositionAndRotation(cart.Body.position, Quaternion.identity);
                     Say("Debug: cart brought over.");
+                    break;
+                
+                case 7: // restart training from the top.
+                    _trained = false;
+                    Restart();
+                    break;
+
+                case 8: // skip training and briefly directly into that day's shift.
+                    tutorial.Skip();
+                    BeginShift();
+                    break;
+
+                case 10: // jump the clock to last 30 seconds of the shift.
+                    if (ShiftRunning) Clock = Mathf.Max(Clock, tuning.shiftLength - 30);
+                    break;
+
+                case 9: // toggles the Shift Bot on and off so i can watch the game instead of playing it :sunglasses:
+                    ShiftBot.Run(this);
                     break;
             }
         }

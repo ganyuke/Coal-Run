@@ -6,6 +6,10 @@ using UnityEngine.Scripting.APIUpdating;
 
 namespace CoalRun.Gameplay.Cart
 {
+    /**
+     * the math here makes my brain hurt.
+     */
+    
     // The cart. Wheel and skid colliders switch with its wheel count; mass follows the coal load.
     // GroundFriction supplies the resistance of rolling wheels and a dragging skid.
     [RequireComponent(typeof(Rigidbody2D))]

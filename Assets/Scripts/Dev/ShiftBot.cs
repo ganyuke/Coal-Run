@@ -17,6 +17,9 @@ namespace CoalRun.Dev
     // thanks claude for this one
     // now i can playtest foreverrr
     // but it's kinda dumb and doesn't understand when to shovel coal
+    
+    // this isn't really a business critical thing I just thought it would be fun to
+    // have Claude write a bot to play the game for me.
 
     // A competent player for balance testing, after the JS prototype's route test ("survives a full
     // ten-minute shift"): fill the cart at the chute from the control room, haul it onto the freight lift,
