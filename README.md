@@ -49,7 +49,7 @@ Mouse and keyboard.
 
 ### Changes from existing content
 
-MVP project (v0.5) was cut down to only two days, with the second wheel concept added to the second day (perhaps the days should be flipped considering how intense day 1 is 🤔).
+MVP project (v0.6) was cut down to only two days, with the second wheel concept added to the second day (perhaps the days should be flipped considering how intense day 1 is 🤔).
 
 Several controls were changed, including the burn rate leveer which was changed to use the same floor lever as the rest of the levers in the game (tip lever and chute lever). Clicking the cart to drag was changed to holding space and using movement controls.
 
